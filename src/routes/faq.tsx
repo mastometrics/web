@@ -6,16 +6,16 @@ import { ParentComponent } from "solid-js";
 
 export default function HomeRoute() {
   return (
-    <Page title="FAQ • MastoMetrics">
-      <div class="bg-white rounded-lg border-mastodon-purple-300/30 border p-4 sm:p-8">
-        <h1 class="text-4xl text-mastodon-purple-500 font-bold">FAQ</h1>
-        <p class="text-gray-500 mt-4  max-w-prose leading-relaxed">
+    <Page title="FAQ - MastoMetrics">
+      <div class="rounded-lg border border-mastodon-purple-300/30 bg-white p-4 sm:p-8">
+        <h1 class="text-4xl font-bold text-mastodon-purple-500">FAQ</h1>
+        <p class="mt-4 max-w-prose  leading-relaxed text-gray-500">
           <strong class="font-semibold">MastoMetrics is a free and simple analytics app for Mastodon Accounts.</strong>{" "}
           Login using your Mastodon account and track the progress of your followers and see which of your posts perform
           well.
         </p>
       </div>
-      <div class="columns-1 sm:columns-2 gap-4 space-y-4 my-8">
+      <div class="my-8 columns-1  gap-4 space-y-2 sm:columns-2 sm:space-y-4">
         <FAQ title="Free?">
           <strong class="font-semibold text-mastodon-purple-500">Yes!</strong> The first version of MastoMetrics is
           absolutely free, no credit card required. I may add payed features in the future to support development, but
@@ -59,8 +59,8 @@ export default function HomeRoute() {
 }
 
 const FAQ: ParentComponent<{ title: string }> = (props) => (
-  <div class="bg-mastodon-purple-300/10 rounded-lg  p-4 sm:p-8 break-inside-avoid-column">
-    <h2 class="text-xl text-mastodon-purple-500 font-bold">{props.title}</h2>
-    <p class="text-gray-500 mt-4 max-w-prose leading-relaxed">{props.children}</p>
+  <div class="break-inside-avoid-column rounded-lg  bg-mastodon-purple-300/10 p-4 sm:p-8">
+    <h2 class="text-xl font-bold text-mastodon-purple-500">{props.title}</h2>
+    <p class="mt-4 max-w-prose leading-relaxed text-gray-500">{props.children}</p>
   </div>
 );

@@ -6,12 +6,12 @@ import { Page } from "~/components/Page";
 export default function HomeRoute() {
   return (
     <Page title="MastoMetrics">
-      <div class="text-center">
-        <h1 class="text-4xl text-mastodon-purple-500 font-bold">Soon!</h1>
-        <h2 class="text-xl mt-4 text-mastodon-purple-800/80 font-medium">
+      <div class="my-8 text-center">
+        <h1 class="text-4xl font-bold text-mastodon-purple-500">Soon!</h1>
+        <h2 class="mt-4 text-xl font-medium text-mastodon-purple-800/80">
           The free Mastodon Analytics app is almost here
         </h2>
-        <p class="text-gray-500 mt-4">
+        <p class="mt-4 text-gray-500">
           Follow the development at{" "}
           <a href="https://mas.to/@mastometrics" target="_blank" class="font-medium">
             <span class="text-mastodon-purple-600">@mastometrics</span>@mas.to
@@ -19,7 +19,7 @@ export default function HomeRoute() {
         </p>
         <figure class="mt-8">
           <img src={footer} />
-          <figcaption class="text-gray-500 text-xs mt-2">&copy; Image from https://joinmastodon.org/apps</figcaption>
+          <figcaption class="mt-2 text-xs text-gray-500">&copy; Image from https://joinmastodon.org/apps</figcaption>
         </figure>
       </div>
     </Page>

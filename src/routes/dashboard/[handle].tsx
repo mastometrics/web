@@ -49,7 +49,7 @@ export function routeData({ params }: RouteDataArgs) {
     return data;
   });
   const [statuses, setStatuses] = createSignal<Status[]>(accountData()?.statuses ?? accountData.latest?.statuses ?? []);
-  const [hasMore, setHasMore] = createSignal(false);
+  const [hasMore, setHasMore] = createSignal(accountData()?.hasMore ?? accountData.latest?.hasMore ?? false);
 
   createEffect(async () => {
     if (loading()) return;
@@ -87,6 +87,7 @@ export function routeData({ params }: RouteDataArgs) {
     ordering,
     setOrdering,
     loadMore,
+    loading,
     hasMore,
   };
 }
@@ -95,7 +96,7 @@ export default function AccountHandleRoute() {
   const user = useAuthentication();
   const params = useParams();
 
-  const { account, period, setPeriod, statuses, resource, ordering, setOrdering, hasMore, loadMore } =
+  const { account, period, setPeriod, statuses, loading, ordering, setOrdering, hasMore, loadMore } =
     useRouteData<typeof routeData>();
 
   const [syncing, sync] = createServerAction$(syncAccount);
@@ -128,11 +129,14 @@ export default function AccountHandleRoute() {
                         <p class="sm:text-base text-sm text-mastodon-purple-900/50">
                           <a href="#"> {acc.username} </a>
                         </p>
+                        <p class="text-mastodon-purple-800/50 text-xs sm:hidden mt-2">
+                          Last updated {formatRelativeTime(acc.lastIndex)}
+                        </p>
                       </div>
                     </div>
                   </div>
                   <div class="ml-4 mt-4 flex-shrink-0 flex flex-col items-end gap-2">
-                    <p class="text-mastodon-purple-900/50 text-xs sm:text-sm">
+                    <p class="text-mastodon-purple-800/50 text-xs hidden sm:block">
                       Last updated {formatRelativeTime(acc.lastIndex)}
                     </p>
                     <Show when={user()?.isAdmin}>
@@ -167,7 +171,7 @@ export default function AccountHandleRoute() {
         </Show> */}
       </Suspense>
 
-      <div class="container max-w-4xl mx-auto  py-4 px-6">
+      <div class="container max-w-4xl mx-auto px-4 py-2 sm:py-4 sm:px-6">
         <Suspense>
           <div class="mt-6">
             {/* <h3 class="text-lg leading-6 font-medium text-gray-900">{periodOptions[period()]}</h3> */}
@@ -178,18 +182,20 @@ export default function AccountHandleRoute() {
             </dl>
           </div>
         </Suspense>
-        <div class="flex items-center">
+        <div class="flex items-center mb-0 mt-8 sm:mt-12 gap-4 ">
           <Tabbar
-            class="mb-4 mt-8 flex-auto"
+            class="flex-auto"
             tabs={tabs}
             active={ordering()}
             onChange={({ key }) => setOrdering(key as orderKeys)}
           />
-          <Select options={periods} value={period()} onChange={setPeriod} />
+          <Select options={periods} value={period()} onChange={setPeriod} label="Select a period" hideLabel />
         </div>
+      </div>
+      <div class="container max-w-4xl mx-auto sm:px-6 sm:mb-12">
         <StatusList.Wrapper>
           <For each={statuses()}>{(status) => <StatusList.Item status={status} />}</For>
-          {hasMore() && <StatusList.LoadMoreButton action={() => loadMore()} />}
+          {hasMore() && <StatusList.LoadMoreButton action={() => loadMore()} loading={loading()} />}
         </StatusList.Wrapper>
       </div>
     </>

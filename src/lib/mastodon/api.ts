@@ -41,20 +41,3 @@ export async function fetchFromApi<T>(
     throw err as Error;
   }
 }
-
-// 429 Too Many Requests
-async function test(instance = "swiss.social") {
-  let count = 0;
-  while (count < 200) {
-    try {
-      const { response } = await fetchFromApi("instance", {
-        throttle: true,
-        instance,
-      });
-      if (response.status !== 200) console.log(response.status, response.statusText);
-    } catch (e) {
-      console.log(e);
-    }
-    count++;
-  }
-}

@@ -47,7 +47,7 @@ export const getFullAccount = async (
             isReblog: false,
             publishedAt: params.period != "all" ? { gte: periodToDate(params.period) } : undefined,
           },
-          take: 10,
+          take: 11, // +1 to check if there are more pages
         },
         Followers: {
           select: { Account: { select: { username: true, avatar: true, displayName: true } } },
@@ -65,7 +65,13 @@ export const getFullAccount = async (
         },
       },
     });
-    return { id: data?.id, account: data, statuses: data?.Statuses, params };
+    return {
+      id: data?.id,
+      account: data,
+      statuses: data?.Statuses.slice(0, 10),
+      params,
+      hasMore: (data?.Statuses.length ?? 0) > 10,
+    };
   });
 
 export const getStatuses = async (

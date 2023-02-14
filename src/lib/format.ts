@@ -37,3 +37,15 @@ const numberFormater = new Intl.NumberFormat("en");
 export function formatNumber(number: number) {
   return numberFormater.format(number);
 }
+
+export function formatHandle(acct: string, defaultInstance: string) {
+  if (acct.startsWith("@")) acct = acct.slice(1);
+  if (acct.includes("@")) return acct;
+  return `${acct}@${defaultInstance}`;
+}
+
+export function parseHandle(handle: string) {
+  const username = handle.startsWith("@") ? handle.slice(1) : handle;
+  const [acct, instance] = username.split("@");
+  return { acct, instance, username };
+}

@@ -175,6 +175,51 @@ export function AtIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
   );
 }
 
+export function QuestionCircleIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-question-circle"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      stroke-width="2"
+      stroke="currentColor"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      {...props}
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M12 16v.01"></path>
+      <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"></path>
+      <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+    </svg>
+  );
+}
+
+export function QuestionMarkIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-question-mark"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      stroke-width="2"
+      stroke="currentColor"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      {...props}
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M8 8a3.5 3 0 0 1 3.5 -3h1a3.5 3 0 0 1 3.5 3a3 3 0 0 1 -2 3a3 4 0 0 0 -2 4"></path>
+      <path d="M12 19l0 .01"></path>
+    </svg>
+  );
+}
+
 export const Icons = {
   Reblog: ReblogIcon,
   Reply: ReplyIcon,
@@ -184,4 +229,8 @@ export const Icons = {
   SignOut: SignOutIcon,
   At: AtIcon,
   Star: StarIcon,
-};
+  QuestionCircle: QuestionCircleIcon,
+  QuestionMark: QuestionMarkIcon,
+} as const;
+
+export type Icon = typeof Icons[keyof typeof Icons];

@@ -1,4 +1,3 @@
-import { JSDOM } from "jsdom";
 import fetch from "node-fetch";
 import { ApiOptions, fetchFromApi } from "./api";
 
@@ -21,9 +20,9 @@ export async function fetchFollowers(api: ApiOptions, id: string) {
 export async function fetchInstance(api: ApiOptions) {
   try {
     const { data } = await fetchFromApi<MastodonInstance>(`instance`, api);
-    if (!data.uri || !data.title) throw new Error("Invalid instance");
+    if (!data.uri || !data.title) throw new Error("This domain is not a valid Mastodon instance");
   } catch (e) {
-    throw new Error(`Could not fetch instance ${api.instance}`, { cause: e });
+    throw new Error(`Could not fetch instance '${api.instance}'`, { cause: e });
   }
 }
 

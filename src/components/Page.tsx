@@ -7,12 +7,12 @@ export const Page: ParentComponent<{ title: string }> = (props) => {
     <>
       <Title>{props.title}</Title>
       <div class="bg-mastodon-purple-700">
-        <div class="container max-w-4xl mx-auto flex items-center py-4 px-6">
+        <div class="container mx-auto flex max-w-4xl items-center py-4 px-6">
           <img src={logo} />
           <div class="flex-auto"></div>
         </div>
       </div>
-      <div class="container max-w-4xl mx-auto py-12 px-6">{props.children}</div>
+      <div class="container mx-auto max-w-4xl p-2 sm:py-12 sm:px-6">{props.children}</div>
     </>
   );
 };

@@ -10,6 +10,7 @@ import {
 } from "../lib/mastodon";
 import { db as prisma, Result, runInConnection } from "../db";
 import { ApiOptions } from "~/lib/mastodon/api";
+import { parseHandle, formatHandle } from "~/lib/format";
 
 export async function importAccount(handle: string, api?: ApiOptions) {
   return runInConnection(async () => {
@@ -179,18 +180,6 @@ async function addFollower(account: Account, follower: Account) {
 function getTextContent(content: string) {
   const dom = new JSDOM(content, { contentType: "text/html" });
   return dom.window.document.body.textContent ?? "";
-}
-
-function formatHandle(acct: string, defaultInstance: string) {
-  if (acct.startsWith("@")) acct = acct.slice(1);
-  if (acct.includes("@")) return acct;
-  return `${acct}@${defaultInstance}`;
-}
-
-function parseHandle(handle: string) {
-  const username = handle.startsWith("@") ? handle.slice(1) : handle;
-  const [acct, instance] = username.split("@");
-  return { acct, instance, username };
 }
 
 function sum(...values: (number | null)[]) {

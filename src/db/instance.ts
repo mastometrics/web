@@ -20,7 +20,7 @@ export async function findOrCreateInstance(host: string) {
           },
         });
       } catch (e) {
-        throw new Error(`Instance ${host} not found`);
+        throw new Error(`Could not connect to instance '${host}'`);
       }
     }
     return instance;
