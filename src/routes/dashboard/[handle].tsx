@@ -1,17 +1,16 @@
 import { Status } from "@prisma/client";
 import { useParams } from "@solidjs/router";
-import { Component, createEffect, createResource, createSignal, For, ParentComponent, Show, Suspense } from "solid-js";
-import { NoHydration } from "solid-js/web";
+import { createEffect, createResource, createSignal, For, Show, Suspense } from "solid-js";
 import { RouteDataArgs, Title, useLocation, useRouteData } from "solid-start";
-import server$, { createServerAction$ } from "solid-start/server";
-import { ReblogIcon, ReplyIcon, StarIcon } from "~/components/Icon";
+import server$, { createServerAction$, createServerData$, redirect } from "solid-start/server";
 import { Select } from "~/components/Select";
 import { StatCard } from "~/components/Statcard";
 import { StatusList } from "~/components/Status";
 import { Tabbar } from "~/components/Tabbar";
 import { getFullAccount, getStatuses, orderKeys, periodKeys, startTracking, syncAccount } from "~/db/account";
-import { simpleMastodonSanitzer } from "~/lib/mastodon/utils";
-import { useUser } from "~/lib/useUser";
+import { getUser } from "~/db/session";
+import { formatDate, formatRelativeTime } from "~/lib/format";
+import { useAuthentication } from "~/lib/useAuthentication";
 
 const periodOptions: { [key in periodKeys]?: string } = {
   "24h": "Today",
@@ -29,8 +28,18 @@ const orderingOptions: { [key in orderKeys]?: string } = {
 const fetchAccount = server$(getFullAccount);
 const fetchStatuses = server$(getStatuses);
 
-export function routeData({ params, location }: RouteDataArgs) {
-  useUser();
+export function routeData({ params }: RouteDataArgs) {
+  createServerData$(
+    async (handle, { request }) => {
+      const [user] = await getUser(request);
+      // Simplistic way to prevent unauthorized access to other users' dashboards
+      if (!user?.isAdmin && user?.account?.username != handle) return redirect(`/dashboard/${user?.account?.username}`);
+    },
+    {
+      key: () => params.handle,
+    }
+  );
+
   const [period, setPeriod] = createSignal<periodKeys>("30d");
   const [ordering, setOrdering] = createSignal<orderKeys>("engagements");
   const [loading, setLoading] = createSignal(false);
@@ -83,17 +92,13 @@ export function routeData({ params, location }: RouteDataArgs) {
 }
 
 export default function AccountHandleRoute() {
-  const user = useUser();
+  const user = useAuthentication();
   const params = useParams();
-  const query = useLocation();
+
   const { account, period, setPeriod, statuses, resource, ordering, setOrdering, hasMore, loadMore } =
     useRouteData<typeof routeData>();
-  // const { accountData, period, setPeriod, statuses } = fetchAccountData(params.handle);
-  // const [period, setPeriod] = createSignal<periodKeys>(accountData()?.params.period ?? "24h");
-  const [tab, setTab] = createSignal<"top" | "latest">("top");
 
   const [syncing, sync] = createServerAction$(syncAccount);
-
   const [_, track] = createServerAction$(startTracking);
 
   const followersHistory = () => account()?.Metrics.map((h) => ({ date: h.date, value: h.followers ?? 0 })) ?? [];
@@ -126,23 +131,31 @@ export default function AccountHandleRoute() {
                       </div>
                     </div>
                   </div>
-                  <div class="ml-4 mt-4 flex-shrink-0 flex">
-                    {!acc.tracking && (
-                      <button
-                        type="button"
-                        class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        onClick={() => track(params.handle)}
-                      >
-                        <span> Start Tracking </span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                      onClick={() => sync(params.handle)}
-                    >
-                      <span> Update / Import </span>
-                    </button>
+                  <div class="ml-4 mt-4 flex-shrink-0 flex flex-col items-end gap-2">
+                    <p class="text-mastodon-purple-900/50 text-xs sm:text-sm">
+                      Last updated {formatRelativeTime(acc.lastIndex)}
+                    </p>
+                    <Show when={user()?.isAdmin}>
+                      <div class="flex-wrap gap-4">
+                        {!acc.tracking && (
+                          <button
+                            type="button"
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            onClick={() => track(params.handle)}
+                          >
+                            <span> Start Tracking </span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-25"
+                          onClick={() => sync(params.handle)}
+                          disabled={syncing.pending}
+                        >
+                          <span> Sync </span>
+                        </button>
+                      </div>
+                    </Show>
                   </div>
                 </div>
               </div>

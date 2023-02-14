@@ -1,5 +1,6 @@
 import { Component, Switch, Match, onMount, createSignal, Show } from "solid-js";
 import { cls } from "~/lib/css";
+import { formatDate, formatNumber } from "~/lib/format";
 import { DashIcon, ArrowUpIcon, ArrowDownIcon } from "./Icon";
 import { SimpleChart } from "./SimpleChart";
 
@@ -98,16 +99,3 @@ const DeltaLabel: Component<{ value?: number; compareTo?: number }> = (props) =>
     </p>
   );
 };
-
-const dateFormater = new Intl.DateTimeFormat("en", {
-  month: "short",
-  day: "numeric",
-});
-function formatDate(date: Date) {
-  return dateFormater.format(date);
-}
-
-const numberFormater = new Intl.NumberFormat("en");
-function formatNumber(number: number) {
-  return numberFormater.format(number);
-}

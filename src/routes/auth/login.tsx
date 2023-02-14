@@ -1,10 +1,8 @@
-import { createEffect, Show, Suspense } from "solid-js";
-import { FormError, Navigate, Title, useLocation, useParams, useRouteData } from "solid-start";
+import { Show } from "solid-js";
+import { FormError, Title, useLocation, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$, redirect } from "solid-start/server";
 import { findOrCreateInstance, getInstanceAppCredentials } from "~/db/instance";
 import { getUser } from "~/db/session";
-import { fetchMastodonInstance } from "~/lib/mastodon";
-import { useUser } from "~/lib/useUser";
 
 export function routeData() {
   return createServerData$(async (_, { request }) => {

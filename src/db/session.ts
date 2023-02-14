@@ -75,7 +75,11 @@ export async function getUser(request: Request) {
 
     try {
       const user = await db.user.findUnique({ where: { id: +userId }, include: { Account: true } });
-      return { user: user as User, account: user?.Account, isAdmin: user?.Account.username === "robertvh@mas.to" };
+      return {
+        // user: user as User, // includes token
+        account: user?.Account,
+        isAdmin: user?.Account.username === "mastometrics@mas.to",
+      };
     } catch {
       throw logout(request);
     }

@@ -51,7 +51,10 @@ const StatusItem: Component<{ status: Status }> = ({ status }) => {
         </div>
 
         <div class="flex basis-1/3 gap-4 pr-4 mt-2 text-sm">
-          <div
+          <a
+            href={`${status.url!}/favourites`}
+            target="_blank"
+            rel="noopener"
             class={cls(
               "flex basis-1/3 grow-0 items-center text-slate-600 justify-end",
               !status.favoritesCount && "opacity-30"
@@ -59,9 +62,12 @@ const StatusItem: Component<{ status: Status }> = ({ status }) => {
           >
             <Icons.Star class="w-4  mr-2 text-mastodon-purple-900/30 group-hover:text-mastodon-purple-600 inline-block  " />{" "}
             {status.favoritesCount}
-          </div>
+          </a>
 
-          <div
+          <a
+            href={`${status.url!}/reblogs`}
+            target="_blank"
+            rel="noopener"
             class={cls(
               "flex basis-1/3 grow-0 items-center text-slate-600 justify-end",
               !status.boostsCount && "opacity-30"
@@ -69,9 +75,12 @@ const StatusItem: Component<{ status: Status }> = ({ status }) => {
           >
             <ReblogIcon class="w-4 mr-2 text-mastodon-purple-900/30 group-hover:text-mastodon-purple-600  inline-block  " />{" "}
             {status.boostsCount}
-          </div>
+          </a>
 
-          <div
+          <a
+            href={status.url!}
+            target="_blank"
+            rel="noopener"
             class={cls(
               "flex basis-1/3 grow-0 items-center text-slate-600 justify-end",
               !status.repliesCount && "opacity-30"
@@ -79,7 +88,7 @@ const StatusItem: Component<{ status: Status }> = ({ status }) => {
           >
             <ReplyIcon class="w-4 mr-2 text-mastodon-purple-900/30 group-hover:text-mastodon-purple-600  inline-block  " />{" "}
             {status.repliesCount}
-          </div>
+          </a>
         </div>
       </div>
     </li>

@@ -1,9 +1,9 @@
-import { Account, User } from "@prisma/client";
+import { Account } from "@prisma/client";
 import { Component, createSignal, Show, Suspense } from "solid-js";
-import { Outlet, redirect, useNavigate, useRouteData } from "solid-start";
+import { Outlet, redirect, useNavigate } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import { getUser } from "~/db/session";
-import { useUser } from "~/lib/useUser";
+import { useAuthentication } from "~/lib/useAuthentication";
 import logo from "~/assets/logo.svg";
 import { DropdownMenu } from "@kobalte/core";
 import { AtIcon, SignOutIcon } from "~/components/Icon";
@@ -76,7 +76,7 @@ export function routeData() {
 }
 
 export default function DashboardRoute() {
-  const user = useUser();
+  const user = useAuthentication();
   return (
     <div>
       <Suspense>
