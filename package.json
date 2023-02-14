@@ -1,0 +1,48 @@
+{
+  "name": "mastometrics",
+  "scripts": {
+    "dev": "solid-start dev",
+    "build": "solid-start build",
+    "start": "solid-start start",
+    "sync": "ts-node ./src/syncer/update.ts"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.3",
+    "@tailwindcss/line-clamp": "^0.4.2",
+    "@tailwindcss/typography": "^0.5.8",
+    "@types/jsdom": "^21.1.0",
+    "@types/node": "^17.0.10",
+    "@xmldom/xmldom": "^0.8.6",
+    "autoprefixer": "^10.4.12",
+    "postcss": "^8.4.18",
+    "solid-start-node": "^0.2.15",
+    "tailwindcss": "^3.2.0",
+    "tailwindcss-animate": "^1.0.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4",
+    "vite": "^3.2.5",
+    "vite-plugin-iso-import": "^1.0.0"
+  },
+  "dependencies": {
+    "@kobalte/core": "^0.6.1",
+    "@kobalte/tailwindcss": "^0.4.2",
+    "@prisma/client": "^4.10.0",
+    "@solidjs/meta": "^0.28.2",
+    "@solidjs/router": "^0.7.0",
+    "@types/": "xmldom/xmldom",
+    "chart.js": "^4.2.1",
+    "jsdom": "^21.1.0",
+    "node-fetch": "^3.3.0",
+    "prisma": "^4.10.0",
+    "solid-js": "^1.6.9",
+    "solid-start": "^0.2.15",
+    "undici": "^5.15.1"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "prettier": {
+    "printWidth": 120
+  }
+}
