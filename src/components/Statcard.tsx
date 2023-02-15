@@ -17,14 +17,14 @@ export const StatCard: Component<{
 
   return (
     <div
-      class="px-4 py-5 bg-mastodon-purple-100 rounded-lg overflow-hidden min-h-[9em] sm:p-6 relative"
+      class="relative min-h-[9em] overflow-hidden rounded-lg bg-mastodon-purple-100 px-4 py-5 dark:bg-mastodon-purple-800 sm:p-6"
       onMouseLeave={() => setHoverIndex(undefined)}
     >
-      <div class="relative z-10 pointer-events-none">
+      <div class="pointer-events-none relative z-10">
         <dt
           class={cls(
-            "text-sm font-medium text-gray-500 truncate transition-all",
-            hoverIndex() == undefined ? "opacity-100 mt-0" : "opacity-0 -mt-8"
+            "truncate text-sm font-medium text-gray-500 transition-all dark:text-mastodon-purple-300",
+            hoverIndex() == undefined ? "mt-0 opacity-100" : "-mt-8 opacity-0"
           )}
         >
           {props.title}
@@ -32,7 +32,7 @@ export const StatCard: Component<{
         <dd class="mt-1 flex items-baseline ">
           <p
             class={cls(
-              "transition-all text-3xl font-semibold text-mastodon-purple-900",
+              "text-3xl font-semibold text-mastodon-purple-900 transition-all dark:text-white",
               hoverIndex() == undefined ? "text-3xl" : "text-2xl"
             )}
           >
@@ -49,7 +49,7 @@ export const StatCard: Component<{
         </dd>
         <dt
           class={cls(
-            "mt-1 -mb-6 text-sm font-medium text-gray-500 truncate transition",
+            "mt-1 -mb-6 truncate text-sm font-medium text-gray-500 transition dark:text-mastodon-purple-300",
             hoverIndex() == undefined ? "opacity-0 " : "opacity-100"
           )}
         >
@@ -57,13 +57,13 @@ export const StatCard: Component<{
         </dt>
       </div>
       <Show when={previousValue() != undefined}>
-        <div class="w-full h-auto bottom-0 top-auto right-0 left-0 absolute rounded-b-lg overflow-hidden p-0.5">
+        <div class="absolute bottom-0 top-auto right-0 left-0 h-auto w-full overflow-hidden rounded-b-lg p-0.5 text-mastodon-purple-300">
           <SimpleChart
             data={data()}
             height={"80px"}
             onHover={(_, i) => setHoverIndex(i)}
-            lineColor="rgba(99 100 255 / 30%)"
-            areaColor="rgba(99 100 255 / 5%)"
+            lineColor="rgba(99 100 255 / 40%)"
+            areaColor="rgba(99 100 255 / 4%)"
           />
         </div>
       </Show>
@@ -75,25 +75,25 @@ const DeltaLabel: Component<{ value?: number; compareTo?: number }> = (props) =>
   const change = () => (props.value ?? 0) - (props.compareTo ?? 0);
   const type = () => (change() > 0 ? "increase" : change() < 0 ? "decrease" : "same");
   return (
-    <p class="px-2 flex items-baseline text-sm font-semibold bg-mastodon-purple-100/70 rounded-full">
+    <p class="font-semibol flex items-baseline rounded-full bg-mastodon-purple-100/70 px-2 text-sm dark:bg-mastodon-purple-800/50">
       <Switch
         fallback={
           <>
-            <DashIcon class="self-center flex-shrink-0 h-4 w-4 text-gray-300" />
+            <DashIcon class="h-4 w-4 flex-shrink-0 self-center text-gray-300" />
             <span class="sr-only"> No change </span>
             {/* <span class="text-gray-500">{0}</span> */}
           </>
         }
       >
         <Match when={type() == "increase"}>
-          <ArrowUpIcon class="self-center flex-shrink-0 h-4 w-4 text-green-500" />
+          <ArrowUpIcon class="h-4 w-4 flex-shrink-0 self-center text-green-500 " />
           <span class="sr-only"> Increased by </span>
-          <span class="text-green-600">{change()}</span>
+          <span class="text-green-600 dark:text-green-400">{change()}</span>
         </Match>
         <Match when={type() == "decrease"}>
-          <ArrowDownIcon class="self-center flex-shrink-0 h-4 w-4 text-red-500" />
+          <ArrowDownIcon class="h-4 w-4 flex-shrink-0 self-center text-red-500 " />
           <span class="sr-only"> Decreased by </span>
-          <span class="text-red-600">{Math.abs(change())}</span>
+          <span class="text-red-600 dark:text-red-500">{Math.abs(change())}</span>
         </Match>
       </Switch>
     </p>

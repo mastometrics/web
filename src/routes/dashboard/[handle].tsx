@@ -1,7 +1,7 @@
 import { Status } from "@prisma/client";
 import { useParams } from "@solidjs/router";
 import { createEffect, createResource, createSignal, For, Show, Suspense } from "solid-js";
-import { RouteDataArgs, Title, useLocation, useRouteData } from "solid-start";
+import { RouteDataArgs, Title, useRouteData } from "solid-start";
 import server$, { createServerAction$, createServerData$, redirect } from "solid-start/server";
 import { Select } from "~/components/Select";
 import { StatCard } from "~/components/Statcard";
@@ -9,7 +9,7 @@ import { StatusList } from "~/components/Status";
 import { Tabbar } from "~/components/Tabbar";
 import { getFullAccount, getStatuses, orderKeys, periodKeys, startTracking, syncAccount } from "~/db/account";
 import { getUser } from "~/db/session";
-import { formatDate, formatRelativeTime } from "~/lib/format";
+import { formatRelativeTime } from "~/lib/format";
 import { useAuthentication } from "~/lib/useAuthentication";
 
 const periodOptions: { [key in periodKeys]?: string } = {
@@ -114,29 +114,29 @@ export default function AccountHandleRoute() {
         <Title>MastoMetrics - {account()?.displayName ?? params.handle}</Title>
         <Show when={account()} keyed>
           {(acc) => (
-            <div class="bg-mastodon-purple-100/90">
-              <div class="container max-w-4xl mx-auto  py-8  px-6">
-                <div class="-ml-4 -mt-4 flex justify-between items-center flex-wrap sm:flex-nowrap">
+            <div class="bg-mastodon-purple-100/90 dark:bg-mastodon-purple-800/10">
+              <div class="container mx-auto max-w-4xl py-8 px-6">
+                <div class="-ml-4 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
                   <div class="ml-4 mt-4">
                     <div class="flex items-center">
                       <div class="flex-shrink-0">
                         <img class="h-16 w-16 rounded-md" src={acc.avatar!} alt={acc.displayName!} />
                       </div>
                       <div class="ml-4">
-                        <h3 class="text-lg sm:text-xl leading-6 font-medium text-mastodon-purple-800">
+                        <h3 class="text-lg font-medium leading-6 text-mastodon-purple-800 dark:text-mastodon-purple-100 sm:text-xl">
                           {acc.displayName}
                         </h3>
-                        <p class="sm:text-base text-sm text-mastodon-purple-900/50">
+                        <p class="text-sm text-mastodon-purple-900/50 dark:text-mastodon-purple-300 sm:text-base">
                           <a href="#"> {acc.username} </a>
                         </p>
-                        <p class="text-mastodon-purple-800/50 text-xs sm:hidden mt-2">
+                        <p class="mt-2 text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:hidden">
                           Last updated {formatRelativeTime(acc.lastIndex)}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div class="ml-4 mt-4 flex-shrink-0 flex flex-col items-end gap-2">
-                    <p class="text-mastodon-purple-800/50 text-xs hidden sm:block">
+                  <div class="ml-4 mt-4 flex flex-shrink-0 flex-col items-end gap-2">
+                    <p class="hidden text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:block ">
                       Last updated {formatRelativeTime(acc.lastIndex)}
                     </p>
                     <Show when={user()?.isAdmin}>
@@ -144,7 +144,7 @@ export default function AccountHandleRoute() {
                         {!acc.tracking && (
                           <button
                             type="button"
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             onClick={() => track(params.handle)}
                           >
                             <span> Start Tracking </span>
@@ -152,7 +152,7 @@ export default function AccountHandleRoute() {
                         )}
                         <button
                           type="button"
-                          class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-25"
+                          class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25"
                           onClick={() => sync(params.handle)}
                           disabled={syncing.pending}
                         >
@@ -171,7 +171,7 @@ export default function AccountHandleRoute() {
         </Show> */}
       </Suspense>
 
-      <div class="container max-w-4xl mx-auto px-4 py-2 sm:py-4 sm:px-6">
+      <div class="container mx-auto max-w-4xl px-4 py-2 sm:py-4 sm:px-6">
         <Suspense>
           <div class="mt-6">
             {/* <h3 class="text-lg leading-6 font-medium text-gray-900">{periodOptions[period()]}</h3> */}
@@ -182,7 +182,7 @@ export default function AccountHandleRoute() {
             </dl>
           </div>
         </Suspense>
-        <div class="flex items-center mb-0 mt-8 sm:mt-12 gap-4 ">
+        <div class="mb-0 mt-8 flex items-center gap-4 sm:mt-12 ">
           <Tabbar
             class="flex-auto"
             tabs={tabs}
@@ -192,7 +192,7 @@ export default function AccountHandleRoute() {
           <Select options={periods} value={period()} onChange={setPeriod} label="Select a period" hideLabel />
         </div>
       </div>
-      <div class="container max-w-4xl mx-auto sm:px-6 sm:mb-12">
+      <div class="container mx-auto max-w-4xl sm:mb-12 sm:px-6">
         <StatusList.Wrapper>
           <For each={statuses()}>{(status) => <StatusList.Item status={status} />}</For>
           {hasMore() && <StatusList.LoadMoreButton action={() => loadMore()} loading={loading()} />}

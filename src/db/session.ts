@@ -1,4 +1,4 @@
-import { Instance, PrismaClient, User } from "@prisma/client";
+import { Instance } from "@prisma/client";
 import { redirect } from "solid-start/server";
 import { createCookieSessionStorage } from "solid-start/session";
 import { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon";

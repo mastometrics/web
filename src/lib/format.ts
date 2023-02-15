@@ -20,7 +20,7 @@ const relativeTimeFormatter = new Intl.RelativeTimeFormat("en", {
   numeric: "auto",
 });
 export function formatRelativeTime(date: Date) {
-  const diff = date.getTime() - Date.now();
+  const diff = new Date(date).getTime() - Date.now();
   const seconds = diff / 1000;
   const minutes = seconds / 60;
   const hours = minutes / 60;

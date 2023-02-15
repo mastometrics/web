@@ -6,7 +6,7 @@ import { getUser } from "~/db/session";
 import { useAuthentication } from "~/lib/useAuthentication";
 import logo from "~/assets/logo.svg";
 import { DropdownMenu } from "@kobalte/core";
-import { AtIcon, Icons, QuestionCircleIcon, SignOutIcon } from "~/components/Icon";
+import { AtIcon, Icons, SignOutIcon } from "~/components/Icon";
 const Header: Component<{ account: Account }> = (props) => {
   const [open, setOpen] = createSignal(false);
   const navigate = useNavigate();
@@ -17,20 +17,20 @@ const Header: Component<{ account: Account }> = (props) => {
   }
 
   return (
-    <div class="bg-mastodon-purple-700">
-      <div class="container max-w-4xl mx-auto flex items-center py-4 px-6">
+    <div class="bg-mastodon-purple-700 dark:bg-mastodon-purple-900">
+      <div class="container mx-auto flex max-w-4xl items-center py-4 px-6">
         <img src={logo} />
         <div class="flex-auto"></div>
         <Show when={props.account}>
           {/* <a href="#" class="flex-shrink-0 group block"> */}
           <DropdownMenu.Root isOpen={open()} onOpenChange={setOpen} placement="top-end" gutter={4}>
-            <DropdownMenu.Trigger class="flex-shrink-0 group block outline-none focus-visible:bg-mastodon-purple-900/50 rounded-lg p-2 pl-8">
+            <DropdownMenu.Trigger class="group block flex-shrink-0 rounded-lg p-2 pl-8 outline-none focus-visible:bg-mastodon-purple-900/50">
               <div class="flex items-center gap-3">
                 <div class="hidden sm:block">
-                  <p class="text-sm font-medium text-mastodon-purple-100/90 group-hover:text-white text-right group-focus-visible:text-white">
+                  <p class="text-right text-sm font-medium text-mastodon-purple-100/90 group-hover:text-white group-focus-visible:text-white">
                     {props.account.displayName}
                   </p>
-                  <p class="text-xs  font-medium text-mastodon-purple-100/70 group-hover:text-mastodon-purple-200 text-right group-focus-visible:text-white">
+                  <p class="text-right  text-xs font-medium text-mastodon-purple-100/70 group-hover:text-mastodon-purple-200 group-focus-visible:text-white">
                     {props.account.username}
                   </p>
                 </div>
@@ -41,29 +41,29 @@ const Header: Component<{ account: Account }> = (props) => {
             </DropdownMenu.Trigger>
 
             <DropdownMenu.Portal>
-              <DropdownMenu.Content class="bg-mastodon-purple-700 p-2 rounded-lg shadow-xl outline-none min-w-[200px] animate-in zoom-in-50 fade-in origin-top-right duration-100">
+              <DropdownMenu.Content class="min-w-[200px] origin-top-right rounded-lg bg-mastodon-purple-700 p-2 shadow-xl outline-none animate-in fade-in zoom-in-50 duration-100">
                 <DropdownMenu.Item
                   onSelect={() => navigate("/faq")}
                   closeOnSelect
-                  class="flex items-center cursor-pointer px-4 py-2 rounded ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white text-mastodon-purple-100 outline-none "
+                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >
-                  <Icons.QuestionMark class="w-4 mr-2" /> <DropdownMenu.ItemLabel>F.A.Q.</DropdownMenu.ItemLabel>
+                  <Icons.QuestionMark class="mr-2 w-4" /> <DropdownMenu.ItemLabel>F.A.Q.</DropdownMenu.ItemLabel>
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item
                   onSelect={startSupport}
                   closeOnSelect
-                  class="flex items-center cursor-pointer px-4 py-2 rounded ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white text-mastodon-purple-100 outline-none "
+                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >
-                  <AtIcon class="w-4 mr-2" /> <DropdownMenu.ItemLabel>Support</DropdownMenu.ItemLabel>
+                  <AtIcon class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Support</DropdownMenu.ItemLabel>
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item
                   onSelect={() => (window.location.pathname = "/auth/logout/")}
                   closeOnSelect
-                  class="flex items-center cursor-pointer px-4 py-2 rounded ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white text-mastodon-purple-100 outline-none "
+                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >
-                  <SignOutIcon class="w-4 mr-2" /> <DropdownMenu.ItemLabel>Sign out</DropdownMenu.ItemLabel>
+                  <SignOutIcon class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Sign out</DropdownMenu.ItemLabel>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>

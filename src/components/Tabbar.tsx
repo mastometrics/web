@@ -27,9 +27,9 @@ export const Tabbar: Component<{ tabs: Tab[]; active?: string; onChange: (tab: T
               <button
                 class={cls(
                   activeTab() == tab
-                    ? "bg-mastodon-purple-100 text-mastodon-purple-700"
-                    : "text-mastodon-purple-700/70 hover:text-mastodon-purple-800/60",
-                  "px-3 py-2 font-medium text-sm rounded-md"
+                    ? "bg-mastodon-purple-100 text-mastodon-purple-700 dark:bg-mastodon-purple-800 dark:text-mastodon-purple-100"
+                    : "text-mastodon-purple-700/70 hover:text-mastodon-purple-800/60 dark:text-mastodon-purple-100/80 dark:hover:text-mastodon-purple-200/60",
+                  "rounded-md px-3 py-2 text-sm font-medium"
                 )}
                 onClick={() => setActiveTab(tab)}
               >

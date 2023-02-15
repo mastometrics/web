@@ -1,7 +1,7 @@
 import { createEffect, createSignal, Show } from "solid-js";
 import { FormError, Title, useLocation, useRouteData } from "solid-start";
 import server$, { createServerAction$, createServerData$, redirect } from "solid-start/server";
-import { TinyLoadingIndicator } from "~/components/LoadingIndicator";
+import { ShowDelayed, TinyLoadingIndicator } from "~/components/LoadingIndicator";
 import { Page } from "~/components/Page";
 import { findOrCreateInstance, getInstanceAppCredentials } from "~/db/instance";
 import { getUser } from "~/db/session";
@@ -125,7 +125,9 @@ export default function LoginRoute() {
               class="h-10 w-full min-w-[6em] place-self-stretch rounded-md bg-mastodon-purple-600 px-6 text-white shadow shadow-mastodon-purple-900/10 outline-mastodon-purple-900 transition-all hover:bg-mastodon-purple-700 hover:shadow-md focus-visible:bg-mastodon-purple-800 focus-visible:outline-2 disabled:bg-mastodon-purple-900/60 sm:h-auto sm:w-auto"
               disabled={loggingIn.pending}
             >
-              {loggingIn.pending ? <TinyLoadingIndicator /> : params.error || loggingIn.error ? "Retry" : "Login"}
+              <ShowDelayed when={loggingIn.pending} fallback={params.error || loggingIn.error ? "Retry" : "Login"}>
+                <TinyLoadingIndicator />
+              </ShowDelayed>
             </button>
             <div class="h-8 w-full">
               <Show when={validation().error} keyed>
