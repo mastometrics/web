@@ -1,6 +1,7 @@
 import { isServer } from "solid-js/web";
 import { MastodonStatus } from ".";
-import { JSDOM } from "jsdom?server";
+import { DOMParser, parseHTML } from "linkedom?server";
+import { HTMLDocument } from "linkedom/types/html/document";
 
 export function formatEmojis(text: string, emojis: MastodonStatus["emojis"]) {
   text = escapeHtml(text);
@@ -27,22 +28,16 @@ export function simpleMastodonSanitzer(
     p: ["text-gray-700", "my-2"],
   }
 ) {
-  let doc: Document;
-  let Node: typeof window.Node;
-  if (isServer && import.meta.env.SSR) {
-    const dom = new JSDOM(html);
-    doc = dom.window.document;
-    Node = dom.window.Node;
-  } else {
-    doc = new DOMParser().parseFromString(html, "text/html");
-    Node = window.Node;
-  }
+  const doc = new DOMParser().parseFromString(
+    `<!doctype html><html lang="en"><body>${html}</body></html>`,
+    "text/html"
+  );
   const SAFE_TAG = ["a", "p", "br", "span", "body"];
   const SAFE_ATTR = ["href", "rel", "target", "class"];
   const SAFE_CLASS = ["mention", "hashtag", "ellipsis", "invisible"]; //https://docs.joinmastodon.org/spec/activitypub/#sanitization
 
   function recursiveSanitize(node: Node) {
-    if (node.nodeType === Node.TEXT_NODE) return;
+    if (node.nodeType === (isServer ? node.TEXT_NODE : Node.TEXT_NODE)) return;
 
     const el = node as Element;
     const tag = el.tagName.toLowerCase();

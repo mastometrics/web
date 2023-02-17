@@ -1,21 +1,18 @@
 // @ts-nocheck
-import { Component, Switch, Match, onMount, JSX, splitProps, onCleanup } from "solid-js";
-import { DashIcon, ArrowUpIcon, ArrowDownIcon } from "./Icon";
+import { Component, onMount, JSX, splitProps, onCleanup } from "solid-js";
 import {
   BarController,
   CategoryScale,
   Chart,
-  ChartData,
-  ChartDataset,
-  FillTarget,
   LinearScale,
   LineController,
   LineElement,
   Filler,
   PointElement,
-  Tooltip,
 } from "chart.js";
-Chart.register(LinearScale, PointElement, CategoryScale, Filler, LineElement, LineController, BarController);
+import { isServer } from "solid-js/web";
+if (!isServer)
+  Chart.register(LinearScale, PointElement, CategoryScale, Filler, LineElement, LineController, BarController);
 
 const corsair = {
   id: "corsair",

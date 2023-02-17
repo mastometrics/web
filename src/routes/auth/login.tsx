@@ -11,7 +11,7 @@ import { fetchInstance } from "~/lib/mastodon";
 export function routeData() {
   return createServerData$(async (_, { request }) => {
     const [user, error] = await getUser(request);
-    if (user) throw redirect(`/dashboard/${user.account!.username}`);
+    if (user?.account) throw redirect(`/dashboard/${user.account!.username}`);
 
     return {};
   });

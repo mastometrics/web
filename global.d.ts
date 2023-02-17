@@ -1,4 +1,4 @@
-declare module "jsdom?server" {
-  import all from "jsdom";
+declare module "linkedom?server" {
+  import all from "linkedom";
   export = all;
 }

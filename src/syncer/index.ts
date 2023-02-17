@@ -1,13 +1,6 @@
-import { JSDOM } from "jsdom";
+import { DOMParser } from "linkedom";
 import { Prisma, Account } from "@prisma/client";
-import {
-  fetchFollowers,
-  fetchFollowing,
-  fetchStatuses,
-  lookupAccount,
-  MastodonAccount,
-  MastodonStatus,
-} from "../lib/mastodon";
+import { fetchFollowers, fetchFollowing, fetchStatuses, lookupAccount, MastodonAccount } from "../lib/mastodon";
 import { db as prisma, Result, runInConnection } from "../db";
 import { ApiOptions } from "~/lib/mastodon/api";
 import { parseHandle, formatHandle } from "~/lib/format";
@@ -85,6 +78,7 @@ export async function updateUserStats(user: Account | string) {
     // truncate date to day
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    console.log(`Updating stats for ${account.username} on ${today}`);
 
     await prisma.metric.upsert({
       where: { accountId_date: { accountId: account.id, date: today }, date: today },
@@ -178,8 +172,10 @@ async function addFollower(account: Account, follower: Account) {
 }
 
 function getTextContent(content: string) {
-  const dom = new JSDOM(content, { contentType: "text/html" });
-  return dom.window.document.body.textContent ?? "";
+  return (
+    new DOMParser().parseFromString(`<!doctype html><html lang="en"><body>${content}</body></html>`, "text/html").body
+      .textContent || ""
+  );
 }
 
 function sum(...values: (number | null)[]) {
