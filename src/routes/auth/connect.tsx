@@ -20,8 +20,10 @@ export async function GET({ params, request }: APIEvent) {
     if (error) throw error;
     if (user) return await createUserSession(`${user.id}`, `/dashboard/${user?.Account?.username}`);
   } catch (error) {
+    console.error(error);
     return redirect(
-      `/login?error=${encodeURIComponent(error as string)}` + host ? `&instance=${encodeURIComponent(host!)}` : ""
+      `/auth/login?error=${encodeURIComponent(error as string)}` +
+        (host ? `&instance=${encodeURIComponent(host!)}` : "")
     );
   }
 }

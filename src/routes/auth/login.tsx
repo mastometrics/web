@@ -71,7 +71,7 @@ export default function LoginRoute() {
       const [instance, error] = await findOrCreateInstance(inputInstance);
       if (error) throw new FormError(error.message);
       const [credentials, err] = await getInstanceAppCredentials(instance, {
-        redirectUri: `http://localhost:3000/auth/connect?instance=${instance.host}`,
+        redirectUri: `${new URL(event.request.url).origin}/auth/connect?instance=${instance.host}`,
       });
       if (err) throw new FormError(err.message);
 
