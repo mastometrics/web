@@ -1,6 +1,3 @@
-import { fetchFromApi } from "../lib/mastodon/api";
-import logo from "~/assets/logo.svg";
-import footer from "~/assets/footer_festival.webp";
 import { Page } from "~/components/Page";
 import { ParentComponent } from "solid-js";
 

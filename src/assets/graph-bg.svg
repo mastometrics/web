@@ -1,0 +1,16 @@
+
+<svg width="1978px" height="669px" viewBox="0 0 1978 669" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-izwibu-tyy-1">
+            <stop stop-color="#5C4FE5" offset="0%"></stop>
+            <stop stop-color="#563BCD" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Homepage" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.271065848" stroke-linecap="round" stroke-linejoin="round">
+        <g id="Extra-Large" transform="translate(21.000000, -360.000000)" fill="url(#linearGradient-izwibu-tyy-1)" stroke="#6F6FE6" stroke-width="6">
+            <g id="Path-2" transform="translate(0.000000, 336.000000)">
+                <polyline points="-17.0818741 690 -17.0818741 403.754653 122.398003 351.847691 280.147978 364.75 398.251068 249.941406 519.381776 253.714844 686.075293 201.425781 751.430631 287.060196 853.283577 227.929688 1020.50435 271.925781 1151.1798 176.714844 1354.6729 211.96875 1532.74324 89 1591.8993 156 1796.61335 27.5 1953.96799 67 1953.96799 675.749874"></polyline>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,9 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{html,js,jsx,ts,tsx}"],
-  darkMode: "class", // or 'media' or 'class
+  darkMode: "media", // or 'media' or 'class
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Inter", "Manrope", "sans-serif"],
+        display: ["Manrope", "Inter", "sans-serif"],
+      },
       colors: {
         "mastodon-gray": {
           200: "#9baec8",
