@@ -1,8 +1,8 @@
 import { Instance } from "@prisma/client";
 import { redirect } from "solid-start/server";
 import { createCookieSessionStorage } from "solid-start/session";
-import { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon";
-import { createOrUpdateAccount } from "~/syncer";
+import { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon/api";
+import { getOrCreateAccount } from "~/workers/upsert-account";
 import { runInConnection } from ".";
 type AuthenticationData = {
   token: MastodonAccessToken;
@@ -13,7 +13,12 @@ type AuthenticationData = {
 export async function authenticate({ authAccount, token, instance }: AuthenticationData) {
   return runInConnection(async (db) => {
     if (!authAccount?.username) throw new Error("Missing username");
-    const account = await createOrUpdateAccount(`${authAccount.username}@${instance.host}`, authAccount);
+    const account = await getOrCreateAccount(
+      `${authAccount.username}@${instance.host}`,
+      authAccount,
+      { instance: instance.host },
+      db
+    );
     return db.user.upsert({
       where: { accountId: account.id },
       update: {

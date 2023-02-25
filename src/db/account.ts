@@ -1,7 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { db, runInConnection } from ".";
-import { importAccount } from "../syncer/index";
-
+export { syncAccount } from "../workers/sync-account";
 export type periodKeys = "24h" | "7d" | "30d" | "90d" | "1y" | "all";
 export type orderKeys = "engagements" | "favorites" | "boosts" | "replies" | "publishedAt";
 
@@ -105,10 +104,6 @@ export const getStatuses = async (
     const hasMore = statuses.length > limit;
     return { statuses: hasMore ? statuses.slice(0, -1) : statuses, page, limit, hasMore, params };
   });
-
-export const syncAccount = async (handle: string) => {
-  return importAccount(handle);
-};
 
 export const startTracking = async (handle: string) => {
   const account = await db.account.findUnique({ where: { username: handle } });

@@ -1,43 +1,44 @@
-import fetch, { RequestInit, Response } from "node-fetch";
-import { createThrottler, createRateLimitStore } from "./throttler";
+import { ApiOptions, fetchApi, http } from "./http";
+import { MastodonAccount, MastodonInstance, MastodonNotification, MastodonStatus } from "./types";
+export * from "./types";
 
-const throttler = createThrottler(createRateLimitStore());
-export type ApiOptions = { throttle?: boolean; instance: string; token?: string };
+type paginateOpts = { limit?: number };
+export function mastodonApi(api: ApiOptions) {
+  return {
+    instance: {
+      info: () => fetchInstance(api),
+    },
+    accounts: {
+      lookup: async (username: string) =>
+        (await http.fetch<MastodonAccount>(`accounts/lookup?acct=${username}`, api)).data,
+      followers: (params: { id: string }, opts?: paginateOpts) =>
+        http.paginate<MastodonAccount>(`accounts/${params.id}/followers?${limit(80, opts)}`, api, opts),
+      following: (params: { id: string }, opts?: paginateOpts) =>
+        http.paginate<MastodonAccount>(`accounts/${params.id}/following?${limit(80, opts)}`, api, opts),
+      statuses: (params: { id: string }, opts?: paginateOpts) =>
+        http.paginate<MastodonStatus>(`accounts/${params.id}/statuses?${limit(40, opts)}`, api, opts),
+    },
+    notifications: {
+      list: ({ types }: { types: MastodonNotification["type"][] } = { types: [] }, opts?: paginateOpts) =>
+        http.paginate<MastodonNotification>(
+          `notifications?types[]=${types.join("&types[]=")}&${limit(30, opts)}`,
+          api,
+          opts
+        ),
+    },
+  };
+}
 
-export async function fetchFromApi<T>(
-  path: string,
-  { throttle, token, instance }: ApiOptions,
-  request: RequestInit = {}
-): Promise<{ data: T; response: Response }> {
+function limit(max: number, { limit }: paginateOpts = {}) {
+  return limit ? `limit=${Math.min(limit, max)}` : `limit=${max}`;
+}
+
+async function fetchInstance(api: ApiOptions) {
   try {
-    let key = instance;
-    if (token) key += `-${token}`;
-
-    const { handleResponse } = await throttler.throttle(key, { greedy: !throttle });
-
-    const url = `https://${instance}/api/v1/${path}`;
-    const requestInit = { ...request };
-    if (token) requestInit.headers = { ...request.headers, Authorization: `Bearer ${token}` };
-    const response = await fetch(url, requestInit);
-
-    const { limited, waitForReset } = handleResponse(response);
-
-    if (limited) {
-      await waitForReset;
-      return fetchFromApi(instance, { throttle, token, instance }, request);
-    }
-
-    if (response.status >= 400) {
-      const err = new Error(response.statusText, { cause: { response } });
-      (err as any).status = response.status;
-      throw err;
-    }
-
-    const data = (await response.json()) as T;
-    return { data, response: response };
-  } catch (err) {
-    if ((err as any).code === "ECONNREFUSED") throw new Error(`Connection refused to ${instance}`);
-    if ((err as any).code === "ECONNRESET") throw new Error(`Connection reset to ${instance}`);
-    throw err as Error;
+    const { data } = await fetchApi<MastodonInstance>(`instance`, api);
+    if (!data.uri || !data.title) throw new Error("This domain is not a valid Mastodon instance");
+    return data;
+  } catch (e) {
+    throw new Error(`Could not fetch instance '${api.instance}'`, { cause: e });
   }
 }

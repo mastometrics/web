@@ -44,17 +44,17 @@ export function createRateLimitStore() {
 
 export function createThrottler({ get, update }: ReturnType<typeof createRateLimitStore>) {
   async function throttle(key: string, { greedy } = { greedy: false }) {
-    function handleResponse(response: Response): { limited: boolean; waitForReset: Promise<unknown> } {
+    function handleResponse(response: Response): { ratelimitExceeded: boolean; awaitReset: () => Promise<unknown> } {
       const limit = update(key, readRateLimit(response));
       if (response.status === 429) {
         const timeToReset = limit.reset.getTime() - Date.now();
         if (timeToReset) {
           console.log(`${key}: Rate limited, retry when timer resets in ${timeToReset / 1000} seconds`);
-          const waitForReset = sleep(timeToReset);
-          return { waitForReset, limited: true };
+          const awaitReset = () => sleep(limit.reset.getTime() - Date.now());
+          return { awaitReset, ratelimitExceeded: true };
         }
       }
-      return { limited: false, waitForReset: Promise.resolve() };
+      return { ratelimitExceeded: false, awaitReset: () => Promise.resolve() };
     }
 
     const { remaining, limit, reset, history } = get(key);

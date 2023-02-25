@@ -49,3 +49,13 @@ export function parseHandle(handle: string) {
   const [acct, instance] = username.split("@");
   return { acct, instance, username };
 }
+
+export function sum(...values: (number | null)[]) {
+  return values.reduce((a, b) => ((a as number) + (b || 0)) as number, 0);
+}
+
+export function truncateDate(date: Date | string) {
+  const turncated = new Date(date);
+  turncated.setHours(0, 0, 0, 0);
+  return turncated;
+}

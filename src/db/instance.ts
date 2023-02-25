@@ -1,5 +1,6 @@
 import { Instance, Prisma } from "@prisma/client";
-import { fetchAppAccessToken, fetchMastodonInstance, registerInstanceApp } from "~/lib/mastodon";
+import { mastodonApi } from "~/lib/mastodon/api";
+import { registerInstanceApp, fetchAppAccessToken } from "~/lib/mastodon/auth";
 import { db, Result, runInConnection } from ".";
 
 export async function findOrCreateInstance(host: string) {
@@ -9,7 +10,7 @@ export async function findOrCreateInstance(host: string) {
     });
     if (!instance) {
       try {
-        const instanceData = await fetchMastodonInstance(host);
+        const instanceData = await mastodonApi({ instance: host }).instance.info();
         if (!instanceData) throw new Error(`Instance ${host} not found`);
 
         instance = await db.instance.create({

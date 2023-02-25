@@ -2,7 +2,7 @@ import { APIEvent } from "solid-start";
 import { redirect } from "solid-start/server";
 import { getInstanceAppCredentials } from "~/db/instance";
 import { authenticate, createUserSession } from "~/db/session";
-import { fetchAuthenticatedUser, fetchUserAccessToken } from "~/lib/mastodon";
+import { fetchAuthenticatedUser, fetchUserAccessToken } from "~/lib/mastodon/auth";
 
 export async function GET({ params, request }: APIEvent) {
   const url = new URL(request.url);

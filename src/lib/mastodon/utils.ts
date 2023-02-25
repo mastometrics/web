@@ -1,7 +1,6 @@
 import { isServer } from "solid-js/web";
-import { MastodonStatus } from ".";
-import { DOMParser, parseHTML } from "linkedom?server";
-import { HTMLDocument } from "linkedom/types/html/document";
+import { DOMParser } from "linkedom?server";
+import { MastodonStatus } from "./types";
 
 export function formatEmojis(text: string, emojis: MastodonStatus["emojis"]) {
   text = escapeHtml(text);

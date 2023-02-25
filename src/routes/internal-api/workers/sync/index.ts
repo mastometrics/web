@@ -1,5 +1,5 @@
 import { APIEvent } from "solid-start";
-import { updateOutdatedUsers, updateUserStats } from "~/syncer";
+import { updateOutdatedUsers } from "~/workers/sync-outdated-users";
 
 export async function GET({ params }: APIEvent) {
   try {

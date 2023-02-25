@@ -6,7 +6,7 @@ import { Page } from "~/components/Page";
 import { findOrCreateInstance, getInstanceAppCredentials } from "~/db/instance";
 import { getUser } from "~/db/session";
 import { parseHandle } from "~/lib/format";
-import { fetchInstance } from "~/lib/mastodon";
+import { mastodonApi } from "~/lib/mastodon/api";
 
 export function routeData() {
   return createServerData$(async (_, { request }) => {
@@ -46,7 +46,7 @@ export default function LoginRoute() {
     if (!instance) return setValidation({});
 
     try {
-      await server$((instance: string) => fetchInstance({ instance }))(instance);
+      await server$((instance: string) => mastodonApi({ instance }).instance.info())(instance);
     } catch (error) {
       setValidation({ error: "Not a valid mastodon instance" });
       return;
@@ -63,7 +63,7 @@ export default function LoginRoute() {
       const inputInstance = parseInstance(input);
       if (!inputInstance) throw new FormError(`Please enter an instance`);
       try {
-        await fetchInstance({ instance: inputInstance });
+        await mastodonApi({ instance: inputInstance }).instance.info();
       } catch {
         throw new FormError("Not a valid mastodon instance");
       }
