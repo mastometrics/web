@@ -72,7 +72,7 @@ export async function getInstanceAppCredentials(
       };
     } else if (redirectUri) {
       const client = await registerInstanceApp(instance.host, {
-        clientName: "Toeter Toeter Toeter, met romana op de scooter",
+        clientName: process.env.NODE_ENV === "production" ? "MastoMetrics" : "MastoMetrics Dev",
         redirectUris: redirectUri,
         scopes: "read",
       });

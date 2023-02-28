@@ -4,9 +4,9 @@ import { ParentComponent } from "solid-js";
 export default function HomeRoute() {
   return (
     <Page title="FAQ - MastoMetrics">
-      <div class="rounded-lg border border-mastodon-purple-300/30 bg-white p-4 sm:p-8">
+      <div class="rounded-lg border border-mastodon-purple-300/30 bg-white p-4 dark:bg-mastodon-purple-800 sm:p-8">
         <h1 class="text-4xl font-bold text-mastodon-purple-500">FAQ</h1>
-        <p class="mt-4 max-w-prose  leading-relaxed text-gray-500">
+        <p class="mt-4 max-w-prose  leading-relaxed text-gray-500 dark:text-white">
           <strong class="font-semibold">MastoMetrics is a free and simple analytics app for Mastodon Accounts.</strong>{" "}
           Login using your Mastodon account and track the progress of your followers and see which of your posts perform
           well.
@@ -58,7 +58,7 @@ export default function HomeRoute() {
 
 const FAQ: ParentComponent<{ title: string }> = (props) => (
   <div class="break-inside-avoid-column rounded-lg  bg-mastodon-purple-300/10 p-4 sm:p-8">
-    <h2 class="text-xl font-bold text-mastodon-purple-500">{props.title}</h2>
-    <p class="mt-4 max-w-prose leading-relaxed text-gray-500">{props.children}</p>
+    <h2 class="text-xl font-bold text-mastodon-purple-500 dark:text-mastodon-purple-300">{props.title}</h2>
+    <p class="mt-4 max-w-prose leading-relaxed text-gray-500 dark:text-mastodon-purple-100">{props.children}</p>
   </div>
 );
