@@ -1,4 +1,5 @@
 import { Metric, Prisma, PrismaClient } from "@prisma/client";
+import { logNewUser } from "~/lib/logsnag/logsnag";
 import { periodKeys, periodToDate } from "~/lib/period";
 import { importAccount } from "~/workers/import-account";
 import { db, runInConnection } from ".";
@@ -113,6 +114,7 @@ export const startTracking = async (handle: string) => {
   const account = await db.account.findUnique({ where: { username: handle } });
   if (!account) throw new Error("Account not found");
   await db.account.update({ where: { id: account.id }, data: { tracking: true } });
+  logNewUser(account);
   await importAccount(handle, { instance: account.instance });
   return true;
   // });

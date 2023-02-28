@@ -37,6 +37,7 @@
     "@solidjs/router": "^0.7.0",
     "chart.js": "^4.2.1",
     "linkedom": "^0.14.22",
+    "logsnag": "^0.1.6",
     "node-fetch": "^3.3.0",
     "prisma": "^4.10.0",
     "solid-js": "^1.6.9",
