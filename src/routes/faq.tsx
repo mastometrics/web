@@ -46,6 +46,8 @@ export default function HomeRoute() {
           <br />
           In addition, we store the number of followers you have gained and the engagement on your posts over time to
           provide you with analytics.
+          <br />
+          We don't store any Direct Messages. "Follower Only" posts <em>are</em> stored.
         </FAQ>
         <FAQ title="Can I delete my account?">
           Yes, you can delete your account at any time. All your data will be deleted immediately. Mention

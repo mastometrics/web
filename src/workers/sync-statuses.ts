@@ -14,6 +14,9 @@ export async function syncStatuses(
     const statuses = mastodonApi(api).accounts.statuses({ id: account.instanceAccountId }, { limit });
     const upserts = [];
     for await (const status of statuses) {
+      // Skip direct messages
+      if (status.visibility === "direct") continue;
+
       const statusData: Prisma.StatusUpdateInput = {
         boostsCount: status.reblogs_count,
         favoritesCount: status.favourites_count,
