@@ -4,9 +4,15 @@ import { runInConnection } from "~/db";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
 
-export async function syncStatuses(account: Account, api: ApiOptions = { instance: account.instance }) {
-  runInConnection(async (db) => {
-    const statuses = mastodonApi(api).accounts.statuses({ id: account.instanceAccountId }, { limit: 80 });
+/** Upsert an accounts most recent statuses and their engagement, (last 120 by default)  */
+export async function syncStatuses(
+  account: Account,
+  api: ApiOptions = { instance: account.instance },
+  { limit = 120 } = {}
+) {
+  return runInConnection(async (db) => {
+    const statuses = mastodonApi(api).accounts.statuses({ id: account.instanceAccountId }, { limit });
+    const upserts = [];
     for await (const status of statuses) {
       const statusData: Prisma.StatusUpdateInput = {
         boostsCount: status.reblogs_count,
@@ -20,16 +26,20 @@ export async function syncStatuses(account: Account, api: ApiOptions = { instanc
         isReblog: !!status.reblog,
       };
 
-      await db.status.upsert({
-        where: { statusUri: status.uri },
-        update: statusData,
-        create: {
-          ...(statusData as Prisma.StatusCreateInput),
-          statusUri: status.uri,
-          Account: { connect: { id: account.id } },
-        },
-      });
+      upserts.push(
+        db.status.upsert({
+          where: { statusUri: status.uri },
+          update: statusData,
+          create: {
+            ...(statusData as Prisma.StatusCreateInput),
+            statusUri: status.uri,
+            Account: { connect: { id: account.id } },
+          },
+        })
+      );
     }
+
+    await Promise.all(upserts);
   });
 }
 

@@ -1,8 +1,9 @@
 import { Account, Prisma } from "@prisma/client";
 import { runInConnection, Result } from "~/db";
-import { sum } from "~/lib/format";
+import { sum, truncateDate } from "~/lib/format";
 import { createOrUpdateAccount } from "./upsert-account";
 
+/* Upsert account metrics for today, based on the account's current status counts and all statuses */
 export async function updateAccountMetrics(handle: string): Result<void>;
 export async function updateAccountMetrics(account: Account): Result<void>;
 export async function updateAccountMetrics(user: Account | string) {
@@ -21,18 +22,17 @@ export async function updateAccountMetrics(user: Account | string) {
       replies: aggregates._sum.repliesCount,
       engagements: sum(aggregates._sum.favoritesCount, aggregates._sum.boostsCount, aggregates._sum.repliesCount),
     };
-    // truncate date to day
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    console.log(`Updating stats for ${account.username} on ${today}`);
+
+    const timestamp = truncateDate(new Date(), "hour");
+    console.log(`Updating stats for ${account.username} on ${timestamp}`);
 
     await db.metric.upsert({
-      where: { accountId_date: { accountId: account.id, date: today }, date: today },
+      where: { accountId_timestamp: { accountId: account.id, timestamp }, timestamp },
       update: counts,
       create: {
         ...(counts as Prisma.MetricCreateInput),
         Account: { connect: { id: account.id } },
-        date: today,
+        timestamp,
       },
     });
   });

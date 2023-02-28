@@ -164,10 +164,10 @@ const Feature: ParentComponent<{ title: string }> = (props) => {
 };
 
 const BackgroundPattern = () => {
-  const mask = `linear-gradient(90deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.00) 2%, rgba(0,0,0,0.94) 20%, #000000 25%, #000000 75%, rgba(0,0,0,0.15) 80%, rgba(0,0,0,0.00) 98%, rgba(0,0,0,0.00) 100%)`;
+  const mask = `linear-gradient(90deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.00) 2%, rgba(0,0,0,0.94) 20%, #000000 25%, #000000 75%, rgba(0,0,0,0.94) 80%, rgba(0,0,0,0.00) 98%, rgba(0,0,0,0.00) 100%)`;
   return (
     <>
-      <div class="absolute top-0 mx-auto h-screen w-full overflow-hidden" aria-hidden="true">
+      <div class="absolute top-0 mx-auto h-full min-h-screen w-full overflow-hidden" aria-hidden="true">
         <div class="top-0 z-0 mx-auto aspect-[2/1] w-full max-w-[120rem] origin-top scale-125  bg-[radial-gradient(farthest-side_at_top,_var(--tw-gradient-stops))] from-[#4A4DED]  to-[#0B0C32]"></div>
       </div>
       <div class="absolute mx-auto h-full w-full overflow-hidden" aria-hidden="true">

@@ -2,8 +2,8 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
 });
-export function formatDate(date: Date) {
-  return dateFormatter.format(date);
+export function formatDate(date: Date | string) {
+  return dateFormatter.format(typeof date === "string" ? new Date(date) : date);
 }
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en", {
@@ -54,8 +54,9 @@ export function sum(...values: (number | null)[]) {
   return values.reduce((a, b) => ((a as number) + (b || 0)) as number, 0);
 }
 
-export function truncateDate(date: Date | string) {
+export function truncateDate(date: Date | string, truncateTo: "day" | "hour" = "day") {
   const turncated = new Date(date);
-  turncated.setHours(0, 0, 0, 0);
+  if (truncateTo == "day") turncated.setHours(0);
+  turncated.setMinutes(0, 0, 0);
   return turncated;
 }

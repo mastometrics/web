@@ -35,9 +35,10 @@ export default function HomeRoute() {
         </FAQ>
 
         <FAQ title="How often is data updated?">
-          Your account data is fetched once every hour. Graphs include daily data. After you sign up, we will fetch your
-          last 40 posts and attempt to create historical data about your followers. From that moment on the number of
-          followers gained and engagement on your posts will be tracked regurarly.
+          Your account data is fetched once every hour. Graphs display daily numbers. After you sign up, we will fetch
+          your last 2000 posts and attempt to create historical data about your followers. From that moment on the
+          number of followers gained and engagement on your posts will be tracked regurarly. We only track and update
+          the engagement on your last 120 posts.
         </FAQ>
         <FAQ title="What data is stored?">
           We store your Mastodon account data, including your username, display name, avatar, and bio as well as all

@@ -12,7 +12,7 @@ export const StatCard: Component<{
 
   const currentValue = () => props.values.at(-1)?.value;
   const previousValue = () => props.values.at(-2)?.value;
-  const dates: Date[] = props.values?.map((v) => v.date) || [];
+  const dates = (): Date[] => props.values?.map((v) => v.date) || [];
   const data = () => props.values.map((v) => v.value) || [];
 
   return (
@@ -53,7 +53,7 @@ export const StatCard: Component<{
             hoverIndex() == undefined ? "opacity-0 " : "opacity-100"
           )}
         >
-          {hoverIndex() != undefined ? formatDate(dates[hoverIndex()!]) : <>&nbsp;</>}
+          {hoverIndex() != undefined ? formatDate(dates()[hoverIndex()!]) : <>&nbsp;</>}
         </dt>
       </div>
       <Show when={previousValue() != undefined}>

@@ -1,4 +1,5 @@
 import fetch, { RequestInit, Response } from "node-fetch";
+import { ClientError } from "../error";
 import { createThrottler, createRateLimitStore } from "./throttler";
 
 const throttler = createThrottler(createRateLimitStore());
@@ -18,7 +19,7 @@ export async function fetchApi<T>(
 
     logger(`Fetching ${url}`);
 
-    const requestInit = { ...request };
+    const requestInit: RequestInit = { ...request, signal: AbortSignal.timeout(20 * 1000) };
     if (token) requestInit.headers = { ...request.headers, Authorization: `Bearer ${token}` };
     const response = await fetch(url, requestInit);
 
@@ -38,8 +39,10 @@ export async function fetchApi<T>(
     const data = (await response.json()) as T;
     return { data, response };
   } catch (err) {
-    if ((err as any).code === "ECONNREFUSED") throw new Error(`Connection refused to ${instance}`);
-    if ((err as any).code === "ECONNRESET") throw new Error(`Connection reset to ${instance}`);
+    if ((err as any).name === "TimeoutError") throw new ClientError(`Timeout to ${instance}`, { cause: err });
+    if ((err as any).name === "AbortError") throw new ClientError(`Aborted request to ${instance}`, { cause: err });
+    if ((err as any).code === "ECONNREFUSED") throw new Error(`Connection refused to ${instance}`, { cause: err });
+    if ((err as any).code === "ECONNRESET") throw new Error(`Connection reset to ${instance}`, { cause: err });
     throw err as Error;
   }
 }

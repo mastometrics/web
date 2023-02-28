@@ -4,14 +4,14 @@ import { syncAccount } from "./sync-account";
 export async function updateOutdatedUsers() {
   return runInConnection(async (db) => {
     const sinceOneDay = new Date(Date.now() - 1000 * 60 * 60 * 24);
-    const sinceOneHour = new Date(Date.now() - 1000 * 60 * 60);
+    const sinceOneHour = new Date(Date.now() - 1000 * 60 * 3);
     const accounts = await db.account.findMany({
       where: {
         OR: [
           { tracking: true, lastIndex: { lt: sinceOneHour } },
           {
             tracking: true,
-            Metrics: { none: { date: { gt: sinceOneDay } } },
+            Metrics: { none: { timestamp: { gt: sinceOneHour } } },
           },
         ],
       },

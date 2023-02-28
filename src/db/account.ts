@@ -1,22 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Metric, Prisma, PrismaClient } from "@prisma/client";
+import { periodKeys, periodToDate } from "~/lib/period";
+import { importAccount } from "~/workers/import-account";
 import { db, runInConnection } from ".";
 export { syncAccount } from "../workers/sync-account";
-export type periodKeys = "24h" | "7d" | "30d" | "90d" | "1y" | "all";
 export type orderKeys = "engagements" | "favorites" | "boosts" | "replies" | "publishedAt";
-
-const periodToDaysAgo: Record<periodKeys, number> = {
-  "24h": 1,
-  "7d": 7,
-  "30d": 30,
-  "90d": 90,
-  "1y": 365,
-  all: 0,
-} as const;
-
-function periodToDate(period: periodKeys) {
-  if (period == "all") return undefined;
-  return new Date(Date.now() - 1000 * 60 * 60 * 24 * periodToDaysAgo[period]);
-}
 
 // Order of keys below determines default secondary sort order
 const orderings: Record<orderKeys, Prisma.StatusOrderByWithRelationInput> = {
@@ -34,10 +21,9 @@ export const getFullAccount = async (
     order: orderKeys;
   } = { period: "30d", order: "engagements" }
 ) =>
-  runInConnection(async () => {
+  runInConnection(async (db) => {
     console.log("getAccount", handle, params);
-
-    const data = await db.account.findUnique({
+    const data = db.account.findUnique({
       where: { username: handle },
       include: {
         Statuses: {
@@ -58,16 +44,33 @@ export const getFullAccount = async (
           orderBy: { createdAt: "desc" },
           take: 5,
         },
-        Metrics: {
-          orderBy: { date: "asc" },
-          take: params.period != "all" ? 30 : undefined,
-        },
       },
     });
+
+    const accountMetrics = db.$queryRaw<(Omit<Metric, "id" | "date"> & { date: Date })[]>`
+      SELECT DATE_TRUNC('day', timestamp AT TIME ZONE '-03:00') AS date,
+        MAX(followers)::int   AS followers,
+        MAX(following)::int   AS following,
+        MAX(statuses)::int    AS statuses,
+        MAX(boosts)::int      AS boosts,
+        MAX(favorites)::int   AS favorites,
+        MAX(engagements)::int AS engagements,
+        MAX(replies)::int     AS replies,
+        "accountId"
+      FROM metrics
+      INNER JOIN accounts acc ON "accountId" = acc.id AND "username" = ${handle}
+      WHERE timestamp >= ${periodToDate(params.period)}
+      GROUP BY date, "accountId"
+      ORDER BY date DESC
+      LIMIT 30
+    `;
+
+    const [account, metrics] = await Promise.all([data, accountMetrics]);
+    metrics.reverse();
     return {
-      id: data?.id,
-      account: data,
-      statuses: data?.Statuses.slice(0, 10),
+      id: account?.id,
+      account,
+      statuses: account?.Statuses.slice(0, 10),
       params,
       hasMore: (data?.Statuses.length ?? 0) > 10,
     };
@@ -106,7 +109,11 @@ export const getStatuses = async (
   });
 
 export const startTracking = async (handle: string) => {
+  // runInConnection(async (db) => {
   const account = await db.account.findUnique({ where: { username: handle } });
   if (!account) throw new Error("Account not found");
   await db.account.update({ where: { id: account.id }, data: { tracking: true } });
+  await importAccount(handle, { instance: account.instance });
+  return true;
+  // });
 };

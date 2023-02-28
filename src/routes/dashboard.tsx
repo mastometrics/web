@@ -7,6 +7,7 @@ import { useAuthentication } from "~/lib/useAuthentication";
 import logo from "~/assets/logo.svg";
 import { DropdownMenu } from "@kobalte/core";
 import { AtIcon, Icons, SignOutIcon } from "~/components/Icon";
+import { ClientError } from "~/lib/error";
 const Header: Component<{ account: Account }> = (props) => {
   const [open, setOpen] = createSignal(false);
   const navigate = useNavigate();
@@ -76,10 +77,14 @@ const Header: Component<{ account: Account }> = (props) => {
 
 export function routeData() {
   return createServerData$(async (_, { request }) => {
-    const [user, error] = await getUser(request);
-    if (!user) throw redirect("/auth/login");
-    if (error) throw redirect("/auth/login?error=" + encodeURIComponent(error));
-    return user;
+    try {
+      const user = await getUser(request);
+      if (!user?.account) throw redirect("/auth/login");
+      return user;
+    } catch (error) {
+      if (error instanceof ClientError) throw redirect("/auth/login?error=" + encodeURIComponent(error.message));
+      else throw redirect("/auth/login");
+    }
   });
 }
 

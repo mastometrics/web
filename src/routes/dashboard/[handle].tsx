@@ -1,15 +1,19 @@
-import { Status } from "@prisma/client";
+import { Metric, Status } from "@prisma/client";
 import { useParams } from "@solidjs/router";
-import { createEffect, createResource, createSignal, For, Show, Suspense } from "solid-js";
-import { RouteDataArgs, Title, useRouteData } from "solid-start";
+import { createEffect, createResource, createSignal, For, onMount, Show, Suspense } from "solid-js";
+import { isServer } from "solid-js/web";
+import { RouteDataArgs, Title, useLocation, useNavigate, useRouteData } from "solid-start";
 import server$, { createServerAction$, createServerData$, redirect } from "solid-start/server";
+import { TinyLoadingIndicator } from "~/components/LoadingIndicator";
 import { Select } from "~/components/Select";
 import { StatCard } from "~/components/Statcard";
 import { StatusList } from "~/components/Status";
 import { Tabbar } from "~/components/Tabbar";
-import { getFullAccount, getStatuses, orderKeys, periodKeys, startTracking, syncAccount } from "~/db/account";
+import { getFullAccount, getStatuses, orderKeys, startTracking, syncAccount } from "~/db/account";
+import { AggregateMetric, getAccountMetrics } from "~/db/metrics";
 import { getUser } from "~/db/session";
 import { formatRelativeTime } from "~/lib/format";
+import { periodKeys } from "~/lib/period";
 import { useAuthentication } from "~/lib/useAuthentication";
 
 const periodOptions: { [key in periodKeys]?: string } = {
@@ -27,11 +31,12 @@ const orderingOptions: { [key in orderKeys]?: string } = {
 
 const fetchAccount = server$(getFullAccount);
 const fetchStatuses = server$(getStatuses);
+const fetchMetrics = server$(getAccountMetrics);
 
 export function routeData({ params }: RouteDataArgs) {
   createServerData$(
     async (handle, { request }) => {
-      const [user] = await getUser(request);
+      const user = await getUser(request);
       // Simplistic way to prevent unauthorized access to other users' dashboards
       if (!user?.isAdmin && user?.account?.username != handle) return redirect(`/dashboard/${user?.account?.username}`);
     },
@@ -48,6 +53,15 @@ export function routeData({ params }: RouteDataArgs) {
     if (err) throw err;
     return data;
   });
+
+  const [metrics, { refetch: loadMetrics }] = createResource(
+    () => ({
+      handle: params.handle,
+      params: { utcOffset: new Date().getTimezoneOffset(), period: "30d" as periodKeys },
+    }),
+    async ({ handle, params }) => fetchMetrics(handle, params)
+  );
+
   const [statuses, setStatuses] = createSignal<Status[]>(accountData()?.statuses ?? accountData.latest?.statuses ?? []);
   const [hasMore, setHasMore] = createSignal(accountData()?.hasMore ?? accountData.latest?.hasMore ?? false);
 
@@ -79,7 +93,9 @@ export function routeData({ params }: RouteDataArgs) {
 
   return {
     account: () => accountData()?.account ?? accountData.latest?.account,
+    metrics, //: () => accountData()?.metrics ?? accountData.latest?.metrics ?? [],
     // statuses: () => accountData()?.statuses ?? accountData.latest?.statuses,
+    loadMetrics,
     statuses,
     resource: accountData,
     period,
@@ -92,19 +108,44 @@ export function routeData({ params }: RouteDataArgs) {
   };
 }
 
+function metricsToChartData(metrics: AggregateMetric[] | undefined, key: keyof Metric, defaultValue: number = 0) {
+  return metrics?.length
+    ? metrics.map((m: any) => ({ date: m.date, value: m[key] }))
+    : [{ date: new Date(), value: defaultValue }];
+}
+
 export default function AccountHandleRoute() {
   const user = useAuthentication();
   const params = useParams();
+  const {
+    account,
+    metrics,
+    period,
+    setPeriod,
+    statuses,
+    loading,
+    ordering,
+    setOrdering,
+    hasMore,
+    loadMore,
+    loadMetrics,
+  } = useRouteData<typeof routeData>();
 
-  const { account, period, setPeriod, statuses, loading, ordering, setOrdering, hasMore, loadMore } =
-    useRouteData<typeof routeData>();
+  const [syncing, sync] = createServerAction$((handle: string) => syncAccount(handle));
+  const [pendingTracking, track] = createServerAction$(startTracking);
+  const clientUtcOffset = new Date().getTimezoneOffset();
+  const followersHistory = () => metricsToChartData(metrics()?.metrics, "followers", account()?.followersCount ?? 0);
+  const followingHistory = () => metricsToChartData(metrics()?.metrics, "following", account()?.followingCount ?? 0);
+  const statusesHistory = () => metricsToChartData(metrics()?.metrics, "statuses", account()?.statusesCount ?? 0);
 
-  const [syncing, sync] = createServerAction$(syncAccount);
-  const [_, track] = createServerAction$(startTracking);
+  async function startTrackingAccount() {
+    if (await track(account()?.username!)) window.location.reload();
+  }
 
-  const followersHistory = () => account()?.Metrics.map((h) => ({ date: h.date, value: h.followers ?? 0 })) ?? [];
-  const followingHistory = () => account()?.Metrics.map((h) => ({ date: h.date, value: h.following ?? 0 })) ?? [];
-  const statusesHistory = () => account()?.Metrics.map((h) => ({ date: h.date, value: h.statuses ?? 0 })) ?? [];
+  onMount(() => {
+    if (!account()?.tracking && user()?.account?.id == account()?.id) startTrackingAccount();
+    if (metrics()?.offset != clientUtcOffset) loadMetrics();
+  });
 
   const tabs = Object.entries(orderingOptions).map(([key, title]) => ({ key, title }));
   const periods = Object.entries(periodOptions).map(([value, label]) => ({ value, label }));
@@ -129,16 +170,20 @@ export default function AccountHandleRoute() {
                         <p class="text-sm text-mastodon-purple-900/50 dark:text-mastodon-purple-300 sm:text-base">
                           <a href="#"> {acc.username} </a>
                         </p>
-                        <p class="mt-2 text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:hidden">
-                          Last updated {formatRelativeTime(acc.lastIndex)}
-                        </p>
+                        {acc.lastIndex && (
+                          <p class="mt-2 text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:hidden">
+                            Last updated {formatRelativeTime(acc.lastIndex)}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
                   <div class="ml-4 mt-4 flex flex-shrink-0 flex-col items-end gap-2">
-                    <p class="hidden text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:block ">
-                      Last updated {formatRelativeTime(acc.lastIndex)}
-                    </p>
+                    {acc.lastIndex && (
+                      <p class="hidden text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:block ">
+                        Last updated {formatRelativeTime(acc.lastIndex)}
+                      </p>
+                    )}
                     <Show when={user()?.isAdmin}>
                       <div class="flex-wrap gap-4">
                         {!acc.tracking && (
@@ -146,6 +191,7 @@ export default function AccountHandleRoute() {
                             type="button"
                             class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             onClick={() => track(params.handle)}
+                            disabled={pendingTracking.pending}
                           >
                             <span> Start Tracking </span>
                           </button>
@@ -182,6 +228,11 @@ export default function AccountHandleRoute() {
             </dl>
           </div>
         </Suspense>
+        {account()?.tracking == false && pendingTracking.pending && (
+          <div class="my-8 rounded-lg bg-mastodon-purple-200/50  px-5 py-6 text-mastodon-purple-800  dark:bg-mastodon-purple-800/40 dark:text-white sm:px-6">
+            <TinyLoadingIndicator /> Importing account data
+          </div>
+        )}
         <div class="mb-0 mt-8 flex items-center gap-4 sm:mt-12 ">
           <Tabbar
             class="flex-auto"

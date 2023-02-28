@@ -1,3 +1,4 @@
+import { createLocalStorage, createStorageSignal } from "@solid-primitives/storage";
 import { createEffect, createSignal, Show } from "solid-js";
 import { FormError, Title, useLocation, useRouteData } from "solid-start";
 import server$, { createServerAction$, createServerData$, redirect } from "solid-start/server";
@@ -5,38 +6,24 @@ import { ShowDelayed, TinyLoadingIndicator } from "~/components/LoadingIndicator
 import { Page } from "~/components/Page";
 import { findOrCreateInstance, getInstanceAppCredentials } from "~/db/instance";
 import { getUser } from "~/db/session";
+import { ClientError } from "~/lib/error";
 import { parseHandle } from "~/lib/format";
 import { mastodonApi } from "~/lib/mastodon/api";
 
 export function routeData() {
   return createServerData$(async (_, { request }) => {
-    const [user, error] = await getUser(request);
+    const user = await getUser(request);
     if (user?.account) throw redirect(`/dashboard/${user.account!.username}`);
-
     return {};
   });
-}
-
-function parseInstance(input?: string) {
-  try {
-    if (!input) return;
-    if (input.includes("@")) {
-      const { instance } = parseHandle(input.trim());
-      return instance;
-    }
-
-    if (input.includes("://")) {
-      const url = new URL(input);
-      return url.hostname;
-    } else return input;
-  } catch {
-    return input;
-  }
 }
 
 export default function LoginRoute() {
   const user = useRouteData<typeof routeData>();
   const params = useLocation().query;
+  // const authSettings = createLocalStorage({ prefix: "authSettings"})
+  const [instance, setInstance] = createStorageSignal("preferedInstance", params.instance || "");
+
   user();
 
   const [validation, setValidation] = createSignal<{ validInstance?: string; error?: string }>({});
@@ -47,6 +34,7 @@ export default function LoginRoute() {
 
     try {
       await server$((instance: string) => mastodonApi({ instance }).instance.info())(instance);
+      setInstance(instance);
     } catch (error) {
       setValidation({ error: "Not a valid mastodon instance" });
       return;
@@ -55,7 +43,7 @@ export default function LoginRoute() {
     setValidation({ validInstance: instance });
   }
 
-  const [loggingIn, { Form }] = createServerAction$(async (form: FormData, event) => {
+  const [login, { Form }] = createServerAction$(async (form: FormData, event) => {
     const input = form.get("instance");
     if (typeof input !== "string") throw new FormError(`Form not submitted correctly.`);
 
@@ -64,7 +52,9 @@ export default function LoginRoute() {
       if (!inputInstance) throw new FormError(`Please enter an instance`);
       try {
         await mastodonApi({ instance: inputInstance }).instance.info();
-      } catch {
+      } catch (error) {
+        if (error instanceof ClientError) throw new FormError(error.message);
+        console.error(error);
         throw new FormError("Not a valid mastodon instance");
       }
 
@@ -87,7 +77,7 @@ export default function LoginRoute() {
   });
 
   createEffect(() => {
-    if (loggingIn.error?.message) setValidation({ error: loggingIn.error.message });
+    if (login.error?.message) setValidation({ error: login.error.message });
   });
 
   return (
@@ -97,11 +87,11 @@ export default function LoginRoute() {
           {params.error}
         </p>
       </Show>
-      <div class="mx-auto my-6 max-w-2xl rounded-lg bg-white p-4 shadow-lg shadow-mastodon-purple-600/10 sm:p-8">
+      <div class="mx-auto my-6 max-w-2xl rounded-lg bg-white p-4 shadow-lg shadow-mastodon-purple-600/10 dark:bg-mastodon-purple-700 sm:p-8">
         {/* {user()?.account && <p>Logged in as {user()?.account!.username}</p>} */}
         <Title>Login</Title>
-        <h1 class="mb-4 text-2xl font-semibold text-mastodon-purple-600">Welcome!</h1>
-        <p class="my-2 text-mastodon-purple-900/60">
+        <h1 class="mb-4 text-2xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-100">Welcome!</h1>
+        <p class="my-2 text-mastodon-purple-900/60 dark:text-mastodon-purple-200">
           Enter your mastodon instance or username, to continue to MastoMetrics,
           <br />
         </p>
@@ -113,7 +103,7 @@ export default function LoginRoute() {
               <input
                 type="text"
                 name="instance"
-                value={params.instance ?? ""}
+                value={instance() ?? ""}
                 onChange={(e) => validate(e.currentTarget.value)}
                 onInput={(e) => setValidation({})}
                 class="form-input block w-full rounded-md border-mastodon-purple-200 bg-mastodon-purple-50 text-mastodon-purple-900 placeholder:text-mastodon-purple-500/50 focus:ring-mastodon-purple-500"
@@ -122,24 +112,24 @@ export default function LoginRoute() {
             </label>
             <button
               type="submit"
-              class="h-10 w-full min-w-[6em] place-self-stretch rounded-md bg-mastodon-purple-600 px-6 text-white shadow shadow-mastodon-purple-900/10 outline-mastodon-purple-900 transition-all hover:bg-mastodon-purple-700 hover:shadow-md focus-visible:bg-mastodon-purple-800 focus-visible:outline-2 disabled:bg-mastodon-purple-900/60 sm:h-auto sm:w-auto"
-              disabled={loggingIn.pending}
+              class="h-10 w-full min-w-[6em] place-self-stretch rounded-md bg-mastodon-purple-600 px-6 text-white shadow shadow-mastodon-purple-900/10 outline-mastodon-purple-900 transition-all hover:bg-mastodon-purple-700 hover:shadow-md focus-visible:bg-mastodon-purple-800 focus-visible:outline-2 disabled:bg-mastodon-purple-900/60 dark:hover:bg-mastodon-purple-400 sm:h-auto sm:w-auto"
+              disabled={login.pending}
             >
-              <ShowDelayed when={loggingIn.pending} fallback={params.error || loggingIn.error ? "Retry" : "Login"}>
+              <ShowDelayed when={login.pending} fallback={params.error || login.error ? "Retry" : "Login"}>
                 <TinyLoadingIndicator />
               </ShowDelayed>
             </button>
             <div class="h-8 w-full">
               <Show when={validation().error} keyed>
                 {(msg) => (
-                  <p role="alert" class="text-sm text-red-700 animate-in fade-in-0">
+                  <p role="alert" class="text-sm text-red-700 animate-in fade-in-0 dark:text-red-400">
                     {msg}
                   </p>
                 )}
               </Show>
               <Show when={validation().validInstance} keyed>
                 {(instance) => (
-                  <p role="alert" class="text-sm text-green-700 animate-in fade-in-0">
+                  <p role="alert" class="text-sm text-green-700 animate-in fade-in-0 dark:text-green-400">
                     {instance} looks good!
                   </p>
                 )}
@@ -147,16 +137,16 @@ export default function LoginRoute() {
             </div>
           </div>
         </Form>
-        <p class="mt-4 max-w-prose text-sm leading-relaxed text-mastodon-purple-900/70">
+        <p class="mt-4 max-w-prose text-sm leading-relaxed text-mastodon-purple-900/70  dark:text-mastodon-purple-200">
           If this is your time using MastoMetrics, you will be asked to authorize the app.
           <br />
           Learn more about the data we store in our{" "}
-          <a href="/faq" class="text-mastodon-purple-500">
+          <a href="/faq" class="text-mastodon-purple-500 dark:text-mastodon-purple-300">
             FAQ
           </a>
           .
         </p>
-        <ul class="my-2 list-inside list-disc space-y-2 text-sm leading-relaxed text-mastodon-purple-900/70 marker:text-mastodon-purple-400">
+        <ul class="my-2 list-inside list-disc space-y-2 text-sm leading-relaxed text-mastodon-purple-900/70 marker:text-mastodon-purple-400 dark:text-mastodon-purple-200">
           <li>We only need read permissions</li>
           <li>We dont't need your email address</li>
           <li>We don't send spam</li>
@@ -164,4 +154,21 @@ export default function LoginRoute() {
       </div>
     </Page>
   );
+}
+
+function parseInstance(input?: string) {
+  try {
+    if (!input) return;
+    if (input.includes("@")) {
+      const { instance } = parseHandle(input.trim());
+      return instance;
+    }
+
+    if (input.includes("://")) {
+      const url = new URL(input);
+      return url.hostname;
+    } else return input;
+  } catch {
+    return input;
+  }
 }

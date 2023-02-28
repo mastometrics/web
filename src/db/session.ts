@@ -3,7 +3,7 @@ import { redirect } from "solid-start/server";
 import { createCookieSessionStorage } from "solid-start/session";
 import { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon/api";
 import { getOrCreateAccount } from "~/workers/upsert-account";
-import { runInConnection } from ".";
+import { db, runInConnection } from ".";
 type AuthenticationData = {
   token: MastodonAccessToken;
   authAccount: MastodonAuthenticatedAccount;
@@ -74,21 +74,19 @@ export async function requireUserId(request: Request, redirectTo: string = new U
 }
 
 export async function getUser(request: Request) {
-  return runInConnection(async (db) => {
-    const userId = await getUserId(request);
-    if (typeof userId !== "string") return null;
+  const userId = await getUserId(request);
+  if (typeof userId !== "string") return null;
 
-    try {
-      const user = await db.user.findUnique({ where: { id: +userId }, include: { Account: true } });
-      return {
-        // user: user as User, // includes token
-        account: user?.Account,
-        isAdmin: user?.Account.username === "mastometrics@mas.to",
-      };
-    } catch {
-      throw logout(request);
-    }
-  });
+  try {
+    const user = await db.user.findUnique({ where: { id: +userId }, include: { Account: true } });
+    return {
+      // user: user as User, // includes token
+      account: user?.Account,
+      isAdmin: user?.Account.username === "mastometrics@mas.to",
+    };
+  } catch {
+    throw logout(request);
+  }
 }
 
 export async function logout(request: Request) {

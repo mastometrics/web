@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Component, onMount, JSX, splitProps, onCleanup } from "solid-js";
+import { Component, onMount, JSX, splitProps, onCleanup, createEffect } from "solid-js";
 import {
   BarController,
   CategoryScale,
@@ -149,6 +149,11 @@ export const SimpleChart: Component<
   });
 
   onCleanup(() => chart?.destroy());
+
+  createEffect(() => {
+    chart.data.datasets[0].data = local.data;
+    chart.update();
+  });
 
   return <canvas ref={canvas} style="height: 80px; width: 100%" />;
 };
