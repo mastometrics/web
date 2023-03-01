@@ -1,7 +1,7 @@
 import fetch, { RequestInit, Response } from "node-fetch";
 import { ClientError } from "../error";
 import { createThrottler, createRateLimitStore } from "./throttler";
-
+import { createHash } from "crypto";
 const throttler = createThrottler(createRateLimitStore());
 export type ApiOptions = { throttle?: boolean; instance: string; token?: string; logger?: (msg: string) => void };
 
@@ -13,11 +13,11 @@ export async function fetchApi<T>(
   try {
     logger ??= console.log;
     let key = instance;
-    if (token) key += `-${token}`;
+    if (token) key += `-${createHash("sha256").update(token).digest("hex").slice(0, 8)}`;
     const { handleResponse } = await throttler.throttle(key, { greedy: !throttle });
     const url = path.startsWith(`https://${instance}/api/v1/`) ? path : `https://${instance}/api/v1/${path}`;
 
-    logger(`Fetching ${url}`);
+    logger(`🐘 GET ${url}`);
 
     const requestInit: RequestInit = { ...request, signal: AbortSignal.timeout(20 * 1000) };
     if (token) requestInit.headers = { ...request.headers, Authorization: `Bearer ${token}` };

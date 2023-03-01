@@ -23,7 +23,6 @@ export const getFullAccount = async (
   } = { period: "30d", order: "engagements" }
 ) =>
   runInConnection(async (db) => {
-    console.log("getAccount", handle, params);
     const data = db.account.findUnique({
       where: { username: handle },
       include: {
@@ -92,8 +91,6 @@ export const getStatuses = async (
     const page = params.page || 0;
     const take = limit + 1; // +1 to check if there are more pages
     const skip = params.skip ?? 0 + page * limit;
-
-    console.log("getStatuses", handle, params);
     const db = new PrismaClient();
     const statuses = await db.status.findMany({
       where: {

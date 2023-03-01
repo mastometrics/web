@@ -17,6 +17,6 @@ export async function syncAccount(handle: string, api?: ApiOptions) {
       tasks.push(updateAccountMetrics(account));
     }
     await Promise.all(tasks);
-    console.log(`Synced ${handle}`);
+    console.log(`👍 Synced ${handle}`);
   });
 }

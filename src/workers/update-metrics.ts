@@ -24,7 +24,7 @@ export async function updateAccountMetrics(user: Account | string) {
     };
 
     const timestamp = truncateDate(new Date(), "hour");
-    console.log(`Updating stats for ${account.username} on ${timestamp}`);
+    console.log(`🔄 Updating stats for ${account.username}`);
 
     await db.metric.upsert({
       where: { accountId_timestamp: { accountId: account.id, timestamp }, timestamp },

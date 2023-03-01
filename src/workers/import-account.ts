@@ -12,7 +12,7 @@ export async function importAccount(handle: string, api?: ApiOptions) {
 
     await syncStatuses(account, api, { limit: MASTODON.API.STATUS_PER_PAGE_LIMIT * 50 });
     await updateAccountMetrics(account);
-    console.log(`Imported ${handle}`);
+    console.log(`✅ Imported ${handle}`);
     return await backfillMetrics(account.username);
   });
 }

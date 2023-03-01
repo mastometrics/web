@@ -28,7 +28,7 @@ const metricPeriod = 24 * 60 * 60 * 1000; // 1 day
 export async function backfillMetrics(handle: string) {
   return runInConnection(async (db) => {
     try {
-      console.log(`Backfilling metrics for ${handle}`);
+      console.log(`🏛️ Backfilling metrics for ${handle}`);
       const account = await getOrCreateAccount(handle, undefined, undefined, db);
       const user = await db.user.findFirstOrThrow({ where: { Account: { id: account.id } } });
 
@@ -115,7 +115,7 @@ export async function backfillMetrics(handle: string) {
       const createData: Prisma.MetricCreateManyInput[] = [];
       for (const metric of toCreateMetrics) {
         if (existingMetrics.find((m) => m.timestamp.getTime() === metric.timestamp.getTime())) {
-          console.log(`Skipping ${metric.timestamp} because it already exists`);
+          console.log(`❗ Skipping ${metric.timestamp} because it already exists`);
           continue;
         }
         createData.push({

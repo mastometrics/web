@@ -4,6 +4,10 @@ import { Response } from "node-fetch";
 // • 300 paging requests per 15 minutes by identifier = 1/3rps
 type RateLimit = { limit?: number; remaining?: number; reset?: Date; history: Date[] };
 
+function logVerbose(msg: string) {
+  if (import.meta.env.DEV) console.log("ℹ️ " + msg);
+}
+
 const THROTTLE_WHEN_PERCENTAGE_LEFT = 0.8,
   THROTTLE_WHEN_REMAINING = 100,
   THROTTLE_RPS_WHEN_RESET_UKNOWN = 1;
@@ -32,7 +36,7 @@ export function createRateLimitStore() {
     for (const [key, limit] of store.entries()) {
       if (!limit.reset || (limit.reset && limit.reset.valueOf() < now.valueOf() - 1000 * 60 * 1)) {
         store.delete(key);
-        console.log(`Garbage collected rate limit for ${key}`);
+        logVerbose(`Garbage collected rate limit for ${key}`);
       }
     }
   }
@@ -49,7 +53,7 @@ export function createThrottler({ get, update }: ReturnType<typeof createRateLim
       if (response.status === 429) {
         const timeToReset = limit.reset.getTime() - Date.now();
         if (timeToReset) {
-          console.log(`${key}: Rate limited, retry when timer resets in ${timeToReset / 1000} seconds`);
+          logVerbose(`${key}: Rate limited, retry when timer resets in ${timeToReset / 1000} seconds`);
           const awaitReset = () => sleep(limit.reset.getTime() - Date.now());
           return { awaitReset, ratelimitExceeded: true };
         }
@@ -65,17 +69,17 @@ export function createThrottler({ get, update }: ReturnType<typeof createRateLim
       (greedy && remaining > 0) || // we're in a greedy mode and have some tokens, just proceed
       (remaining > limit * THROTTLE_WHEN_PERCENTAGE_LEFT && remaining > THROTTLE_WHEN_REMAINING) // if  we have at least 50% and 50 tokens of the bucket left, we can proceed
     ) {
-      console.log(`${key}: Passed throttling threshold, remaining: ${remaining}, limit: ${limit}, greedy: ${greedy}`);
+      logVerbose(`${key}: Passed throttling threshold, remaining: ${remaining}, limit: ${limit}, greedy: ${greedy}`);
       return { handleResponse };
     }
 
     if (reset === undefined) {
-      console.log(`Passed throttling threshold, unknown reset, throttle for ${THROTTLE_RPS_WHEN_RESET_UKNOWN} seconds`);
+      logVerbose(`Passed throttling threshold, unknown reset, throttle for ${THROTTLE_RPS_WHEN_RESET_UKNOWN} seconds`);
       await sleep(1000 / THROTTLE_RPS_WHEN_RESET_UKNOWN);
     } else {
       const timeToReset = reset.getTime() - Date.now();
       const timePerToken = Math.max(timeToReset / remaining, 500);
-      console.log(
+      logVerbose(
         `${key}: Passed throttling threshold, throttle for ${timePerToken}ms per token, reset in ${
           timeToReset / 1000
         } seconds`
