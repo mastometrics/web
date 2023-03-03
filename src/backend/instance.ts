@@ -1,7 +1,7 @@
 import { Instance, Prisma } from "@prisma/client";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { registerInstanceApp, fetchAppAccessToken } from "~/lib/mastodon/auth";
-import { db, Result, runInConnection } from ".";
+import { db, Result, runInConnection } from "./db";
 
 export async function findOrCreateInstance(host: string) {
   return runInConnection(async () => {

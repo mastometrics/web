@@ -1,6 +1,6 @@
 import { DOMParser } from "linkedom";
 import { Account, Prisma } from "@prisma/client";
-import { runInConnection } from "~/db";
+import { runInConnection } from "~/backend/db";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
 

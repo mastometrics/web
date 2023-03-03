@@ -1,9 +1,9 @@
-import { runInConnection } from "~/db";
+import { runInConnection } from "~/backend/db";
 import { syncAccount } from "./sync-account";
 
 export async function updateOutdatedUsers() {
   return runInConnection(async (db) => {
-    const outdatedAfter = new Date(Date.now() - 1000 * 60 * 10);
+    const outdatedAfter = new Date(Date.now() - 1000 * 60 * 30);
     const accounts = await db.account.findMany({
       where: {
         OR: [

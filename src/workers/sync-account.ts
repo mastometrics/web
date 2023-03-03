@@ -1,4 +1,4 @@
-import { runInConnection } from "~/db";
+import { runInConnection } from "~/backend/db";
 import { ApiOptions } from "~/lib/mastodon/http";
 import { syncFollowers, syncFollowing } from "./sync-follows";
 import { syncStatuses } from "./sync-statuses";

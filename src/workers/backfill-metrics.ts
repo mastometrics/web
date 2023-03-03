@@ -1,6 +1,6 @@
 import { Metric, Prisma } from "@prisma/client";
 import { mastodonApi } from "../lib/mastodon/api";
-import { runInConnection } from "../db";
+import { runInConnection } from "../backend/db";
 import { truncateDate } from "~/lib/format";
 import { getOrCreateAccount } from "./upsert-account";
 

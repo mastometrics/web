@@ -4,9 +4,9 @@ import { FormError, Title, useLocation, useRouteData } from "solid-start";
 import server$, { createServerAction$, createServerData$, redirect } from "solid-start/server";
 import { ShowDelayed, TinyLoadingIndicator } from "~/components/LoadingIndicator";
 import { Page } from "~/components/Page";
-import { findOrCreateInstance, getInstanceAppCredentials } from "~/db/instance";
-import { getUser } from "~/db/session";
-import { ClientError } from "~/lib/error";
+import { findOrCreateInstance, getInstanceAppCredentials } from "~/backend/instance";
+import { getUser } from "~/backend/session";
+import { HandledError } from "~/lib/error";
 import { parseHandle } from "~/lib/format";
 import { mastodonApi } from "~/lib/mastodon/api";
 
@@ -53,7 +53,7 @@ export default function LoginRoute() {
       try {
         await mastodonApi({ instance: inputInstance }).instance.info();
       } catch (error) {
-        if (error instanceof ClientError) throw new FormError(error.message);
+        if (error instanceof HandledError) throw new FormError(error.message);
         console.error(error);
         throw new FormError("Not a valid mastodon instance");
       }

@@ -1,4 +1,4 @@
-import { ClientError } from "../error";
+import { HandledError } from "../error";
 import { ApiOptions, fetchApi, http } from "./http";
 import { MastodonAccount, MastodonInstance, MastodonNotification, MastodonStatus } from "./types";
 export * from "./types";
@@ -53,10 +53,10 @@ function limit(max: number, { limit }: paginateOpts = {}) {
 async function fetchInstance(api: ApiOptions) {
   try {
     const { data } = await fetchApi<MastodonInstance>(`instance`, api);
-    if (!data.uri || !data.title) throw new ClientError("This domain is not a valid Mastodon instance");
+    if (!data.uri || !data.title) throw new HandledError("This domain is not a valid Mastodon instance");
     return data;
   } catch (e) {
     console.error(e);
-    throw new ClientError(`Could not fetch instance '${api.instance}'`, { cause: e });
+    throw new HandledError(`Could not fetch instance '${api.instance}'`, { cause: e });
   }
 }

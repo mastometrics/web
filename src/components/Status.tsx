@@ -8,15 +8,19 @@ import { simpleMastodonSanitzer } from "~/lib/mastodon/utils";
 import { StarIcon, ReblogIcon, ReplyIcon, Icons, Icon } from "./Icon";
 import { ShowDelayed, TinyLoadingIndicator } from "./LoadingIndicator";
 
-const Wrapper: ParentComponent = (props) => {
+const Wrapper: ParentComponent<{ loading?: boolean }> = (props) => {
   return (
-    <Suspense>
-      <div class="mt-6 overflow-hidden bg-white shadow dark:bg-mastodon-purple-800/30 dark:shadow-none dark:outline dark:outline-mastodon-purple-800/70 sm:rounded-md">
-        <ul role="list" class="divide-y divide-mastodon-purple-100  dark:divide-mastodon-purple-800">
-          {props.children}
-        </ul>
-      </div>
-    </Suspense>
+    <div class="mt-6 overflow-hidden bg-white shadow dark:bg-mastodon-purple-800/30 dark:shadow-none dark:outline dark:outline-mastodon-purple-800/70 sm:rounded-md">
+      <ul
+        role="list"
+        class={cls(
+          "divide-y divide-mastodon-purple-100 dark:divide-mastodon-purple-800",
+          props.loading && "opacity-60"
+        )}
+      >
+        {props.children}
+      </ul>
+    </div>
   );
 };
 

@@ -1,15 +1,33 @@
-import { children, Component, createEffect, createSignal, For, onCleanup, onMount, ParentComponent } from "solid-js";
+import {
+  children,
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+  ParentComponent,
+} from "solid-js";
 import { Meta, Title } from "solid-start";
-import { A } from "@solidjs/router";
+import { A, useRouteData } from "@solidjs/router";
 import graphBgPattern from "~/assets/graph-bg.svg";
 import screenshotDark from "~/assets/screenshot-dark.png";
 import Logo3d from "~/assets/3d-logo.svg";
 import logo from "~/assets/logo.svg";
 import { vendorIcons } from "~/assets/icons";
+import { createServerData$ } from "solid-start/server";
+import { hasActiveSession } from "~/backend/session";
+
+export function routeData() {
+  const hasSession = createServerData$(async (_, { request }) => {
+    return await hasActiveSession(request);
+  });
+  return { hasSession };
+}
 
 export default function HomeRoute() {
-  // onMount(() => window.document.querySelector("html")?.classList.add("dark"));
-
+  const { hasSession } = useRouteData<typeof routeData>();
   return (
     <div class="relative min-h-screen bg-[#0B0C32] font-display">
       <Title>MastoMetrics - Analytics for Mastodon</Title>
@@ -17,7 +35,7 @@ export default function HomeRoute() {
       <BackgroundPattern />
 
       <div class="container relative mx-auto min-h-screen max-w-4xl 2xl:max-w-6xl">
-        <Nav />
+        <Nav isLoggedIn={hasSession()} />
         <Hero slogan="Track the growth of your Mastodon Account" />
         <Features>
           <Feature title="Free">MastoMetrics is free to use for any number of accounts.</Feature>
@@ -45,12 +63,11 @@ export default function HomeRoute() {
   );
 }
 
-const Nav: Component = () => {
+const Nav: Component<{ isLoggedIn?: boolean }> = (props) => {
   return (
     <div class="z-10 flex h-20 flex-row items-center justify-center px-4 sm:px-8">
       <div class="relative flex items-center">
         <img src={logo} alt="MastoMetrics logo" class="mr-2 h-10 w-14 object-cover object-left" />
-        {/* <img src={logo} alt="MastoMetrics logo" class="absolute left-0 h-10 opacity-50" /> */}
         <div class="flex flex-col gap-x-3 sm:flex-row sm:items-center">
           <p class="text-base font-extrabold text-white sm:text-2xl">MastoMetrics</p>
           <p class="-mt-0.5 text-xs font-semibold text-mastodon-purple-200/80 sm:mt-1 sm:text-lg">
@@ -60,7 +77,8 @@ const Nav: Component = () => {
       </div>
       <div class="flex-auto"></div>
       <div class="">
-        {/* <button
+        <a
+          href={props.isLoggedIn ? "/dashboard" : "/auth/login"}
           class={`rounded-lg border border-mastodon-purple-400 bg-gradient-to-b from-mastodon-purple-600/10 to-mastodon-purple-800/50
         px-6 py-2 font-semibold text-mastodon-purple-100 shadow-[0_1px_4px_1px_rgba(0,0,0,0.09),inset_0_1px_2px_0_rgba(0,0,0,0.18)]
         transition-all duration-75 hover:border-mastodon-purple-300 hover:from-mastodon-purple-600/40 hover:to-mastodon-purple-700/70
@@ -68,8 +86,8 @@ const Nav: Component = () => {
         focus-visible:border-mastodon-purple-100 active:from-mastodon-purple-700/20 active:to-mastodon-purple-900/40 active:shadow-none active:duration-0
         `}
         >
-          Login
-        </button> */}
+          {props.isLoggedIn ? "Dashboard" : "Sign in"}
+        </a>
       </div>
     </div>
   );

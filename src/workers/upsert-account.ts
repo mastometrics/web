@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { db as prisma } from "~/db";
+import { db as prisma } from "~/backend/db";
 import { parseHandle } from "~/lib/format";
 import { MastodonAccount, mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";

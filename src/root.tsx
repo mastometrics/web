@@ -12,7 +12,7 @@ export default function Root() {
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Body class="bg-mastodon-purple-200/10 dark:bg-[#080822] ">
+      <Body class="bg-mastodon-purple-200/10 dark:bg-[#080822] dark:text-white">
         <ErrorBoundary>
           <Suspense fallback={<div>Loading</div>}>
             <Routes>

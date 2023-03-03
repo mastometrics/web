@@ -1,5 +1,5 @@
 import { Account, Prisma } from "@prisma/client";
-import { runInConnection, Result } from "~/db";
+import { runInConnection, Result } from "~/backend/db";
 import { sum, truncateDate } from "~/lib/format";
 import { createOrUpdateAccount } from "./upsert-account";
 

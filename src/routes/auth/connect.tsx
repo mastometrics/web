@@ -1,8 +1,8 @@
 import { APIEvent } from "solid-start";
 import { redirect } from "solid-start/server";
-import { getInstanceAppCredentials } from "~/db/instance";
-import { authenticate, createUserSession } from "~/db/session";
-import { ClientError } from "~/lib/error";
+import { getInstanceAppCredentials } from "~/backend/instance";
+import { authenticate, createUserSession } from "~/backend/session";
+import { HandledError } from "~/lib/error";
 import { fetchAuthenticatedUser, fetchUserAccessToken } from "~/lib/mastodon/auth";
 
 export async function GET({ params, request }: APIEvent) {
@@ -21,7 +21,7 @@ export async function GET({ params, request }: APIEvent) {
     if (error) throw error;
     if (user) return await createUserSession(`${user.id}`, `/dashboard/${user?.Account?.username}`);
   } catch (error) {
-    if (!(error instanceof ClientError)) console.error(error);
+    if (!(error instanceof HandledError)) console.error(error);
     return redirect(
       `/auth/login?error=${encodeURIComponent(
         `Could not sign you in with ${host}:\n` +

@@ -1,5 +1,5 @@
 import { Account } from "@prisma/client";
-import { runInConnection } from "~/db";
+import { runInConnection } from "~/backend/db";
 import { formatHandle } from "~/lib/format";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";

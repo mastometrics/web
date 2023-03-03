@@ -1,6 +1,6 @@
 import { Metric } from "@prisma/client";
 import { periodKeys, periodToDate } from "~/lib/period";
-import { db } from ".";
+import { db } from "./db";
 
 function formatUtcOffset(offset: number) {
   const sign = offset < 0 ? "-" : "+";
