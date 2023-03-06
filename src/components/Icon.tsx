@@ -1,259 +1,37 @@
-import { JSX } from "solid-js";
-
-export function ReblogIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-repeat"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3"></path>
-      <path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"></path>
-    </svg>
-  );
-}
-
-export function StarIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-star"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"></path>
-    </svg>
-  );
-}
-
-export function ReplyIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-corner-up-left"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M18 18v-6a3 3 0 0 0 -3 -3h-10l4 -4m0 8l-4 -4"></path>
-    </svg>
-  );
-}
-
-export function ArrowUpIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-arrow-up"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M12 5l0 14"></path>
-      <path d="M18 11l-6 -6"></path>
-      <path d="M6 11l6 -6"></path>
-    </svg>
-  );
-}
-
-export function ArrowDownIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-arrow-down"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M12 5l0 14"></path>
-      <path d="M18 13l-6 6"></path>
-      <path d="M6 13l6 6"></path>
-    </svg>
-  );
-}
-
-export function DashIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-minus"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M5 12l14 0"></path>
-    </svg>
-  );
-}
-
-export function SignOutIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-logout"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path>
-      <path d="M7 12h14l-3 -3m0 6l3 -3"></path>
-    </svg>
-  );
-}
-
-export function AtIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-at"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-      <path d="M16 12v1.5a2.5 2.5 0 0 0 5 0v-1.5a9 9 0 1 0 -5.5 8.28"></path>
-    </svg>
-  );
-}
-
-export function QuestionCircleIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-question-circle"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M12 16v.01"></path>
-      <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"></path>
-      <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-    </svg>
-  );
-}
-
-export function ReloadIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-reload"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747"></path>
-      <path d="M20 4v5h-5"></path>
-    </svg>
-  );
-}
-
-export function QuestionMarkIcon(props: JSX.IntrinsicElements["svg"]): JSX.Element {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-question-mark"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      fill="none"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      {...props}
-    >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M8 8a3.5 3 0 0 1 3.5 -3h1a3.5 3 0 0 1 3.5 3a3 3 0 0 1 -2 3a3 4 0 0 0 -2 4"></path>
-      <path d="M12 19l0 .01"></path>
-    </svg>
-  );
-}
+import Adjustments from "~icons/tabler/adjustments";
+import ArrowDown from "~icons/tabler/arrow-down";
+import ArrowUp from "~icons/tabler/arrow-up";
+import At from "~icons/tabler/at";
+import Check from "~icons/tabler/check";
+import CornerUpLeft from "~icons/tabler/corner-up-left";
+import Logout from "~icons/tabler/logout";
+import Minus from "~icons/tabler/minus";
+import QuestionCircle from "~icons/tabler/question-circle";
+import QuestionMark from "~icons/tabler/question-mark";
+import Reload from "~icons/tabler/reload";
+import Repeat from "~icons/tabler/repeat";
+import Star from "~icons/tabler/star";
+import Trash from "~icons/tabler/trash";
+import X from "~icons/tabler/x";
 
 export const Icons = {
-  Reblog: ReblogIcon,
-  Reply: ReplyIcon,
-  ArrowUp: ArrowUpIcon,
-  ArrowDown: ArrowDownIcon,
-  Dash: DashIcon,
-  SignOut: SignOutIcon,
-  At: AtIcon,
-  QuestionCircle: QuestionCircleIcon,
-  QuestionMark: QuestionMarkIcon,
-  Reload: ReloadIcon,
-  Star: StarIcon,
+  Adjustments,
+  ArrowDown,
+  ArrowUp,
+  At,
+  Check,
+  Close: X,
+  Dash: Minus,
+  Logout,
+  QuestionCircle,
+  QuestionMark,
+  Reblog: Repeat,
+  Reload,
+  Repeat,
+  Reply: CornerUpLeft,
+  Star,
+  Trash,
+  X,
 } as const;
 
 export type Icon = (typeof Icons)[keyof typeof Icons];

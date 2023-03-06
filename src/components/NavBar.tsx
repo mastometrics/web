@@ -2,7 +2,7 @@ import { DropdownMenu } from "@kobalte/core";
 import { Account } from "@prisma/client";
 import { Component, createSignal, Show } from "solid-js";
 import { useNavigate } from "solid-start";
-import { Icons, AtIcon, SignOutIcon } from "./Icon";
+import { Icons } from "./Icon";
 import logo from "~/assets/logo.svg";
 import { startSupport } from "~/lib/support";
 
@@ -49,7 +49,7 @@ export const NavBar: Component<{ account: Account }> = (props) => {
                   closeOnSelect
                   class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >
-                  <AtIcon class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Support</DropdownMenu.ItemLabel>
+                  <Icons.At class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Support</DropdownMenu.ItemLabel>
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item
@@ -57,7 +57,7 @@ export const NavBar: Component<{ account: Account }> = (props) => {
                   closeOnSelect
                   class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >
-                  <SignOutIcon class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Sign out</DropdownMenu.ItemLabel>
+                  <Icons.Logout class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Sign out</DropdownMenu.ItemLabel>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>

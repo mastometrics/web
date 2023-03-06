@@ -1,11 +1,9 @@
 import { Status } from "@prisma/client";
-import { stat } from "fs";
-import { type } from "os";
-import { ParentComponent, Suspense, Component, createSignal } from "solid-js";
+import { ParentComponent, Component } from "solid-js";
 import { Dynamic, NoHydration } from "solid-js/web";
 import { cls } from "~/lib/css";
 import { simpleMastodonSanitzer } from "~/lib/mastodon/utils";
-import { StarIcon, ReblogIcon, ReplyIcon, Icons, Icon } from "./Icon";
+import { Icons, Icon } from "./Icon";
 import { ShowDelayed, TinyLoadingIndicator } from "./LoadingIndicator";
 
 const Wrapper: ParentComponent<{ loading?: boolean }> = (props) => {
@@ -60,9 +58,9 @@ const StatusItem: Component<{ status: Status }> = ({ status }) => {
         </div>
 
         <div class="mt-2 ml-12 flex h-7 basis-full gap-4 pr-4 text-sm sm:ml-0 sm:basis-1/3">
-          <EngagementLink count={status.favoritesCount} href={`${status.url!}/favourites`} icon={StarIcon} />
-          <EngagementLink count={status.boostsCount} href={`${status.url!}/reblogs`} icon={ReblogIcon} />
-          <EngagementLink count={status.repliesCount} href={status.url!} icon={ReplyIcon} />
+          <EngagementLink count={status.favoritesCount} href={`${status.url!}/favourites`} icon={Icons.Star} />
+          <EngagementLink count={status.boostsCount} href={`${status.url!}/reblogs`} icon={Icons.Reblog} />
+          <EngagementLink count={status.repliesCount} href={status.url!} icon={Icons.Reply} />
         </div>
       </div>
     </li>

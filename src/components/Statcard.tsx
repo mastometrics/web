@@ -1,7 +1,7 @@
 import { Component, Switch, Match, onMount, createSignal, Show } from "solid-js";
 import { cls } from "~/lib/css";
 import { formatDate, formatNumber } from "~/lib/format";
-import { DashIcon, ArrowUpIcon, ArrowDownIcon } from "./Icon";
+import { Icons } from "./Icon";
 import { SimpleChart } from "./SimpleChart";
 
 export const StatCard: Component<{
@@ -79,19 +79,19 @@ const DeltaLabel: Component<{ value?: number; compareTo?: number }> = (props) =>
       <Switch
         fallback={
           <>
-            <DashIcon class="h-4 w-4 flex-shrink-0 self-center text-gray-300" />
+            <Icons.Dash class="h-4 w-4 flex-shrink-0 self-center text-gray-300" />
             <span class="sr-only"> No change </span>
             {/* <span class="text-gray-500">{0}</span> */}
           </>
         }
       >
         <Match when={type() == "increase"}>
-          <ArrowUpIcon class="h-4 w-4 flex-shrink-0 self-center text-green-500 " />
+          <Icons.ArrowUp class="h-4 w-4 flex-shrink-0 self-center text-green-500 " />
           <span class="sr-only"> Increased by </span>
           <span class="text-green-600 dark:text-green-400">{change()}</span>
         </Match>
         <Match when={type() == "decrease"}>
-          <ArrowDownIcon class="h-4 w-4 flex-shrink-0 self-center text-red-500 " />
+          <Icons.ArrowDown class="h-4 w-4 flex-shrink-0 self-center text-red-500 " />
           <span class="sr-only"> Decreased by </span>
           <span class="text-red-600 dark:text-red-500">{Math.abs(change())}</span>
         </Match>
