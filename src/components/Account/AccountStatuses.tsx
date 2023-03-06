@@ -48,7 +48,7 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
   const periods = Object.entries(periodOptions).map(([value, label]) => ({ value, label }));
 
   return (
-    <div class="container mx-auto max-w-4xl sm:mb-12 sm:px-6">
+    <>
       <div class="mb-0 mt-8 flex items-center gap-4 sm:mt-12 ">
         <Tabbar
           class="flex-auto"
@@ -71,7 +71,7 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
           </Match>
         </Switch>
       </StatusList.Wrapper>
-    </div>
+    </>
   );
 };
 

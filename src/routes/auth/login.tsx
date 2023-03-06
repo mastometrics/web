@@ -9,6 +9,7 @@ import { getUser } from "~/backend/session";
 import { HandledError } from "~/lib/error";
 import { parseHandle } from "~/lib/format";
 import { mastodonApi } from "~/lib/mastodon/api";
+import { Box } from "~/components/Box";
 
 export function routeData() {
   return createServerData$(async (_, { request }) => {
@@ -25,6 +26,8 @@ export default function LoginRoute() {
   const [instance, setInstance] = createStorageSignal("preferedInstance", params.instance || "");
 
   user();
+
+  createEffect(() => params.instance && setInstance(params.instance));
 
   const [validation, setValidation] = createSignal<{ validInstance?: string; error?: string }>({});
 
@@ -83,9 +86,9 @@ export default function LoginRoute() {
   return (
     <Page title="Login">
       <Show when={params.error}>
-        <p role="alert" class="mx-auto max-w-2xl rounded bg-red-500/10 px-4 py-6 text-center text-red-700">
-          {params.error}
-        </p>
+        <Box isError class="mx-auto my-6 max-w-2xl">
+          <p>{params.error}</p>
+        </Box>
       </Show>
       <div class="mx-auto my-6 max-w-2xl rounded-lg bg-white p-4 shadow-lg shadow-mastodon-purple-600/10 dark:bg-mastodon-purple-700 sm:p-8">
         {/* {user()?.account && <p>Logged in as {user()?.account!.username}</p>} */}

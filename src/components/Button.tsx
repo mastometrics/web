@@ -11,8 +11,10 @@ export const UIButton: Component<
   return (
     <button
       class={cls(
-        "relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm",
-        "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25",
+        "relative inline-flex items-center rounded-md border border-mastodon-purple-900/20 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm",
+        "hover:bg-gray-50 focus:outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:bg-mastodon-purple-200 active:outline-0",
+        "dark:border-mastodon-purple-600 dark:bg-mastodon-purple-800 dark:text-white",
+        "dark:hover:bg-mastodon-purple-700 dark:focus:ring-mastodon-purple-500 dark:active:bg-mastodon-purple-500 dark:disabled:opacity-50",
         local.class
       )}
       {...rest}

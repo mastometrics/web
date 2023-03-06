@@ -1,7 +1,8 @@
-import { createEffect, createSignal, JSX, Match, onCleanup, ParentComponent, Show, Switch } from "solid-js";
+import { Component, createEffect, createSignal, JSX, Match, onCleanup, ParentComponent, Show, Switch } from "solid-js";
+import { cls } from "~/lib/css";
 
-export const TinyLoadingIndicator = () => (
-  <div class="translate-y-.5 inline-flex" aria-hidden>
+export const TinyLoadingIndicator: Component<{ class?: string }> = (props) => (
+  <div class={cls("translate-y-.5 inline-flex", props.class)} aria-hidden>
     <span class="animate-bounce text-lg">•</span>
     <span class="animate-bounce text-lg delay-75">•</span>
     <span class="animate-bounce text-lg delay-200">•</span>

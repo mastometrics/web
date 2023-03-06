@@ -3,10 +3,11 @@ import { redirect, useRequest } from "solid-start/server";
 import { createCookieSessionStorage } from "solid-start/session";
 import { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon/api";
 import { AuthenticatedUser } from "~/backend/authentication";
-import { getOrCreateAccount } from "~/workers/upsert-account";
+import { createOrUpdateAccount, getOrCreateAccount } from "~/workers/upsert-account";
 import { db, runInConnection } from "./db";
 import { HandledError } from "~/lib/error";
 import { Roles } from "~/lib/permissions";
+import { logNewUser } from "~/lib/logsnag/logsnag";
 type AuthenticationData = {
   token: MastodonAccessToken;
   authAccount: MastodonAuthenticatedAccount;
@@ -16,12 +17,14 @@ type AuthenticationData = {
 export async function authenticate({ authAccount, token, instance }: AuthenticationData) {
   return runInConnection(async (db) => {
     if (!authAccount?.username) throw new Error("Missing username");
-    const account = await getOrCreateAccount(
-      `${authAccount.username}@${instance.host}`,
-      authAccount,
-      { instance: instance.host },
-      db
-    );
+    const username = `${authAccount.username}@${instance.host}`;
+    let account = await db.account.findUnique({ where: { username } });
+    if (!account) {
+      account = await createOrUpdateAccount(username, authAccount, { instance: instance.host }, db);
+      console.log(`🔥 New signup: ${username}`);
+      if (import.meta.env.PROD) logNewUser(account);
+    }
+
     return db.user.upsert({
       where: { accountId: account.id },
       update: {

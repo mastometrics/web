@@ -1,7 +1,7 @@
 import { HandledError } from "~/lib/error";
 import { logNewUser } from "~/lib/logsnag/logsnag";
 import { importAccount } from "~/workers/import-account";
-import { db, runInConnection } from "./db";
+import { db, runInConnection, throwOnError } from "./db";
 export { syncAccount } from "../workers/sync-account";
 
 export const getFullAccount = async (handle: string) =>
@@ -31,8 +31,6 @@ export const getFullAccount = async (handle: string) =>
 export const startTracking = async (handle: string) => {
   const account = await db.account.findUnique({ where: { username: handle } });
   if (!account) throw new HandledError("Account not found", { status: 404 });
-  await db.account.update({ where: { id: account.id }, data: { tracking: true } });
-  logNewUser(account);
-  await importAccount(handle, { instance: account.instance });
+  throwOnError(await importAccount(handle, { instance: account.instance }));
   return true;
 };

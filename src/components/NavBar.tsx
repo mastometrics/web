@@ -4,15 +4,11 @@ import { Component, createSignal, Show } from "solid-js";
 import { useNavigate } from "solid-start";
 import { Icons, AtIcon, SignOutIcon } from "./Icon";
 import logo from "~/assets/logo.svg";
+import { startSupport } from "~/lib/support";
 
 export const NavBar: Component<{ account: Account }> = (props) => {
   const [open, setOpen] = createSignal(false);
   const navigate = useNavigate();
-
-  function startSupport() {
-    const url = `https://${props.account.instance}/share?text=@MastoMetrics@mas.to+help!`;
-    window.open(url, "_blank");
-  }
 
   return (
     <div class="bg-mastodon-purple-700 dark:bg-mastodon-purple-900">
@@ -49,7 +45,7 @@ export const NavBar: Component<{ account: Account }> = (props) => {
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item
-                  onSelect={startSupport}
+                  onSelect={() => startSupport(props.account)}
                   closeOnSelect
                   class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >
