@@ -17,6 +17,7 @@ const orderings: Record<orderKeys, Prisma.StatusOrderByWithRelationInput> = {
 export type getStatusesParams = {
   period: periodKeys;
   order: orderKeys;
+  includeReplies?: boolean;
   page?: number;
   limit?: number;
   skip?: number;
@@ -36,6 +37,7 @@ export const getStatuses = async (
         Account: { username: handle },
         isReblog: false,
         publishedAt: params.period != "all" ? { gte: periodToDate(params.period) } : undefined,
+        ...(params.includeReplies ? {} : { NOT: { content: { startsWith: "@" } } }),
       },
       orderBy: [orderings[params.order], ...Object.values(orderings)],
       take,
