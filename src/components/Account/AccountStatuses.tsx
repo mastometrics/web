@@ -30,6 +30,7 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
       params: { period: period(), order: ordering(), includeReplies: includeReplies() },
     }),
     async ({ handle, params }) => {
+      if (params.order === "publishedAt") params.period = "all";
       const [result, err] = await fetchStatuses(handle, params);
       if (err) throw err;
       return result;
@@ -103,7 +104,14 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
             </Popover.Content>
           </Popover.Portal>
         </Popover.Root>
-        <Select options={periods} value={period()} onChange={setPeriod} label="Select a period" hideLabel />
+        <Select
+          options={periods}
+          value={period()}
+          onChange={setPeriod}
+          label="Select a period"
+          hideLabel
+          disabled={ordering() === "publishedAt"}
+        />
       </div>
       <StatusList.Wrapper loading={data.loading}>
         <Switch fallback={<>Loading</>}>

@@ -8,6 +8,7 @@ export const Select: Component<{
   hideLabel?: boolean;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }> = (props) => {
   const id = createUniqueId();
   const options = createMemo(() =>
@@ -25,9 +26,10 @@ export const Select: Component<{
       )}
       <select
         id={id}
-        class="block rounded-md border-2 border-mastodon-purple-200/50 bg-mastodon-purple-100 py-2 pl-3 pr-10 text-base text-mastodon-purple-600  focus:border-mastodon-purple-500 focus:outline-none dark:border-mastodon-purple-700  dark:bg-mastodon-purple-800 dark:text-mastodon-purple-100 sm:text-sm"
+        class="block rounded-md border-2 border-mastodon-purple-200/50 bg-mastodon-purple-100 py-2 pl-3 pr-10 text-base text-mastodon-purple-600  focus:border-mastodon-purple-500 focus:outline-none disabled:opacity-25  dark:border-mastodon-purple-700 dark:bg-mastodon-purple-800 dark:text-mastodon-purple-100 sm:text-sm"
         value={value()}
         onChange={(e) => setValue(e.currentTarget.value)}
+        disabled={props.disabled}
       >
         <For each={options()}>
           {(option) => (
