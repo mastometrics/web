@@ -1,5 +1,5 @@
 import { ParentComponent } from "solid-js";
-import { Title } from "solid-start";
+import { A, Title } from "solid-start";
 import logo from "~/assets/logo.svg";
 
 export const Page: ParentComponent<{ title: string }> = (props) => {
@@ -8,7 +8,9 @@ export const Page: ParentComponent<{ title: string }> = (props) => {
       <Title>{props.title}</Title>
       <div class="bg-mastodon-purple-700">
         <div class="container mx-auto flex max-w-4xl items-center py-4 px-6">
-          <img src={logo} />
+          <A href="/">
+            <img src={logo} alt="MastoMetrics Logo" />
+          </A>
           <div class="flex-auto"></div>
         </div>
       </div>

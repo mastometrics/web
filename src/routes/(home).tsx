@@ -18,6 +18,7 @@ import logo from "~/assets/logo.svg";
 import { vendorIcons } from "~/assets/icons";
 import { createServerData$ } from "solid-start/server";
 import { hasActiveSession } from "~/backend/session";
+import { createLoginAction, LoginForm, loginFormSignal } from "./auth/login";
 
 export function routeData() {
   const hasSession = createServerData$(async (_, { request }) => {
@@ -28,6 +29,8 @@ export function routeData() {
 
 export default function HomeRoute() {
   const { hasSession } = useRouteData<typeof routeData>();
+  const [login, { Form }] = createLoginAction();
+
   return (
     <div class="relative min-h-screen bg-[#0B0C32] font-display">
       <Title>MastoMetrics - Analytics for Mastodon</Title>
@@ -40,14 +43,15 @@ export default function HomeRoute() {
         <Features>
           <Feature title="Free">MastoMetrics is free to use for any number of accounts.</Feature>
           <Feature title="Simple">Track follower progress over time and see your most engaging posts.</Feature>
-          <Feature title="Fair">We don’t need your email and don’t store hidden accounts.</Feature>
+          <Feature title="Fair">We don’t need your email and respect others' privacy.</Feature>
         </Features>
-        <SignUp
-          // cta="Enter your Mastodon username to get started"
-          // guarantees={["No email required.", "No write permissions asked."]}
-          cta="Sign up soon"
-          guarantees={["No email required.", "No write permissions asked."]}
-        />
+        <Form>
+          <SignUp
+            cta="Enter your Mastodon username to get started"
+            guarantees={["No email required.", "No write permissions asked."]}
+            loginForm={login}
+          />
+        </Form>
         <FooterNav>
           <a href="/faq">FAQ</a>
           {/* <a href="/privacy">Privacy</a>
@@ -202,7 +206,7 @@ const BackgroundPattern = () => {
   );
 };
 
-const SignUp: Component<{ cta: string; guarantees: string[] }> = (props) => {
+const SignUp: Component<{ cta: string; guarantees: string[]; loginForm: loginFormSignal }> = (props) => {
   return (
     <div class="my-24 flex flex-col items-center justify-center px-4 sm:px-8">
       <div class="text-lg font-bold text-white">{props.cta}</div>
@@ -212,9 +216,9 @@ const SignUp: Component<{ cta: string; guarantees: string[] }> = (props) => {
           Learn more →
         </A>
       </div>
-      {/* <div class="mt-6 flex flex-col items-center justify-center">
-        <button class="rounded bg-black/50 px-4 py-2 font-semibold text-white">Sign up</button>
-      </div> */}
+      <div class="mt-6 flex w-full max-w-xl flex-col items-center justify-center">
+        <LoginForm loginForm={props.loginForm} cta="Sign up" />
+      </div>
     </div>
   );
 };
