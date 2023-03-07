@@ -102,8 +102,8 @@ export default function PrivacyPolicyRoute() {
         <h2>Consent</h2>
         <p>
           We only start collecting your data after explicit consent through signing up for MastoMetrics. If signed up
-          and you want to opt-out from processing, please contact us at @mastometrics@mas.to from the Mastodon Account
-          you want to opt-out. After you opted out all your account data will be deleted.
+          and you want to opt-out from processing, please contact us at <Contact /> from the Mastodon Account you want
+          to opt-out. After you opted out all your account data will be deleted.
         </p>
 
         <h2>Third Parties (Vendors)</h2>
@@ -112,13 +112,32 @@ export default function PrivacyPolicyRoute() {
           the data collected as part of normal operations:
         </p>
         <ul>
-          <li> Application and database hosting: Railway, which itself uses Google Cloud Platform</li>
-          <li> Proxying and content delivery: CloudFlare</li>
-          <li> Logging and service monitoring: Logsnag</li>
+          <li>
+            {" "}
+            Application and database hosting:{" "}
+            <a href="https://railway.app" target="_blank">
+              Railway
+            </a>
+            , which itself uses Google Cloud Platform
+          </li>
+          <li>
+            {" "}
+            Proxying and content delivery:{" "}
+            <a href="https://cloudflare.com" target="_blank">
+              CloudFlare
+            </a>
+          </li>
+          <li>
+            {" "}
+            Logging and service monitoring:{" "}
+            <a href="https://logsnag.com" target="_blank">
+              Logsnag
+            </a>
+          </li>
         </ul>
         <p>
           In all cases these 3rd parties only process or access data for the purposes of providing the application to
-          you, and will not user, sell or distribute your data for any other purposes.
+          you, and will not use, sell or distribute your data for any other purposes.
         </p>
 
         <h2>Cookies</h2>

@@ -47,7 +47,7 @@ export const NavBar: Component<{ account: Account }> = (props) => {
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item
-                  onSelect={() => navigate("/privacy")}
+                  onSelect={() => navigate("/privacy/")}
                   closeOnSelect
                   class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >

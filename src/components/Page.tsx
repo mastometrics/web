@@ -15,9 +15,8 @@ export const Page: ParentComponent<{ title: string }> = (props) => {
           <div class="flex-auto"></div>
         </div>
       </div>
-      <div class="container mx-auto max-w-4xl p-2 sm:py-12 sm:px-6">{props.children}</div>
+      <div class="container mx-auto max-w-4xl px-4 py-4 sm:py-12 sm:px-6">{props.children}</div>
       <GlobalFooter />
-      <FooterCredits />
     </>
   );
 };
