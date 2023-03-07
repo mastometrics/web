@@ -43,24 +43,18 @@ export default function HomeRoute() {
         <Features>
           <Feature title="Free">MastoMetrics is free to use for any number of accounts.</Feature>
           <Feature title="Simple">Track follower progress over time and see your most engaging posts.</Feature>
-          <Feature title="Fair">We don’t need your email and respect others' privacy.</Feature>
+          <Feature title="Fair">We don’t need your email and only store public data.</Feature>
         </Features>
-        <Form>
-          <SignUp
-            cta="Enter your Mastodon username to get started"
-            guarantees={["No email required.", "No write permissions asked."]}
-            loginForm={login}
-          />
-        </Form>
-        <FooterNav>
-          <a href="/faq">FAQ</a>
-          {/* <a href="/privacy">Privacy</a>
-          <a href="/roadmap">Roadmap</a> */}
-          <a href="https://mas.to/@MastoMetrics">Contact</a>
-          <a rel="me" href="https://mas.to/@MastoMetrics">
-            @mastometrics@mas.to
-          </a>
-        </FooterNav>
+        {!hasSession() && (
+          <Form>
+            <SignUp
+              cta="Enter your Mastodon username to get started"
+              guarantees={["No email required.", "No write permissions asked."]}
+              loginForm={login}
+            />
+          </Form>
+        )}
+        <GlobalFooter />
         <FooterCredits />
       </div>
     </div>
@@ -240,7 +234,7 @@ const FooterNav: ParentComponent = (props) => {
   );
 };
 
-const FooterCredits: Component = () => {
+export const FooterCredits: Component = () => {
   return (
     <div class="flex flex-wrap items-center justify-center gap-2 pt-4 pb-10 text-sm text-mastodon-purple-200/80  sm:text-base">
       <p>
@@ -279,5 +273,19 @@ const FooterCredits: Component = () => {
         </a>
       </p>
     </div>
+  );
+};
+
+export const GlobalFooter = () => {
+  return (
+    <FooterNav>
+      <a href="/faq">FAQ</a>
+      <a href="/privacy">Privacy</a>
+      {/* <<a href="/roadmap">Roadmap</a> */}
+      <a href="https://mas.to/@MastoMetrics">Contact</a>
+      <a rel="me" href="https://mas.to/@MastoMetrics">
+        @mastometrics@mas.to
+      </a>
+    </FooterNav>
   );
 };

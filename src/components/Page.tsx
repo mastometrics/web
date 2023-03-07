@@ -1,6 +1,7 @@
 import { ParentComponent } from "solid-js";
 import { A, Title } from "solid-start";
 import logo from "~/assets/logo.svg";
+import { FooterCredits, GlobalFooter } from "~/routes/(home)";
 
 export const Page: ParentComponent<{ title: string }> = (props) => {
   return (
@@ -15,6 +16,8 @@ export const Page: ParentComponent<{ title: string }> = (props) => {
         </div>
       </div>
       <div class="container mx-auto max-w-4xl p-2 sm:py-12 sm:px-6">{props.children}</div>
+      <GlobalFooter />
+      <FooterCredits />
     </>
   );
 };

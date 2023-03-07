@@ -1,6 +1,7 @@
 import { Page } from "~/components/Page";
 import { ParentComponent } from "solid-js";
 import { Box } from "~/components/Box";
+import { A } from "solid-start";
 
 export default function HomeRoute() {
   return (
@@ -60,13 +61,17 @@ export default function HomeRoute() {
           the engagement on your last 120 posts.
         </FAQ>
         <FAQ title="What data is stored?">
-          We store your Mastodon account data, including your username, display name, avatar, and bio as well as all
-          your posts, including the content, date, and number of likes and boosts.
+          We store your public Mastodon account data, including your username, display name, avatar, and bio as well as
+          all your posts, including the content, date, and number of likes and boosts.
           <br />
           In addition, we store the number of followers you have gained and the engagement on your posts over time to
           provide you with analytics.
           <br />
-          We don't store any Direct Messages. "Follower Only" posts <em>are</em> stored.
+          We don't store any Direct Messages. "Follower Only" posts <em>are</em> stored. <br />
+          <br />
+          <A href="/privacy" class="font-medium underline">
+            Read our privacy policy
+          </A>
         </FAQ>
         <FAQ title="Can I delete my account?">
           Yes, you can delete your account at any time. All your data will be deleted immediately. Mention

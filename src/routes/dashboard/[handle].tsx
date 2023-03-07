@@ -110,9 +110,9 @@ export default function AccountHandleRoute() {
       </Suspense>
       <div class="container mx-auto max-w-4xl px-4 py-2 sm:py-4 sm:px-6">
         <ImportStatus account={account()!} importing={importing} />
-        <AccountMetrics handle={params.handle} account={account} />
+        {account() && <AccountMetrics handle={params.handle} account={account} />}
       </div>
-      {account()?.tracking && (
+      {account() && account()?.tracking && (
         <div class="container mx-auto max-w-4xl sm:mb-12 sm:px-6">
           <AccountStatuses handle={params.handle} account={account} />
         </div>

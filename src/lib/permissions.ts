@@ -3,7 +3,7 @@ export enum Roles {
   Admin = "admin",
 }
 export function usePermissions(user?: AuthenticatedUser | null) {
-  const isAdmin = user?.roles.includes(Roles.Admin);
+  const isAdmin = user?.roles?.includes(Roles.Admin);
   const viewAccount = (username: string) => {
     if (!user?.account) return false;
     if (isAdmin) return true;

@@ -1,7 +1,7 @@
 import { DropdownMenu } from "@kobalte/core";
 import { Account } from "@prisma/client";
 import { Component, createSignal, Show } from "solid-js";
-import { useNavigate } from "solid-start";
+import { A, useNavigate } from "solid-start";
 import { Icons } from "./Icon";
 import logo from "~/assets/logo.svg";
 import { startSupport } from "~/lib/support";
@@ -13,7 +13,9 @@ export const NavBar: Component<{ account: Account }> = (props) => {
   return (
     <div class="bg-mastodon-purple-700 dark:bg-mastodon-purple-900">
       <div class="container mx-auto flex max-w-4xl items-center py-4 px-6">
-        <img src={logo} />
+        <A href="/">
+          <img src={logo} />
+        </A>
         <div class="flex-auto"></div>
         <Show when={props.account}>
           {/* <a href="#" class="flex-shrink-0 group block"> */}
@@ -42,6 +44,15 @@ export const NavBar: Component<{ account: Account }> = (props) => {
                   class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
                 >
                   <Icons.QuestionMark class="mr-2 w-4" /> <DropdownMenu.ItemLabel>F.A.Q.</DropdownMenu.ItemLabel>
+                </DropdownMenu.Item>
+
+                <DropdownMenu.Item
+                  onSelect={() => navigate("/privacy")}
+                  closeOnSelect
+                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
+                >
+                  <Icons.ShieldLock class="mr-2 w-4" />
+                  <DropdownMenu.ItemLabel>Privacy Policy</DropdownMenu.ItemLabel>
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item

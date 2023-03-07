@@ -10,6 +10,7 @@ import QuestionCircle from "~icons/tabler/question-circle";
 import QuestionMark from "~icons/tabler/question-mark";
 import Reload from "~icons/tabler/reload";
 import Repeat from "~icons/tabler/repeat";
+import ShieldLock from "~icons/tabler/shield-lock";
 import Star from "~icons/tabler/star";
 import Trash from "~icons/tabler/trash";
 import X from "~icons/tabler/x";
@@ -29,6 +30,7 @@ export const Icons = {
   Reload,
   Repeat,
   Reply: CornerUpLeft,
+  ShieldLock,
   Star,
   Trash,
   X,

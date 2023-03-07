@@ -9,7 +9,7 @@ export type AuthenticatedUser = { account: Account; roles: Roles[] };
 
 export async function useAuthentication(request: Request) {
   if (!isServer) throw new HandledError("useAuthentication can only be used on the server");
-  const user = getUser(request);
+  const user = await getUser(request);
   if (!user) throw redirect("/auth/login");
   return user;
 }
