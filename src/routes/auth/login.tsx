@@ -83,7 +83,7 @@ export default function LoginRoute() {
           <LoginForm loginForm={login} defaultInstance={params.instance} error={params.error} />
         </Form>
         <p class="mt-4 max-w-prose text-sm leading-relaxed text-mastodon-purple-900/70  dark:text-mastodon-purple-200">
-          If this is your time using MastoMetrics, you will be asked to authorize the app.
+          If this is your first time using MastoMetrics, you will be asked to authorize the app.
           <br />
           Learn more about the data we store in our{" "}
           <a href="/faq" class="text-mastodon-purple-500 dark:text-mastodon-purple-300">
@@ -108,7 +108,7 @@ export const LoginForm: Component<{
   loginForm: loginFormSignal;
   cta?: string;
 }> = (props) => {
-  const [instance, setInstance] = createStorageSignal("preferedInstance", props.defaultInstance);
+  const [instance, setInstance] = createStorageSignal("preferedInstance", props.defaultInstance ?? "");
   const [validation, setValidation] = createSignal<{ validInstance?: string; error?: string }>({});
 
   async function validate(value?: string) {

@@ -209,6 +209,6 @@ function estimateImportDuration(statusesCount: number) {
 
 function formatDuration(seconds: number) {
   const minutes = Math.floor(seconds / 60);
-  if (minutes > 0) return `${minutes} minutes and ${seconds % 60} seconds`;
+  if (minutes > 0) return `${minutes} minutes and ${Math.ceil(seconds % 60)} seconds`;
   return `${seconds} seconds`;
 }
