@@ -1,3 +1,4 @@
+import { handleAccountSyncingError } from "~/backend/account";
 import { runInConnection, throwOnError } from "~/backend/db";
 import { HandledError } from "~/lib/error";
 import { MASTODON } from "~/lib/mastodon/api";
@@ -30,21 +31,14 @@ export async function importAccount(handle: string, api?: ApiOptions) {
       throwOnError(await updateAccountMetrics(account));
       throwOnError(await backfillMetrics(account.username));
 
-      metadata = setMetadata<AccountMetadata>(account.metadata, { pendingImport: undefined });
+      metadata = setMetadata<AccountMetadata>(account.metadata, { pendingImport: undefined, suspendedSync: undefined });
       account = await db.account.update({ where: { id: account.id }, data: { metadata } });
       console.log(`✅ Imported ${handle}`);
     } catch (e) {
       console.error(`❌ Failed to import ${handle}`, e);
-
-      let metadata = setMetadata<AccountMetadata>(account.metadata, { pendingImport: undefined });
-      metadata.warnings ??= [];
-      metadata.warnings.unshift({
-        timestamp: new Date().toISOString(),
-        message: `Import failed, ${e instanceof HandledError ? e.message : "Unhandled error"}`,
-      });
-      account = await db.account.update({ where: { id: account.id }, data: { tracking: true, metadata } });
-
+      await handleAccountSyncingError(account, e, db);
       if (e instanceof HandledError) throw e;
+      return false;
     }
 
     return true;

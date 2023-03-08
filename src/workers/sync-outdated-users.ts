@@ -1,4 +1,4 @@
-import { runInConnection } from "~/backend/db";
+import { Prisma, runInConnection } from "~/backend/db";
 import { syncAccount } from "./sync-account";
 
 export async function updateOutdatedUsers() {
@@ -13,6 +13,7 @@ export async function updateOutdatedUsers() {
             Metrics: { none: { timestamp: { gt: outdatedAfter } } },
           },
         ],
+        metadata: { path: ["suspendedSync"], equals: Prisma.AnyNull },
       },
       include: { User: true },
     });

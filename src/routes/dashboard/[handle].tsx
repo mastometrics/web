@@ -4,7 +4,7 @@ import { RouteDataArgs, Title, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$, redirect, ServerError } from "solid-start/server";
 import { TinyLoadingIndicator } from "~/components/LoadingIndicator";
 import { getFullAccount, startTracking, syncAccount } from "~/backend/account";
-import { formatRelativeTime } from "~/lib/format";
+import { formatDate, formatDateTime, formatRelativeTime } from "~/lib/format";
 import { useAuthentication } from "~/backend/authentication";
 import { usePermissions } from "~/lib/permissions";
 import { AccountStatuses } from "~/components/Account/AccountStatuses";
@@ -58,6 +58,8 @@ export default function AccountHandleRoute() {
     if (!account()?.tracking && user()?.account?.id == account()?.id) startTrackingAccount();
   });
 
+  const suspended = () => (account() && readMetadata<AccountMetadata>(account()!.metadata)?.suspendedSync) ?? false;
+
   return (
     <>
       <Suspense fallback={<TinyLoadingIndicator />}>
@@ -109,6 +111,28 @@ export default function AccountHandleRoute() {
         </div>
       </Suspense>
       <div class="container mx-auto max-w-4xl px-4 py-2 sm:py-4 sm:px-6">
+        {suspended() && (
+          <Box isError title="Data syncing suspended">
+            <p class="mt-4">
+              Since {formatDateTime(suspended() as string)} we are no longer syncing data for this account. Typically
+              this is because your instance denied access to MastoMetrics, for example because the MastoMetrics app has
+              been revoked in your Mastodon account settings.
+            </p>
+            <p class="my-4">
+              To resolve this issue, please first log out and in again and then retry. If the issue persists, please
+              contact support.
+            </p>
+            <UIButton onClick={() => startTrackingAccount()}>
+              <Icons.Reload class="mr-2 h-4 w-4" />
+              Retry
+            </UIButton>
+            <UIButton onClick={() => startSupport(account()!)} class="ml-2">
+              <Icons.At class="mr-2 h-4 w-4" />
+              Support
+            </UIButton>
+          </Box>
+        )}
+
         <ImportStatus account={account()!} importing={importing} />
         {account() && <AccountMetrics handle={params.handle} account={account} />}
       </div>

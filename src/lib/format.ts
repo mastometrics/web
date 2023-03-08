@@ -12,8 +12,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat("en", {
   hour: "numeric",
   minute: "numeric",
 });
-export function formatDateTime(date: Date) {
-  return dateTimeFormatter.format(date);
+export function formatDateTime(date: Date | string) {
+  return dateTimeFormatter.format(typeof date === "string" ? new Date(date) : date);
 }
 
 const relativeTimeFormatter = new Intl.RelativeTimeFormat("en", {

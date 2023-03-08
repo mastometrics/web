@@ -5,6 +5,7 @@ export type Metadata<T> = T & { [key: string]: Prisma.JsonValue };
 
 export type AccountMetadata = Metadata<{
   pendingImport?: DateTimeString;
+  suspendedSync?: DateTimeString;
   warnings?: { timestamp: DateTimeString; message: string }[];
 }>;
 

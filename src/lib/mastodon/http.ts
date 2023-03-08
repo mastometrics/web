@@ -45,6 +45,12 @@ export async function fetchApi<T>(
     if ((err as any).name === "AbortError") throw new HandledError(`Aborted request to ${instance}`, { cause: err });
     if ((err as any).code === "ECONNREFUSED") throw new Error(`Connection refused to ${instance}`, { cause: err });
     if ((err as any).code === "ECONNRESET") throw new Error(`Connection reset to ${instance}`, { cause: err });
+    if ((err as any).status === 404)
+      throw new HandledError(`Endpoint not found on ${instance}`, { cause: err, status: 404 });
+    if ((err as any).status === 401)
+      throw new HandledError(`Unauthorized request to ${instance}`, { cause: err, status: 401 });
+    if ((err as any).status === 403)
+      throw new HandledError(`Forbidden request to ${instance}`, { cause: err, status: 403 });
     throw err as Error;
   }
 }
