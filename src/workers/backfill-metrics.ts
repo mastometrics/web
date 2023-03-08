@@ -32,7 +32,7 @@ export async function backfillMetrics(handle: string) {
     const user = await db.user.findFirstOrThrow({ where: { Account: { id: account.id } } });
 
     const config = { token: user.token, instance: account.instance };
-    const followNotifications = mastodonApi(config).notifications.list({ types: ["follow"] });
+    const followNotifications = mastodonApi(config).notifications.list({ types: ["follow"] }, { limit: 1500 });
 
     const statusAggregates = await db.$queryRaw<StatusAggregate[]>`
         SELECT DATE_TRUNC('day', "publishedAt") AS date,
