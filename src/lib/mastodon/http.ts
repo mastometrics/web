@@ -15,7 +15,9 @@ export async function fetchApi<T>(
     let key = instance;
     if (token) key += `-${createHash("sha256").update(token).digest("hex").slice(0, 8)}`;
     const { handleResponse } = await throttler.throttle(key, { greedy: !throttle });
-    const url = path.startsWith(`https://${instance}/api/v1/`) ? path : `https://${instance}/api/v1/${path}`;
+    const url = path.toLowerCase().startsWith(`https://${instance.toLowerCase()}/api/v1/`)
+      ? path
+      : `https://${instance}/api/v1/${path}`;
 
     logger(`🐘 GET ${url}`);
 
