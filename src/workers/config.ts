@@ -13,7 +13,7 @@ export const SYNC_MAX_STATUS_COUNT = +(import.meta.env.WORKER_SYNC_MAX_STATUS_CO
 /** Max percentage of accounts to sync per job, to spread out load
  * Defaults to 2x the interval / 60 minutes. I.e. if job runs every 6 minutes, max 20% of accounts will be synced per job.
  */
-export const SYNC_MAX_SPIKE = +(import.meta.env.WORKER_SYNC_MAX_SPIKE || (2 * SYNC_INTERVAL_MINS) / 60);
+export const SYNC_MAX_SPIKE = +(import.meta.env.WORKER_SYNC_MAX_SPIKE || (2 * SYNC_INTERVAL_MINS) / SYNC_OUTDATED_MINS);
 
 /** Debug, verbose or warning */
 export const LOG_LEVEL = import.meta.env.DEV ? "debug" : import.meta.env.LOG_LEVEL || "info";
