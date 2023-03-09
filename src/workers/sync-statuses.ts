@@ -17,6 +17,10 @@ export async function syncStatuses(
       // Skip direct messages
       if (status.visibility === "direct") continue;
 
+      // Skip boosts of the same status
+      // It will overwrite the original status without any engagement data
+      if (status.reblog?.uri === status.uri) continue;
+
       const statusData: Prisma.StatusUpdateInput = {
         boostsCount: status.reblogs_count,
         favoritesCount: status.favourites_count,
