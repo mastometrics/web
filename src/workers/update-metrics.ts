@@ -1,6 +1,7 @@
 import { Account, Prisma } from "@prisma/client";
 import { useDatabase, Result } from "~/backend/db";
 import { sum, truncateDate } from "~/lib/format";
+import { logger } from "~/lib/logger";
 import { createOrUpdateAccount } from "./upsert-account";
 
 /* Upsert account metrics for today, based on the account's current status counts and all statuses */
@@ -24,7 +25,7 @@ export async function updateAccountMetrics(user: Account | string) {
     };
 
     const timestamp = truncateDate(new Date(), "hour");
-    console.log(`🔄 Updating stats for ${account.username}`);
+    logger.debug(`🔄 Updating stats for ${account.username}`);
 
     await db.metric.upsert({
       where: { accountId_timestamp: { accountId: account.id, timestamp }, timestamp },

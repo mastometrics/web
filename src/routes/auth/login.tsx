@@ -12,6 +12,7 @@ import { mastodonApi } from "~/lib/mastodon/api";
 import { Box } from "~/components/Box";
 import { RouteAction } from "solid-start/data/createRouteAction";
 import { cls } from "~/lib/css";
+import { logger } from "~/lib/logger";
 
 export function createLoginAction() {
   return createServerAction$(async (form: FormData, event) => {
@@ -25,7 +26,7 @@ export function createLoginAction() {
         await mastodonApi({ instance: inputInstance }).instance.info();
       } catch (error) {
         if (error instanceof HandledError) throw new FormError(error.message);
-        console.error(error);
+        logger.error(error);
         throw new FormError("Not a valid mastodon instance");
       }
 

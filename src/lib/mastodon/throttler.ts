@@ -1,11 +1,12 @@
 import { Response } from "node-fetch";
+import { logger } from "../logger";
 // https://github.com/mastodon/mastodon/blob/main/config/initializers/rack_attack.rb
 // • 300 requests per 5 minutes per identifier (IP address (unauthenticated) or user token) = 1rps
 // • 300 paging requests per 15 minutes by identifier = 1/3rps
 type RateLimit = { limit?: number; remaining?: number; reset?: Date; history: Date[] };
 
 function logVerbose(msg: string) {
-  if (import.meta.env.DEV) console.log("ℹ️ " + msg);
+  logger.debug("ℹ️ " + msg);
 }
 
 const THROTTLE_WHEN_PERCENTAGE_LEFT = 0.8,

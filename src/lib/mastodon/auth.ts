@@ -1,3 +1,4 @@
+import { HandledError } from "../error";
 import { MastodonAccessToken, MastodonAppRegistration, MastodonAuthenticatedAccount } from "./types";
 
 export async function registerInstanceApp(
@@ -57,8 +58,9 @@ export async function fetchAccessToken(
   const response = await request;
   if (response.status != 200) {
     const error = (await response.json()) as { error: string; error_description: string };
-    if (error?.error == "invalid_grant") throw new Error("Invalid grant: " + error.error_description, { cause: error });
-    else throw new Error("Could not fetch access token", { cause: error });
+    if (error?.error == "invalid_grant")
+      throw new HandledError("Invalid grant: " + error.error_description, { cause: error, status: response.status });
+    else throw new HandledError("Could not fetch access token", { cause: error, status: response.status });
   }
   const token = (await response.json()) as MastodonAccessToken;
   return token;
@@ -78,6 +80,6 @@ export async function fetchAuthenticatedUser(instance: string, accessToken: stri
       },
     })
   ).json()) as MastodonAuthenticatedAccount;
-  if (!user?.username) throw new Error("Could not fetch authenticated user");
+  if (!user?.username) throw new HandledError("Could not fetch authenticated user");
   return user;
 }

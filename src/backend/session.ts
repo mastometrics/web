@@ -8,6 +8,7 @@ import { db, useDatabase } from "./db";
 import { HandledError } from "~/lib/error";
 import { Roles } from "~/lib/permissions";
 import { logNewUser } from "~/lib/logsnag/logsnag";
+import { logger } from "~/lib/logger";
 type AuthenticationData = {
   token: MastodonAccessToken;
   authAccount: MastodonAuthenticatedAccount;
@@ -21,7 +22,7 @@ export async function authenticate({ authAccount, token, instance }: Authenticat
     let account = await db.account.findUnique({ where: { username } });
     if (!account) {
       account = await createOrUpdateAccount(username, authAccount, { instance: instance.host }, db);
-      console.log(`🔥 New signup: ${username}`);
+      logger.info(`🔥 New signup: ${username}`);
       if (import.meta.env.PROD) logNewUser(account);
     }
 

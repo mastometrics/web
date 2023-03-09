@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { isServer } from "solid-js/web";
 import { HandledError } from "~/lib/error";
+import { logger } from "~/lib/logger";
 
 export { Prisma };
 export const db = isServer
@@ -24,7 +25,7 @@ export async function useDatabaseConnection<T extends any>(fn: (db: PrismaClient
     await db.$connect();
     return [await fn(db), null];
   } catch (e) {
-    // console.error(e);
+    // logger.error(e);
     await db.$disconnect();
     return handleError(e);
     // process.exit(1);
@@ -36,7 +37,7 @@ export async function useDatabaseConnection<T extends any>(fn: (db: PrismaClient
 export type Result<T> = Promise<[T, null] | [null, HandledError]>;
 
 function returnError(clientMessage: string, error: Error, internalMessage?: string): [null, HandledError] {
-  console.error(internalMessage ?? error.message, error);
+  logger.error(internalMessage ?? error.message, error);
   return [null, new HandledError(clientMessage, { cause: error, stack: error.stack, status: 500 })];
 }
 

@@ -1,4 +1,6 @@
 import { CronJob } from "cron";
+import { logger } from "~/lib/logger";
+import { SYNC_CRON_SCHEDULE } from "./config";
 import { updateOutdatedUsers } from "./sync-outdated-users";
 
 const jobs: CronJob[] = [];
@@ -6,9 +8,9 @@ export function startScheduledWorkers() {
   jobs.forEach((task) => task.stop());
   jobs.length = 0;
 
-  // Check for outdated users every 5 minutes, and sync them
-  jobs.push(new CronJob("*/5 * * * *", () => updateOutdatedUsers()));
+  jobs.push(new CronJob(SYNC_CRON_SCHEDULE, () => updateOutdatedUsers()));
+  console.info(`🕒 Starting updated outdated users worker with schedule ${SYNC_CRON_SCHEDULE}`);
 
   jobs.forEach((task) => task.start());
-  console.log(`🕒 Started ${jobs.length} scheduled workers`);
+  logger.info(`🕒 Started ${jobs.length} scheduled workers`);
 }

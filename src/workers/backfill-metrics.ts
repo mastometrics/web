@@ -3,6 +3,7 @@ import { mastodonApi } from "../lib/mastodon/api";
 import { useDatabase } from "../backend/db";
 import { truncateDate } from "~/lib/format";
 import { getOrCreateAccount } from "./upsert-account";
+import { logger } from "~/lib/logger";
 
 type StatusAggregate = {
   date: Date;
@@ -27,7 +28,7 @@ const metricPeriod = 24 * 60 * 60 * 1000; // 1 day
 
 export async function backfillMetrics(handle: string) {
   return useDatabase(async (db) => {
-    console.log(`🏛️ Backfilling metrics for ${handle}`);
+    logger.info(`🏛️ Backfilling metrics for ${handle}`);
     const account = await getOrCreateAccount(handle, undefined, undefined, db);
     const user = await db.user.findFirstOrThrow({ where: { Account: { id: account.id } } });
 
@@ -114,7 +115,7 @@ export async function backfillMetrics(handle: string) {
     const createData: Prisma.MetricCreateManyInput[] = [];
     for (const metric of toCreateMetrics) {
       if (existingMetrics.find((m) => m.timestamp.getTime() === metric.timestamp.getTime())) {
-        if (import.meta.env.DEV) console.log(`❗ Skipping ${metric.timestamp} because it already exists`);
+        if (import.meta.env.DEV) logger.debug(`❗ Skipping ${metric.timestamp} because it already exists`);
         continue;
       }
       createData.push({

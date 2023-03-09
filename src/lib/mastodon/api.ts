@@ -1,4 +1,5 @@
 import { HandledError } from "../error";
+import { logger } from "../logger";
 import { ApiOptions, fetchApi, http } from "./http";
 import { MastodonAccount, MastodonInstance, MastodonNotification, MastodonStatus } from "./types";
 export * from "./types";
@@ -56,7 +57,7 @@ async function fetchInstance(api: ApiOptions) {
     if (!data.uri || !data.title) throw new HandledError("This domain is not a valid Mastodon instance");
     return data;
   } catch (e) {
-    console.error(e);
+    logger.warn(e);
     throw new HandledError(`Could not fetch instance '${api.instance}'`, { cause: e });
   }
 }

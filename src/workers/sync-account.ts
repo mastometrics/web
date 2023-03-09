@@ -1,8 +1,10 @@
 import { handleAccountSyncingError } from "~/backend/account";
 import { useDatabase } from "~/backend/db";
 import { HandledError } from "~/lib/error";
+import { logger } from "~/lib/logger";
 import { ApiOptions } from "~/lib/mastodon/http";
 import { AccountMetadata, readMetadata } from "~/lib/metadata";
+import { SYNC_MAX_STATUS_COUNT } from "./config";
 import { syncStatuses } from "./sync-statuses";
 import { updateAccountMetrics } from "./update-metrics";
 import { createOrUpdateAccount } from "./upsert-account";
@@ -22,11 +24,13 @@ export async function syncAccount(handle: string, api?: ApiOptions) {
         api = { token: user?.token, instance: account.instance };
       }
 
-      await syncStatuses(account, api, { limit: 120 });
+      await syncStatuses(account, api, { limit: SYNC_MAX_STATUS_COUNT });
       await updateAccountMetrics(account);
 
-      console.log(`👍 Synced ${handle}`);
+      logger.debug(`👍 Synced ${handle}`);
+      return true;
     } catch (e) {
+      logger.warn(`👎 Failed to sync ${handle}`, e);
       await handleAccountSyncingError(account, e, db);
       if (e instanceof HandledError) throw e;
     }

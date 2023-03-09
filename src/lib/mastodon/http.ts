@@ -2,24 +2,25 @@ import fetch, { RequestInit, Response } from "node-fetch";
 import { HandledError } from "../error";
 import { createThrottler, createRateLimitStore } from "./throttler";
 import { createHash } from "crypto";
+import { logger } from "../logger";
 const throttler = createThrottler(createRateLimitStore());
-export type ApiOptions = { throttle?: boolean; instance: string; token?: string; logger?: (msg: string) => void };
+export type ApiOptions = { throttle?: boolean; instance: string; token?: string };
 
 export async function fetchApi<T>(
   path: string,
-  { throttle, token, instance, logger }: ApiOptions,
+  { throttle, token, instance }: ApiOptions,
   request: RequestInit = {}
 ): Promise<{ data: T; response: Response }> {
+  const url = path.toLowerCase().startsWith(`https://${instance.toLowerCase()}/api/v1/`)
+    ? path
+    : `https://${instance}/api/v1/${path}`;
+
   try {
-    logger ??= console.log;
     let key = instance;
     if (token) key += `-${createHash("sha256").update(token).digest("hex").slice(0, 8)}`;
     const { handleResponse } = await throttler.throttle(key, { greedy: !throttle });
-    const url = path.toLowerCase().startsWith(`https://${instance.toLowerCase()}/api/v1/`)
-      ? path
-      : `https://${instance}/api/v1/${path}`;
 
-    logger(`🐘 GET ${url}`);
+    logger.debug(`🐘 GET ${url}`);
 
     const requestInit: RequestInit = { ...request, signal: AbortSignal.timeout(20 * 1000) };
     if (token) requestInit.headers = { ...request.headers, Authorization: `Bearer ${token}` };
@@ -41,6 +42,7 @@ export async function fetchApi<T>(
     const data = (await response.json()) as T;
     return { data, response };
   } catch (err) {
+    logger.warn(`🐘 Error fetching from ${instance} ${url} : ${(err as Error).message})`);
     if ((err as any).name === "TimeoutError") throw new HandledError(`Timeout to ${instance}`, { cause: err });
     if ((err as any).name === "AbortError") throw new HandledError(`Aborted request to ${instance}`, { cause: err });
     if ((err as any).code === "ECONNREFUSED") throw new Error(`Connection refused to ${instance}`, { cause: err });

@@ -1,6 +1,7 @@
 import { handleAccountSyncingError } from "~/backend/account";
 import { useDatabase, throwOnError } from "~/backend/db";
 import { HandledError } from "~/lib/error";
+import { logger } from "~/lib/logger";
 import { MASTODON } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
 import { AccountMetadata, readMetadata, setMetadata } from "~/lib/metadata";
@@ -17,9 +18,9 @@ export async function importAccount(handle: string, api?: ApiOptions) {
 
     const pendingImport = readMetadata<AccountMetadata>(account.metadata)?.pendingImport;
     if (pendingImport && new Date(pendingImport).getTime() < Date.now() - 1000 * 60 * 60) {
-      console.log(`🚫 Found import for ${handle} taking more than an hour, retrying`);
+      logger.warn(`🚫 Found import for ${handle} taking more than an hour, retrying`);
     } else if (pendingImport) {
-      console.log(`🚫 Already importing ${handle}`);
+      logger.warn(`🚫 Already importing ${handle}`);
       return false;
     }
 
@@ -33,9 +34,9 @@ export async function importAccount(handle: string, api?: ApiOptions) {
 
       metadata = setMetadata<AccountMetadata>(account.metadata, { pendingImport: undefined, suspendedSync: undefined });
       account = await db.account.update({ where: { id: account.id }, data: { metadata } });
-      console.log(`✅ Imported ${handle}`);
+      logger.info(`✅ Imported ${handle}`);
     } catch (e) {
-      console.error(`❌ Failed to import ${handle}`, e);
+      logger.error(`❌ Failed to import ${handle}`, e);
       await handleAccountSyncingError(account, e, db);
       if (e instanceof HandledError) throw e;
       return false;
