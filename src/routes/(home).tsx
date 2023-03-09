@@ -268,7 +268,12 @@ export const FooterCredits: Component = () => {
       </a>
       <p>
         and hosted on{" "}
-        <a class="transition hover:text-mastodon-purple-100" href="https://railway.app/" target="_blank" rel="noopener">
+        <a
+          class="transition hover:text-mastodon-purple-100"
+          href="https://railway.app?referralCode=aGEfIB"
+          target="_blank"
+          rel="noopener"
+        >
           <img class="mx-0.5 mb-0.5 inline-block w-4 align-middle" src={vendorIcons.railwayOnDark} /> Railway
         </a>
       </p>
