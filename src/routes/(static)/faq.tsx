@@ -99,6 +99,31 @@ export default function HomeRoute() {
           </a>{" "}
           know what you think or what features you'd like to see.
         </FAQ>
+        <FAQ title="What is the impact of MastoMetrics on my Instance?">
+          If you're an instance admin, you might be wondering what the impact of MastoMetrics is on your instance. The
+          traffic should be negligible compared to normal clients and apps, but we've taken the following measures to
+          ensure we don't negatively impact your instance:
+          <br />
+          <br />
+          <span class="opacity-50">1.</span> We make around 5 requests per 30 minutes for each account to sync their
+          data. Of which 1 to fetch their latest profile counts, and max. 4 to fetch their last 120 statuses.
+          <br />
+          <br />
+          <span class="opacity-50">2.</span> All requests are made serially, meaning we wait for the first request to
+          finish before sending a new one, so there are no noticable spikes.
+          <br />
+          <br />
+          <span class="opacity-50">3.</span> During signup max. 50 requests are made to fetch the last 2000 statuses,
+          and max. 50 requests to create an historic view of follower counts, spread out over multiple minutes.
+          <br />
+          <br />
+          <span class="opacity-50">4.</span> We follow your rate limits and anticipate them, i.e. if the limit is 300
+          pages per 15 minutes, we will spread requests so there's around 1 every 3 seconds.
+          <br />
+          <br />
+          Additionally, we're only making authenticated requests and only for the accounts that have signed up for
+          MastoMetrics.
+        </FAQ>
       </div>
     </Page>
   );
