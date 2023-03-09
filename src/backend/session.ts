@@ -4,7 +4,7 @@ import { createCookieSessionStorage } from "solid-start/session";
 import { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon/api";
 import { AuthenticatedUser } from "~/backend/authentication";
 import { createOrUpdateAccount, getOrCreateAccount } from "~/workers/upsert-account";
-import { db, runInConnection } from "./db";
+import { db, useDatabase } from "./db";
 import { HandledError } from "~/lib/error";
 import { Roles } from "~/lib/permissions";
 import { logNewUser } from "~/lib/logsnag/logsnag";
@@ -15,7 +15,7 @@ type AuthenticationData = {
 };
 
 export async function authenticate({ authAccount, token, instance }: AuthenticationData) {
-  return runInConnection(async (db) => {
+  return useDatabase(async (db) => {
     if (!authAccount?.username) throw new Error("Missing username");
     const username = `${authAccount.username}@${instance.host}`;
     let account = await db.account.findUnique({ where: { username } });

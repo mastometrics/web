@@ -3,11 +3,11 @@ import { HandledError } from "~/lib/error";
 import { logNewUser } from "~/lib/logsnag/logsnag";
 import { AccountMetadata, setMetadata } from "~/lib/metadata";
 import { importAccount } from "~/workers/import-account";
-import { db, runInConnection, throwOnError } from "./db";
+import { db, useDatabase, throwOnError } from "./db";
 export { syncAccount } from "../workers/sync-account";
 
 export const getFullAccount = async (handle: string) =>
-  runInConnection(async (db) => {
+  useDatabase(async (db) => {
     const account = await db.account.findUnique({
       where: { username: handle },
       // include: {

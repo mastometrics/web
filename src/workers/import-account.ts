@@ -1,5 +1,5 @@
 import { handleAccountSyncingError } from "~/backend/account";
-import { runInConnection, throwOnError } from "~/backend/db";
+import { useDatabase, throwOnError } from "~/backend/db";
 import { HandledError } from "~/lib/error";
 import { MASTODON } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
@@ -12,7 +12,7 @@ import { createOrUpdateAccount } from "./upsert-account";
 const MAX_STATUS_PAGES_IMPORT = 50;
 const MAX_IMPORT = MASTODON.API.STATUS_PER_PAGE_LIMIT * MAX_STATUS_PAGES_IMPORT;
 export async function importAccount(handle: string, api?: ApiOptions) {
-  return runInConnection(async (db) => {
+  return useDatabase(async (db) => {
     let account = await createOrUpdateAccount(handle, undefined, api, db);
 
     const pendingImport = readMetadata<AccountMetadata>(account.metadata)?.pendingImport;

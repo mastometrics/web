@@ -1,6 +1,6 @@
 import { DOMParser } from "linkedom";
 import { Account, Prisma } from "@prisma/client";
-import { runInConnection } from "~/backend/db";
+import { useDatabase } from "~/backend/db";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
 
@@ -10,7 +10,7 @@ export async function syncStatuses(
   api: ApiOptions = { instance: account.instance },
   { limit = 120 } = {}
 ) {
-  return runInConnection(async (db) => {
+  return useDatabase(async (db) => {
     const statuses = mastodonApi(api).accounts.statuses({ id: account.instanceAccountId }, { limit });
     const upserts = [];
     for await (const status of statuses) {

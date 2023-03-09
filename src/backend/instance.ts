@@ -1,10 +1,10 @@
 import { Instance, Prisma } from "@prisma/client";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { registerInstanceApp, fetchAppAccessToken } from "~/lib/mastodon/auth";
-import { db, Result, runInConnection } from "./db";
+import { db, Result, useDatabase } from "./db";
 
 export async function findOrCreateInstance(host: string) {
-  return runInConnection(async () => {
+  return useDatabase(async () => {
     let instance = await db.instance.findUnique({
       where: { host },
     });
@@ -48,7 +48,7 @@ export async function getInstanceAppCredentials(
   hostOrInstance: string | Instance,
   { redirectUri }: InstanceAppOptions
 ): Result<InstanceAppCredentials> {
-  return runInConnection(async () => {
+  return useDatabase(async () => {
     let instance: Instance;
     if (typeof hostOrInstance === "string") {
       const [ins, err] = await findOrCreateInstance(hostOrInstance);

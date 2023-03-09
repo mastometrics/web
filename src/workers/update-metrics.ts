@@ -1,5 +1,5 @@
 import { Account, Prisma } from "@prisma/client";
-import { runInConnection, Result } from "~/backend/db";
+import { useDatabase, Result } from "~/backend/db";
 import { sum, truncateDate } from "~/lib/format";
 import { createOrUpdateAccount } from "./upsert-account";
 
@@ -7,7 +7,7 @@ import { createOrUpdateAccount } from "./upsert-account";
 export async function updateAccountMetrics(handle: string): Result<void>;
 export async function updateAccountMetrics(account: Account): Result<void>;
 export async function updateAccountMetrics(user: Account | string) {
-  return runInConnection(async (db) => {
+  return useDatabase(async (db) => {
     const account = typeof user === "string" ? await createOrUpdateAccount(user, undefined, undefined, db) : user;
     const aggregates = await db.status.aggregate({
       where: { Account: { id: account.id } },

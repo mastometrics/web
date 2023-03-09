@@ -2,7 +2,7 @@ import { HandledError } from "~/lib/error";
 import { logNewUser } from "~/lib/logsnag/logsnag";
 import { periodKeys, periodToDate } from "~/lib/period";
 import { importAccount } from "~/workers/import-account";
-import { runInConnection, db, Prisma } from "./db";
+import { useDatabase, db, Prisma } from "./db";
 
 export type orderKeys = "engagements" | "favorites" | "boosts" | "replies" | "publishedAt";
 
@@ -27,7 +27,7 @@ export const getStatuses = async (
   handle: string,
   params: getStatusesParams = { period: "30d", order: "engagements" }
 ) =>
-  runInConnection(async (db) => {
+  useDatabase(async (db) => {
     const limit = params.limit || 10;
     const page = params.page || 0;
     const take = limit + 1; // +1 to check if there are more pages

@@ -1,6 +1,6 @@
 import { Metric, Prisma } from "@prisma/client";
 import { mastodonApi } from "../lib/mastodon/api";
-import { runInConnection } from "../backend/db";
+import { useDatabase } from "../backend/db";
 import { truncateDate } from "~/lib/format";
 import { getOrCreateAccount } from "./upsert-account";
 
@@ -26,7 +26,7 @@ type MetricAggregate = {
 const metricPeriod = 24 * 60 * 60 * 1000; // 1 day
 
 export async function backfillMetrics(handle: string) {
-  return runInConnection(async (db) => {
+  return useDatabase(async (db) => {
     console.log(`🏛️ Backfilling metrics for ${handle}`);
     const account = await getOrCreateAccount(handle, undefined, undefined, db);
     const user = await db.user.findFirstOrThrow({ where: { Account: { id: account.id } } });

@@ -1,5 +1,5 @@
 import { Account } from "@prisma/client";
-import { runInConnection } from "~/backend/db";
+import { useDatabase } from "~/backend/db";
 import { formatHandle } from "~/lib/format";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
@@ -18,7 +18,7 @@ export async function syncFollowing(account: Account, api: ApiOptions = { instan
 }
 
 export async function addFollower(account: Account, follower: Account) {
-  runInConnection(async (db) => {
+  useDatabase(async (db) => {
     await db.follow.upsert({
       where: { accountId_followingId: { accountId: follower.id, followingId: account.id } },
       update: {},

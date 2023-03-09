@@ -11,8 +11,15 @@ export const db = isServer
       },
     } as unknown as PrismaClient);
 
-// todo: https://www.prisma.io/docs/guides/performance-and-optimization/connection-management#instantiate-prismaclient-outside-the-handler
-export async function runInConnection<T extends any>(fn: (db: PrismaClient) => Promise<T>): Result<T> {
+export async function useDatabase<T extends any>(fn: (db: PrismaClient) => Promise<T>): Result<T> {
+  try {
+    return [await fn(db), null];
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+export async function useDatabaseConnection<T extends any>(fn: (db: PrismaClient) => Promise<T>): Result<T> {
   try {
     await db.$connect();
     return [await fn(db), null];
