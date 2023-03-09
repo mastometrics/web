@@ -21,14 +21,10 @@ export async function syncAccount(handle: string, api?: ApiOptions) {
         const user = await db.user.findUnique({ where: { accountId: account.id } });
         api = { token: user?.token, instance: account.instance };
       }
-      const tasks = [];
-      if (account.discoverable && !account.noindex) {
-        tasks.push(syncStatuses(account, api, { limit: 120 }));
-        //   if (account.followersCount) tasks.push(syncFollowers(account, api));
-        //   if (account.followingCount) tasks.push(syncFollowing(account, api));
-        tasks.push(updateAccountMetrics(account));
-      }
-      await Promise.all(tasks);
+
+      await syncStatuses(account, api, { limit: 120 });
+      await updateAccountMetrics(account);
+
       console.log(`👍 Synced ${handle}`);
     } catch (e) {
       await handleAccountSyncingError(account, e, db);
