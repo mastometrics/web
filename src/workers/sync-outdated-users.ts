@@ -22,6 +22,7 @@ export async function updateOutdatedUsers() {
         ],
         metadata: { path: ["suspendedSync"], equals: Prisma.AnyNull },
       },
+      orderBy: { lastIndex: "asc" },
       take: limit,
       include: { User: true },
     });

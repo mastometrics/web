@@ -2,6 +2,7 @@ import { handleAccountSyncingError } from "~/backend/account";
 import { useDatabase } from "~/backend/db";
 import { HandledError } from "~/lib/error";
 import { logger } from "~/lib/logger";
+import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
 import { AccountMetadata, readMetadata } from "~/lib/metadata";
 import { SYNC_MAX_STATUS_COUNT } from "./config";
@@ -10,9 +11,10 @@ import { updateAccountMetrics } from "./update-metrics";
 import { createOrUpdateAccount } from "./upsert-account";
 
 /** Fetch the latest counts + profile info, sync the last 120 status counts and update the metrics accordingly */
-export async function syncAccount(handle: string, api?: ApiOptions) {
+export async function syncAccount(handle: string, api?: ApiOptions, opts?: { accountId?: string }) {
   return useDatabase(async (db) => {
-    const account = await createOrUpdateAccount(handle, undefined, api, db);
+    let accountData = opts?.accountId && api ? await mastodonApi(api!).accounts.get(opts.accountId) : undefined;
+    const account = await createOrUpdateAccount(handle, accountData, api, db);
     if (readMetadata<AccountMetadata>(account.metadata)?.suspendedSync)
       throw new HandledError(`Account ${handle} is suspended`);
     if (readMetadata<AccountMetadata>(account.metadata)?.pendingImport)

@@ -34,7 +34,7 @@ export async function fetchApi<T>(
     }
 
     if (response.status >= 400) {
-      const err = new Error(response.statusText, { cause: { response } });
+      const err = new HandledError(response.statusText, { cause: { response } });
       (err as any).status = response.status;
       throw err;
     }

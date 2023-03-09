@@ -8,6 +8,10 @@ export async function createOrUpdateAccount(handle: string, user?: MastodonAccou
   const { username, acct, instance } = parseHandle(handle);
   user ??= await mastodonApi(api ?? { instance }).accounts.lookup(acct);
 
+  // Sometimes the API returns an authorization error when calling this endpoint
+  // authenticated, so we fallback to an unauthenticated call
+  user ??= await mastodonApi({ instance }).accounts.get(username);
+
   const accountData: Prisma.AccountCreateInput = {
     displayName: user.display_name,
     avatar: user.avatar,

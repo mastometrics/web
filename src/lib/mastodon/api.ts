@@ -14,6 +14,7 @@ export function mastodonApi(api: ApiOptions) {
       /** Find an account on the instance by username */
       lookup: async (username: string) =>
         (await http.fetch<MastodonAccount>(`accounts/lookup?acct=${username}`, api)).data,
+      get: async (id: string) => (await http.fetch<MastodonAccount>(`accounts/${id}`, api)).data,
       /** Get account followers, max 80 per request */
       followers: (params: { id: string }, opts?: paginateOpts) =>
         http.paginate<MastodonAccount>(`accounts/${params.id}/followers?${limit(FOLLOW_LIMIT, opts)}`, api, opts),
