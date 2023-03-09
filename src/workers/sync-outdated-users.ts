@@ -32,7 +32,11 @@ export async function updateOutdatedUsers() {
     logger.info(`🔄 Syncing ${accounts.length} outdated accounts`);
     const results = await Promise.allSettled(
       accounts.map((account) =>
-        syncAccount(account.username, { token: account.User[0]?.token, instance: account.instance, throttle: true })
+        syncAccount(
+          account.username,
+          { token: account.User[0]?.token, instance: account.instance, throttle: true },
+          { accountId: account.instanceAccountId }
+        )
       )
     );
     logger.info(`🔄 Synced ${results.filter((r) => r.status === "fulfilled").length} outdated accounts`);
