@@ -1,6 +1,7 @@
 import { Account, PrismaClient } from "@prisma/client";
 import { HandledError } from "~/lib/error";
-import { logNewUser } from "~/lib/logsnag/logsnag";
+import { logger } from "~/lib/logger";
+import { logDeletedUser, logNewUser } from "~/lib/logsnag/logsnag";
 import { AccountMetadata, setMetadata } from "~/lib/metadata";
 import { MAX_WARNINGS_LOGGED, SUSPEND_IMPORT_AFTER_WARNINGS } from "~/workers/config";
 import { importAccount } from "~/workers/import-account";
@@ -73,4 +74,23 @@ export async function handleAccountSyncingError(
   if (metadata.warnings.length > MAX_WARNINGS_LOGGED) metadata.warnings.slice(0, MAX_WARNINGS_LOGGED);
 
   return await db.account.update({ where: { id: account.id }, data: { metadata } });
+}
+
+export async function deleteAccount(handle: string) {
+  return useDatabase(async (db) => {
+    const account = await db.account.findUniqueOrThrow({ where: { username: handle } });
+    if (!account) throw new HandledError("Account not found", { status: 404 });
+    let deleted = false;
+    try {
+      await db.account.delete({ where: { id: account.id } });
+      deleted = true;
+    } catch (error) {
+      throw new HandledError("Unable to delete account", { status: 500 });
+    } finally {
+      if (deleted) {
+        logger.info(`💔 Deleted account ${handle}`);
+        logDeletedUser(account);
+      }
+    }
+  });
 }

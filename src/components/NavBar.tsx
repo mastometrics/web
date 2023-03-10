@@ -5,10 +5,10 @@ import { A, useNavigate } from "solid-start";
 import { Icons } from "./Icon";
 import logo from "~/assets/logo.svg";
 import { startSupport } from "~/lib/support";
+import { Dynamic } from "solid-js/web";
 
 export const NavBar: Component<{ account: Account }> = (props) => {
   const [open, setOpen] = createSignal(false);
-  const navigate = useNavigate();
 
   return (
     <div class="bg-mastodon-purple-700 dark:bg-mastodon-purple-900">
@@ -37,44 +37,35 @@ export const NavBar: Component<{ account: Account }> = (props) => {
             </DropdownMenu.Trigger>
 
             <DropdownMenu.Portal>
-              <DropdownMenu.Content class="min-w-[200px] origin-top-right rounded-lg bg-mastodon-purple-700 p-2 shadow-xl outline-none animate-in fade-in zoom-in-50 duration-100">
-                <DropdownMenu.Item
-                  onSelect={() => navigate("/faq")}
-                  closeOnSelect
-                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
-                >
-                  <Icons.QuestionMark class="mr-2 w-4" /> <DropdownMenu.ItemLabel>F.A.Q.</DropdownMenu.ItemLabel>
-                </DropdownMenu.Item>
-
-                <DropdownMenu.Item
-                  onSelect={() => navigate("/privacy/")}
-                  closeOnSelect
-                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
-                >
-                  <Icons.ShieldLock class="mr-2 w-4" />
-                  <DropdownMenu.ItemLabel>Privacy Policy</DropdownMenu.ItemLabel>
-                </DropdownMenu.Item>
-
-                <DropdownMenu.Item
-                  onSelect={() => startSupport(props.account)}
-                  closeOnSelect
-                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
-                >
-                  <Icons.At class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Support</DropdownMenu.ItemLabel>
-                </DropdownMenu.Item>
-
-                <DropdownMenu.Item
-                  onSelect={() => (window.location.pathname = "/auth/logout/")}
-                  closeOnSelect
-                  class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
-                >
-                  <Icons.Logout class="mr-2 w-4" /> <DropdownMenu.ItemLabel>Sign out</DropdownMenu.ItemLabel>
-                </DropdownMenu.Item>
+              <DropdownMenu.Content class="z-20 min-w-[200px] origin-top-right rounded-lg bg-mastodon-purple-700 p-2 shadow-xl outline-none animate-in fade-in zoom-in-50 duration-100">
+                <DropDownMenuLink href={`/dashboard/${props.account.username}`} icon={Icons.Home} label="Dashboard" />
+                <DropDownMenuLink href={`/dashboard/settings`} icon={Icons.Settings} label="Settings" />
+                <DropDownMenuLink href={`/faq`} icon={Icons.QuestionMark} label="F.A.Q." />
+                <DropDownMenuLink href={`/privacy/`} icon={Icons.ShieldLock} label="Privacy Policy" />
+                <DropDownMenuLink onClick={() => startSupport(props.account)} icon={Icons.At} label="Support" />
+                <DropDownMenuLink onClick={() => (location.href = "/auth/logout")} icon={Icons.Logout} label="Logout" />
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
         </Show>
       </div>
     </div>
+  );
+};
+
+export const DropDownMenuLink: Component<
+  { label: string; icon: any } & ({ href: string } | { onClick: () => void })
+> = (props) => {
+  const navigate = useNavigate();
+
+  return (
+    <DropdownMenu.Item
+      onSelect={() => ("href" in props ? navigate(props.href) : props.onClick())}
+      closeOnSelect
+      class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
+    >
+      <Dynamic component={props.icon} class="mr-2 w-4" />
+      <DropdownMenu.ItemLabel>{props.label}</DropdownMenu.ItemLabel>
+    </DropdownMenu.Item>
   );
 };

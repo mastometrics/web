@@ -75,7 +75,7 @@ const DeltaLabel: Component<{ value?: number; compareTo?: number }> = (props) =>
   const change = () => (props.value ?? 0) - (props.compareTo ?? 0);
   const type = () => (change() > 0 ? "increase" : change() < 0 ? "decrease" : "same");
   return (
-    <p class="font-semibol flex items-baseline rounded-full bg-mastodon-purple-100/70 px-2 text-sm dark:bg-mastodon-purple-800/50">
+    <p class="flex items-baseline rounded-full bg-mastodon-purple-100/70 px-2 text-sm font-semibold dark:bg-mastodon-purple-800/50">
       <Switch
         fallback={
           <>

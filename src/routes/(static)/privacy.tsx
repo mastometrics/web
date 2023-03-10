@@ -102,8 +102,13 @@ export default function PrivacyPolicyRoute() {
         <h2>Consent</h2>
         <p>
           We only start collecting your data after explicit consent through signing up for MastoMetrics. If signed up
-          and you want to opt-out from processing, please contact us at <Contact /> from the Mastodon Account you want
-          to opt-out. After you opted out all your account data will be deleted.
+          and you want to opt-out from processing, you can instantly deleted your account from the MastoMetrics
+          settings.
+        </p>
+        <p>
+          Alternatively, if you revoke access to the MastoMetrics application from your Mastodon instance account
+          settings, we will no longer be able to collect data from your account. However, your data will remain for 30
+          days, if we didn't get any new login from you within that timeframe we will also delete all your data.
         </p>
 
         <h2>Third Parties (Vendors)</h2>
@@ -175,8 +180,8 @@ export default function PrivacyPolicyRoute() {
         <h2>GDPR</h2>
         <p>
           We respect, embrace and encourage the rights and regulations that the General Data Protection Regulation
-          (GDPR) provides. We intent to implement some of your rights as features in the future (i.e. data portability
-          and right of erasure), in the meantime you can always call on your rights by contacting us.
+          (GDPR) provides. We intent to implement some of your rights as features in the future (i.e. data portability),
+          in the meantime you can always call on your rights by contacting us.
         </p>
 
         <h2>Changes to our Policy</h2>
@@ -195,6 +200,17 @@ export default function PrivacyPolicyRoute() {
           MastoMetrics is developed by Robert van Hoesel in The Netherlands. MastoMetrics is not a formal legal
           (non-person) entity, but may become one in the future.
         </p>
+
+        <details>
+          <summary class="text-mastodon-purple-500">History</summary>
+          <ul>
+            <li>
+              2032-03-10: Added explantion on how to delete your account yourself without needing to contact us. Also
+              adding policy that any account that revokes access to the Mastodon App will be delete if not signed into
+              again within 30 days.
+            </li>
+          </ul>
+        </details>
       </div>
     </Page>
   );

@@ -14,7 +14,7 @@ export const Box: ParentComponent<{
         "dark:bg-mastodon-purple-800/40 dark:text-white dark:shadow-none dark:outline dark:outline-mastodon-purple-800/70 ",
         props.isSecondary && "bg-mastodon-purple-100 shadow-none dark:bg-mastodon-purple-800/60",
         props.isError &&
-          "bg-red-100/50 shadow-none outline outline-red-500/30 dark:bg-red-900/20 dark:outline-red-500/30",
+          "bg-red-100/50 text-red-900 shadow-none outline outline-red-500/30 dark:bg-red-900/20 dark:text-white dark:outline-red-500/30",
         props.class
       )}
       role={props.isError ? "alert" : undefined}
@@ -22,7 +22,7 @@ export const Box: ParentComponent<{
       {props.title && (
         <h3
           class={cls(
-            "text-xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-400",
+            "mb-4 text-xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-400",
             props.isSecondary && " dark:text-mastodon-purple-400",
             props.isError && "!text-red-600 dark:text-red-400"
           )}

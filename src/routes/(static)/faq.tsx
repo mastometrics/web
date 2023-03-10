@@ -74,8 +74,9 @@ export default function HomeRoute() {
           </A>
         </FAQ>
         <FAQ title="Can I delete my account?">
-          Yes, you can delete your account at any time. All your data will be deleted immediately. Mention
-          @mastometrics@mas.to from your account to request deletion.
+          Yes, you can delete your account at any time via your account settings. All your data will be deleted
+          immediately. You can alternatively revoke access to MastoMetrics App from your Mastodon account settings,
+          after which we will delete your data if you don't sign in again within 30 days.
         </FAQ>
         <FAQ title="Is this open source? Can I self-host or contribute?">
           For now, MastoMetrics is not open source. I might open source it in the future, but for now I want to keep
@@ -131,6 +132,6 @@ export default function HomeRoute() {
 
 const FAQ: ParentComponent<{ title: string }> = (props) => (
   <Box class="my-0 break-inside-avoid-column rounded-lg" title={props.title} isSecondary>
-    <p class="mt-4 max-w-prose leading-relaxed text-gray-500 dark:text-mastodon-purple-100">{props.children}</p>
+    <p class="max-w-prose leading-relaxed text-gray-500 dark:text-mastodon-purple-100">{props.children}</p>
   </Box>
 );

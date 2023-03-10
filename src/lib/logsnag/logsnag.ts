@@ -22,6 +22,21 @@ export async function logNewUser(account: Account) {
   });
 }
 
+export async function logDeletedUser(account: Account) {
+  if (!logsnagEnabled) return;
+  await logsnag.publish({
+    channel: "users",
+    event: "Account deleted",
+    description: `${account.username}`,
+    icon: "💔",
+    notify: true,
+    tags: {
+      instance: account.instance,
+      username: account.username,
+    },
+  });
+}
+
 const hypeIcons = {
   0: "🍼",
   50: "🌱",

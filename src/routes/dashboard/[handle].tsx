@@ -63,7 +63,7 @@ export default function AccountHandleRoute() {
   return (
     <>
       <Suspense fallback={<TinyLoadingIndicator />}>
-        <Title>MastoMetrics - {account()?.displayName ?? params.handle}</Title>
+        <Title>{account()?.displayName ?? params.handle} - MastoMetrics</Title>
         <div class="bg-mastodon-purple-100/90 dark:bg-mastodon-purple-800/10">
           <div class="container mx-auto max-w-4xl py-8 px-6">
             <div class="-ml-4 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
@@ -113,7 +113,7 @@ export default function AccountHandleRoute() {
       <div class="container mx-auto max-w-4xl px-4 py-2 sm:py-4 sm:px-6">
         {suspended() && (
           <Box isError title="Data syncing suspended">
-            <p class="mt-4">
+            <p>
               Since {formatDateTime(suspended() as string)} we are no longer syncing data for this account. Typically
               this is because your instance denied access to MastoMetrics, for example because the MastoMetrics app has
               been revoked in your Mastodon account settings.
@@ -185,7 +185,7 @@ const ImportStatus: Component<{ account: Account; importing: RouteAction<any, bo
       )}
       {props.importing.error && (
         <Box isError title="Import failed">
-          <p class="my-4">{props.importing.error.message}</p>
+          <p class="mb-4">{props.importing.error.message}</p>
           <UIButton onClick={() => props.importing.retry()}>
             <Icons.Reload class="mr-2 h-4 w-4" />
             Retry
