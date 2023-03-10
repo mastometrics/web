@@ -2,6 +2,7 @@ import { Account, PrismaClient } from "@prisma/client";
 import { HandledError } from "~/lib/error";
 import { logNewUser } from "~/lib/logsnag/logsnag";
 import { AccountMetadata, setMetadata } from "~/lib/metadata";
+import { MAX_WARNINGS_LOGGED, SUSPEND_IMPORT_AFTER_WARNINGS } from "~/workers/config";
 import { importAccount } from "~/workers/import-account";
 import { db, useDatabase, throwOnError } from "./db";
 export { syncAccount } from "../workers/sync-account";
@@ -51,11 +52,25 @@ export async function handleAccountSyncingError(
       timestamp: new Date().toISOString(),
       message: `Unable to sync account, authentication token rejected (${error.message})`,
     });
+  } else if (
+    metadata.warnings.length > SUSPEND_IMPORT_AFTER_WARNINGS &&
+    new Date(metadata.warnings.at(SUSPEND_IMPORT_AFTER_WARNINGS - 1)!.timestamp).valueOf() + 1000 * 60 * 60 * 24 >
+      new Date().valueOf()
+  ) {
+    metadata.suspendedSync ??= new Date().toISOString();
+    metadata.warnings.unshift({
+      timestamp: new Date().toISOString(),
+      message: `Suspending after too many import warnings, ${
+        error instanceof HandledError ? error.message : "Unhandled error"
+      }`,
+    });
   } else
     metadata.warnings.unshift({
       timestamp: new Date().toISOString(),
       message: `Import failed, ${error instanceof HandledError ? error.message : "Unhandled error"}`,
     });
+
+  if (metadata.warnings.length > MAX_WARNINGS_LOGGED) metadata.warnings.slice(0, MAX_WARNINGS_LOGGED);
 
   return await db.account.update({ where: { id: account.id }, data: { metadata } });
 }

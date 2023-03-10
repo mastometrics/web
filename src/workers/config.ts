@@ -17,3 +17,9 @@ export const SYNC_MAX_SPIKE = +(import.meta.env.WORKER_SYNC_MAX_SPIKE || (2 * SY
 
 /** Debug, verbose or warning */
 export const LOG_LEVEL = import.meta.env.DEV ? "debug" : import.meta.env.LOG_LEVEL || "info";
+
+/** Max number of warnings to store on an account */
+export const MAX_WARNINGS_LOGGED = +(import.meta.env.WORKER_MAX_WARNINGS_LOGGED ?? 15);
+
+/** Max number of warnings within 24 hours after which to suspend an account */
+export const SUSPEND_IMPORT_AFTER_WARNINGS = +(import.meta.env.WORKER_SUSPEND_IMPORT_AFTER_WARNINGS ?? 10);
