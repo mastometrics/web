@@ -9,7 +9,7 @@ export function startScheduledWorkers() {
   jobs.length = 0;
 
   jobs.push(new CronJob(SYNC_CRON_SCHEDULE, () => updateOutdatedUsers()));
-  console.info(`🕒 Starting updated outdated users worker with schedule ${SYNC_CRON_SCHEDULE}`);
+  logger.info(`🕒 Starting updated outdated users worker with schedule ${SYNC_CRON_SCHEDULE}`);
 
   jobs.forEach((task) => task.start());
   logger.info(`🕒 Started ${jobs.length} scheduled workers`);

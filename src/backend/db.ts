@@ -37,7 +37,8 @@ export async function useDatabaseConnection<T extends any>(fn: (db: PrismaClient
 export type Result<T> = Promise<[T, null] | [null, HandledError]>;
 
 function returnError(clientMessage: string, error: Error, internalMessage?: string): [null, HandledError] {
-  logger.error(internalMessage ?? error.message, error);
+  logger.error(internalMessage ?? error.message);
+  logger.debug(error.stack);
   return [null, new HandledError(clientMessage, { cause: error, stack: error.stack, status: 500 })];
 }
 

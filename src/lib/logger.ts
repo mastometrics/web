@@ -21,4 +21,5 @@ export const logger = {
   info,
   warn,
   error,
+  level: LOG_LEVEL,
 };

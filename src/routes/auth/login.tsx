@@ -195,7 +195,7 @@ function parseInstance(input?: string) {
     }
 
     if (input.includes("://")) {
-      const url = new URL(input);
+      const url = new URL(input.trim());
       return url.hostname;
     } else return input;
   } catch {
