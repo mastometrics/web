@@ -5,7 +5,7 @@ import server$, { createServerAction$, createServerData$, redirect } from "solid
 import { ShowDelayed, TinyLoadingIndicator } from "~/components/LoadingIndicator";
 import { Page } from "~/components/Page";
 import { findOrCreateInstance, getInstanceAppCredentials } from "~/backend/instance";
-import { getUser } from "~/backend/session";
+import { getUser, logout } from "~/backend/session";
 import { HandledError } from "~/lib/error";
 import { parseHandle } from "~/lib/format";
 import { mastodonApi } from "~/lib/mastodon/api";
@@ -13,6 +13,20 @@ import { Box } from "~/components/Box";
 import { RouteAction } from "solid-start/data/createRouteAction";
 import { cls } from "~/lib/css";
 import { logger } from "~/lib/logger";
+import { accountExists } from "~/backend/account";
+import { throwOnError } from "~/backend/db";
+
+async function getAuthUrl(inputInstance: string, request: Request) {
+  const instance = throwOnError(await findOrCreateInstance(inputInstance));
+  const credentials = throwOnError(
+    await getInstanceAppCredentials(instance, {
+      redirectUri: `${new URL(request.url).origin}/auth/connect?instance=${instance.host}`,
+    })
+  );
+  return `https://${instance.host}/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${
+    credentials.redirectUri
+  }&response_type=code&scope=${"read"}`;
+}
 
 export function createLoginAction() {
   return createServerAction$(async (form: FormData, event) => {
@@ -30,18 +44,11 @@ export function createLoginAction() {
         throw new FormError("Not a valid mastodon instance");
       }
 
-      const [instance, error] = await findOrCreateInstance(inputInstance);
-      if (error) throw new FormError(error.message);
-      const [credentials, err] = await getInstanceAppCredentials(instance, {
-        redirectUri: `${new URL(event.request.url).origin}/auth/connect?instance=${instance.host}`,
-      });
-      if (err) throw new FormError(err.message);
-
-      return redirect(
-        `https://${instance.host}/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${
-          credentials.redirectUri
-        }&response_type=code&scope=${"read"}`
-      );
+      try {
+        return redirect(await getAuthUrl(inputInstance, event.request));
+      } catch (error) {
+        throw new FormError((error as any).message);
+      }
     } catch (error) {
       if (error instanceof FormError) throw error;
       throw new FormError(`Something went wrong while trying to log you in.`);
@@ -52,17 +59,35 @@ export function createLoginAction() {
 export function routeData() {
   return createServerData$(async (_, { request }) => {
     const user = await getUser(request);
+    const params = new URL(request.url).searchParams;
+    if (params.get("username")?.length) {
+      let username = params.get("username");
+      if (username?.startsWith("@")) username = username.slice(1);
+      if (user?.account && user.account.username != username) {
+        // Logout and redirect to the same url
+        console.log("Logging out");
+        return logout(request, request.url);
+      } else if (!user?.account && (await accountExists(username!))) {
+        // There's an account with this username, user is specifically trying to log in with that account
+        // so we direct to the login page with the 'force_login' parameter set to true
+        return redirect((await getAuthUrl(parseInstance(username!)!, request)) + "&force_login=true");
+      } else if (!user?.account) return { username: username! };
+    }
+
     if (user?.account) throw redirect(`/dashboard/${user.account!.username}`);
-    return {};
+    return { username: undefined };
   });
 }
 
 export default function LoginRoute() {
-  const user = useRouteData<typeof routeData>();
+  const data = useRouteData<typeof routeData>();
   const params = useLocation().query;
-  user();
 
   const [login, { Form }] = createLoginAction();
+  const username = () => {
+    if ("username" in (data() ?? {})) return (data() as { username?: string })?.username;
+    return undefined;
+  };
 
   return (
     <Page title="Login">
@@ -76,12 +101,27 @@ export default function LoginRoute() {
         <Title>Login</Title>
         <h1 class="mb-4 text-2xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-100">Welcome!</h1>
         <p class="my-2 text-mastodon-purple-900/60 dark:text-mastodon-purple-200">
-          Enter your mastodon instance or username, to continue to MastoMetrics,
+          {username() ? (
+            <>
+              Sign up for MastoMetrics to get analytics for <em class="text-mastodon-purple-500">{username()}</em>.
+              <br />
+              <br />
+              MastoMetrics is a free and privacy-friendly analytics tool for Mastodon, giving you insights into your
+              account and your followers.
+            </>
+          ) : (
+            "Enter your mastodon instance or username, to continue to MastoMetrics."
+          )}
           <br />
         </p>
 
-        <Form class="mt-4">
-          <LoginForm loginForm={login} defaultInstance={params.instance} error={params.error} />
+        <Form class="mt-8">
+          <LoginForm
+            loginForm={login}
+            defaultInstance={username() ? parseInstance(username()) : params.instance}
+            error={params.error}
+            cta={username() ? "Continue" : undefined}
+          />
         </Form>
         <p class="mt-4 max-w-prose text-sm leading-relaxed text-mastodon-purple-900/70  dark:text-mastodon-purple-200">
           If this is your first time using MastoMetrics, you will be asked to authorize the app.

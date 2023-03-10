@@ -76,6 +76,15 @@ export async function handleAccountSyncingError(
   return await db.account.update({ where: { id: account.id }, data: { metadata } });
 }
 
+export async function accountExists(handle: string) {
+  return throwOnError(
+    await useDatabase(async (db) => {
+      const account = await db.account.findUnique({ where: { username: handle } });
+      return !!account;
+    })
+  );
+}
+
 export async function deleteAccount(handle: string) {
   return useDatabase(async (db) => {
     const account = await db.account.findUniqueOrThrow({ where: { username: handle } });

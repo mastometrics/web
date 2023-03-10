@@ -111,9 +111,9 @@ export async function getUser(request: Request): Promise<AuthenticatedUser | nul
   return promise;
 }
 
-export async function logout(request: Request) {
+export async function logout(request: Request, redirectTo: string = "/") {
   const session = await storage.getSession(request.headers.get("Cookie"));
-  return redirect("/", {
+  return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await storage.destroySession(session),
     },

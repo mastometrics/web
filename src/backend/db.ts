@@ -60,7 +60,7 @@ function handleError(e: unknown): [null, HandledError] {
   else return returnError("A unhandled database error occured", e as Error);
 }
 
-export function throwOnError([res, err]: Awaited<Result<any>>) {
+export function throwOnError<T>([res, err]: Awaited<Result<T>>): T {
   if (err) {
     const [_, handled] = handleError(err);
     throw handled;
