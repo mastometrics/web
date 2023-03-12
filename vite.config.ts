@@ -4,6 +4,7 @@ import { isoImport } from "vite-plugin-iso-import";
 import webfontDownload from "vite-plugin-webfont-dl";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 import Icons from "unplugin-icons/vite";
+import { prismaPlugin } from "./prisma/prisma-vite-plugin";
 
 export default defineConfig({
   plugins: [
@@ -16,6 +17,7 @@ export default defineConfig({
     Icons({
       compiler: "solid",
     }),
+    prismaPlugin(),
   ],
   ssr: { external: ["@prisma/client"], noExternal: ["@kobalte/core"] },
 });
