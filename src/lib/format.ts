@@ -19,7 +19,9 @@ export function formatDateTime(date: Date | string) {
 const relativeTimeFormatter = new Intl.RelativeTimeFormat("en", {
   numeric: "auto",
 });
-export function formatRelativeTime(date: Date) {
+export function formatRelativeTime(date: Date | string | undefined) {
+  if (!date) return "";
+  if (typeof date === "string") date = new Date(date);
   const diff = new Date(date).getTime() - Date.now();
   const seconds = diff / 1000;
   const minutes = seconds / 60;

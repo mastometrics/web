@@ -15,5 +15,5 @@ export function setMetadata<T extends Metadata<unknown>>(metadata: Prisma.JsonVa
 }
 
 export function readMetadata<T extends Metadata<unknown>>(metadata: Prisma.JsonValue): T {
-  return metadata as T;
+  return (metadata ?? {}) as T;
 }

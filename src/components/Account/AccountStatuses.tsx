@@ -1,5 +1,5 @@
 import { Account } from "@prisma/client";
-import { Component, createSignal, createResource, createEffect, Switch, Match, For, Show } from "solid-js";
+import { Component, createSignal, createResource, Switch, Match, For, Show } from "solid-js";
 import server$ from "solid-start/server";
 import { requireAuth, throwUnauthorized } from "~/backend/authentication";
 import { getStatusesParams, getStatuses, orderKeys } from "~/backend/statuses";
@@ -8,9 +8,9 @@ import { usePermissions } from "~/lib/permissions";
 import { Select } from "../Select";
 import { StatusList } from "../Status";
 import { Tabbar } from "../Tabbar";
-import { Checkbox, Popover } from "@kobalte/core";
-import { UIButton } from "../Button";
+import { Checkbox } from "../Checkbox";
 import { Icons } from "../Icon";
+import { Popover, PopoverTrigger } from "../Popover";
 
 const fetchStatuses = server$(async (handle, params: getStatusesParams) => {
   const user = await requireAuth(server$.request);
@@ -75,35 +75,18 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
           active={ordering()}
           onChange={({ key }) => setOrdering(key as orderKeys)}
         />
-        <Popover.Root>
-          <Popover.Trigger class="rounded p-2 text-mastodon-purple-500 focus:outline-none focus-visible:bg-mastodon-purple-600 focus-visible:text-white dark:text-white/80">
-            <Icons.Adjustments />
-          </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Content class="origin-top rounded-md bg-white p-4 shadow-lg  animate-in fade-in zoom-in-50 duration-100 dark:bg-mastodon-purple-700 ">
-              <Popover.Arrow />
-              {/* <Popover.CloseButton>
-                <Icons.Close />
-              </Popover.CloseButton> */}
-              <Popover.Title class="mb-2 text-xs font-bold uppercase  text-mastodon-purple-400 dark:text-mastodon-purple-200">
-                Options
-              </Popover.Title>
-              <Checkbox.Root
-                isChecked={includeReplies()}
-                onCheckedChange={setIncludeReplies}
-                class="flex flex-wrap items-center gap-2"
-              >
-                <Checkbox.Input class="peer" />
-                <Checkbox.Control class="grid h-5 w-5 place-items-center items-center rounded-sm  border border-black/20 bg-white shadow-sm ring-white  peer-focus-visible:ring ui-checked:bg-mastodon-purple-500 ui-checked:text-white">
-                  <Checkbox.Indicator>
-                    <Icons.Check class="h-4 w-4" />
-                  </Checkbox.Indicator>
-                </Checkbox.Control>
-                <Checkbox.Label>Include replies</Checkbox.Label>
-              </Checkbox.Root>
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
+        <Popover
+          title="Options"
+          triggerEl={
+            <PopoverTrigger class="rounded p-2 text-mastodon-purple-500 focus:outline-none focus-visible:bg-mastodon-purple-600 focus-visible:text-white dark:text-white/80">
+              <Icons.Adjustments />
+            </PopoverTrigger>
+          }
+        >
+          <Checkbox checked={includeReplies()} onChange={setIncludeReplies}>
+            Include replies
+          </Checkbox>
+        </Popover>
         <Select
           options={periods}
           value={period()}
