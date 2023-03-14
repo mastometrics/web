@@ -9,6 +9,8 @@
   "type": "module",
   "devDependencies": {
     "@iconify-json/tabler": "^1.1.64",
+    "@solid-primitives/context": "^0.1.4",
+    "@solid-primitives/media": "^2.1.4",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",
     "@tailwindcss/typography": "^0.5.8",

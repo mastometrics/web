@@ -1,12 +1,37 @@
 // @refresh reload
-import { createSignal, Suspense } from "solid-js";
+import { createEffect, createSignal, onMount, Suspense } from "solid-js";
+import { NoHydration } from "solid-js/web";
 import { Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title } from "solid-start";
+import { createPrefersDark } from "@solid-primitives/media";
 import "./root.css";
+import { createStorageSignal } from "@solid-primitives/storage";
+import { createContextProvider } from "@solid-primitives/context";
+
+export type Theme = "dark" | "light" | "system";
+const [ThemeProvider, useTheme] = createContextProvider(() => {
+  const [theme, setTheme] = createStorageSignal<Theme>("theme", "system");
+  const prefersDark = createPrefersDark();
+
+  createEffect(() => {
+    if (theme() == "dark" || (theme() != "light" && prefersDark())) document.documentElement.classList.add("dark");
+    else if (theme() === "light" || (theme() != "dark" && !prefersDark()))
+      document.documentElement.classList.remove("dark");
+  });
+
+  return { theme, setTheme };
+});
+
+const blockingThemeScript = `
+if (localStorage.theme === "dark" || (localStorage.theme !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches))
+  document.documentElement.classList.add("dark");
+else document.documentElement.classList.remove("dark");
+`;
+
+export { useTheme };
 
 export default function Root() {
-  const [isDark, setIsDark] = createSignal(false);
   return (
-    <Html lang="en" class={isDark() ? "dark" : ""}>
+    <Html lang="en">
       <Head>
         <Title>MastoMetrics</Title>
         <Meta charset="utf-8" />
@@ -40,14 +65,19 @@ export default function Root() {
         <Meta property="og:locale" content="en_US" />
       </Head>
       <Body class="bg-mastodon-purple-200/10 dark:bg-[#080822] dark:text-white">
-        <ErrorBoundary>
-          <Suspense fallback={<div>Loading</div>}>
-            <Routes>
-              <FileRoutes />
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <Suspense fallback={<div>Loading</div>}>
+              <Routes>
+                <FileRoutes />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </ThemeProvider>
         <Scripts />
+        <NoHydration>
+          <script type="text/javascript">{blockingThemeScript}</script>
+        </NoHydration>
       </Body>
     </Html>
   );

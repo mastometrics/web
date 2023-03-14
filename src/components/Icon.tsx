@@ -8,6 +8,8 @@ import ArrowUp from "~icons/tabler/arrow-up";
 import At from "~icons/tabler/at";
 import Check from "~icons/tabler/check";
 import ChevronDown from "~icons/tabler/chevron-down";
+import ChevronLeft from "~icons/tabler/chevron-left";
+import ChevronRight from "~icons/tabler/chevron-right";
 import ChevronUp from "~icons/tabler/chevron-up";
 import CircleKeyFilled from "~icons/tabler/circle-key-filled";
 import CornerUpLeft from "~icons/tabler/corner-up-left";
@@ -15,6 +17,8 @@ import Home from "~icons/tabler/home";
 import KeyOff from "~icons/tabler/key-off";
 import Logout from "~icons/tabler/logout";
 import Minus from "~icons/tabler/minus";
+import Moon from "~icons/tabler/moon";
+import MoonStars from "~icons/tabler/moon-stars";
 import Notes from "~icons/tabler/notes";
 import QuestionCircle from "~icons/tabler/question-circle";
 import QuestionMark from "~icons/tabler/question-mark";
@@ -24,6 +28,8 @@ import Search from "~icons/tabler/search";
 import Settings from "~icons/tabler/settings";
 import ShieldLock from "~icons/tabler/shield-lock";
 import Star from "~icons/tabler/star";
+import Sun from "~icons/tabler/sun";
+import SunMoon from "~icons/tabler/sun-moon";
 import Trash from "~icons/tabler/trash";
 import User from "~icons/tabler/user";
 import Users from "~icons/tabler/users";
@@ -40,6 +46,8 @@ export const Icons = {
   At,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   CircleKeyFilled,
   Close: X,
@@ -48,6 +56,8 @@ export const Icons = {
   KeyOff,
   Logout,
   Minus,
+  Moon,
+  MoonStars,
   Notes,
   QuestionCircle,
   QuestionMark,
@@ -59,6 +69,8 @@ export const Icons = {
   Settings,
   ShieldLock,
   Star,
+  Sun,
+  SunMoon,
   Trash,
   User,
   Users,
