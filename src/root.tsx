@@ -49,7 +49,7 @@ export default function Root() {
           name="twitter:description"
           content="Analytics for Mastodon. Track the growth and success of your Mastodon account and posts."
         />
-        <Meta name="twitter:image" content="https://mastometrics.com/public/og-image.png" />
+        <Meta name="twitter:image" content="https://mastometrics.com/og-image.png" />
         <Meta property="og:type" content="website" />
         <Meta property="og:title" content="MastoMetrics" />
         <Meta
@@ -58,7 +58,7 @@ export default function Root() {
         />
         <Meta property="og:site_name" content="MastoMetrics" />
         <Meta property="og:url" content="https://mastometrics.com" />
-        <Meta property="og:image" content="https://mastometrics.com/public/og-image.png" />
+        <Meta property="og:image" content="https://mastometrics.com/og-image.png" />
         <Meta property="og:image:width" content="1200" />
         <Meta property="og:image:height" content="630" />
         <Meta property="og:image:alt" content="MastoMetrics" />
