@@ -46,7 +46,7 @@ export async function syncStatuses(
       );
     }
 
-    await Promise.all(upserts);
+    await db.$transaction(upserts);
   });
 }
 

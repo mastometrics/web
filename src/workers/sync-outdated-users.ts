@@ -20,7 +20,14 @@ export async function updateOutdatedUsers() {
             Metrics: { none: { timestamp: { gt: outdatedAfter } } },
           },
         ],
-        metadata: { path: ["suspendedSync"], equals: Prisma.AnyNull },
+        AND: [
+          {
+            metadata: { path: ["suspendedSync"], equals: Prisma.AnyNull },
+          },
+          {
+            metadata: { path: ["pendingSync"], equals: Prisma.AnyNull },
+          },
+        ],
       },
       orderBy: { lastIndex: "asc" },
       take: limit,

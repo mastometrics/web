@@ -106,7 +106,7 @@ export default function HomeRoute() {
           ensure we don't negatively impact your instance:
           <br />
           <br />
-          <span class="opacity-50">1.</span> We make around 5 requests per 30 minutes for each account to sync their
+          <span class="opacity-50">1.</span> We make around 5 requests per 30-45 minutes for each account to sync their
           data. Of which 1 to fetch their latest profile counts, and max. 4 to fetch their last 120 statuses.
           <br />
           <br />

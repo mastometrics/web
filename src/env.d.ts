@@ -15,7 +15,7 @@ interface ImportMetaEnv {
   readonly WORKER_SYNC_MAX_STATUS_COUNT?: string;
 
   /** Max percentage of accounts to sync per job, to spread out load
-   * Defaults to 2x the interval / 60 minutes. I.e. if job runs every 6 minutes, max 20% of accounts will be synced per job.
+   * Defaults to 1.5x the interval / 60 minutes. I.e. if job runs every 6 minutes, max 15% (5/10*1.5) of accounts will be synced per job.
    */
   readonly WORKER_SYNC_MAX_SPIKE?: string;
 

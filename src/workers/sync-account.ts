@@ -27,8 +27,14 @@ export async function syncAccount(handle: string, api?: ApiOptions, opts?: { acc
           api = { token: user?.token, instance: account.instance };
         }
 
+        // Add a small lock to prevent multiple syncs from running at the same time
+        await db.$executeRaw`UPDATE "accounts" SET metadata = jsonb_set(metadata, '{pendingSync}', to_json(NOW())::jsonb)  WHERE "id" = ${account.id}`;
+
         await syncStatuses(account, api, { limit: SYNC_MAX_STATUS_COUNT });
         await updateAccountMetrics(account);
+
+        // Remove the lock
+        await db.$executeRaw`UPDATE "accounts" SET metadata = jsonb_set(metadata, '{pendingSync}', 'null', false)  WHERE "id" = ${account.id}`;
 
         logger.debug(`👍 Synced ${handle}`);
         return true;
