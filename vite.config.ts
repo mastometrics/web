@@ -5,9 +5,18 @@ import webfontDownload from "vite-plugin-webfont-dl";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 import Icons from "unplugin-icons/vite";
 import { prismaPlugin } from "./prisma/prisma-vite-plugin";
+import devtools from "solid-devtools/vite";
 
 export default defineConfig({
   plugins: [
+    devtools({
+      autoname: true,
+      locator: {
+        targetIDE: "vscode",
+        componentLocation: true,
+        jsxLocation: true,
+      },
+    }),
     solid(),
     isoImport(),
     webfontDownload([

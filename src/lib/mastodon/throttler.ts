@@ -1,4 +1,3 @@
-import { Response } from "node-fetch";
 import { logger } from "../logger";
 // https://github.com/mastodon/mastodon/blob/main/config/initializers/rack_attack.rb
 // • 300 requests per 5 minutes per identifier (IP address (unauthenticated) or user token) = 1rps

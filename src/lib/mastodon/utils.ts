@@ -2,8 +2,8 @@ import { isServer } from "solid-js/web";
 import { DOMParser } from "linkedom?server";
 import { MastodonStatus } from "./types";
 
-export function formatEmojis(text: string, emojis: MastodonStatus["emojis"]) {
-  text = escapeHtml(text);
+export function formatEmojis(text: string, emojis: MastodonStatus["emojis"], trust = false) {
+  text = trust ? text : escapeHtml(text);
   for (const emoji of emojis) {
     const regex = new RegExp(`:${emoji.shortcode}:`, "g");
     text = text.replace(
@@ -23,8 +23,8 @@ export function simpleMastodonSanitzer(
     ellipsis: ["trunacte"],
   },
   elementClassmap: Record<string, string[]> = {
-    a: ["text-mastodon-purple-600", "hover:underline"],
-    p: ["text-gray-700", "my-2"],
+    a: ["text-mastodon-purple-600", "dark:text-mastodon-purple-300", "hover:underline"],
+    p: ["text-gray-700", "dark:text-mastodon-purple-100", "last-child:mb-0", "mb-2"],
   }
 ) {
   const doc = new DOMParser().parseFromString(
@@ -69,4 +69,11 @@ export function escapeHtml(unsafe: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+export function getTextContent(content: string) {
+  return (
+    new DOMParser().parseFromString(`<!doctype html><html lang="en"><body>${content}</body></html>`, "text/html").body
+      .textContent || ""
+  );
 }

@@ -1,7 +1,6 @@
-import fetch, { RequestInit, Response } from "node-fetch";
 import { HandledError } from "../error";
 import { createThrottler, createRateLimitStore } from "./throttler";
-import { createHash } from "crypto";
+import { createHash } from "crypto?server";
 import { logger } from "../logger";
 const throttler = createThrottler(createRateLimitStore());
 export type ApiOptions = { throttle?: boolean; instance: string; token?: string };
@@ -17,7 +16,7 @@ export async function fetchApi<T>(
 
   try {
     let key = instance;
-    if (token) key += `-${createHash("sha256").update(token).digest("hex").slice(0, 8)}`;
+    if (token) key += crypto ? `-${createHash("sha256").update(token).digest("hex").slice(0, 8)}` : token.slice(0, 8);
     const { handleResponse } = await throttler.throttle(key, { greedy: !throttle });
 
     logger.debug(`🐘 GET ${url}`);
@@ -67,7 +66,7 @@ export async function* paginateApi<T>(
   let count = 0;
   do {
     const { data, response } = (await fetchApi<T[]>(next, options, request)) as { data: T[]; response: Response }; // https://github.com/microsoft/TypeScript/issues/36687
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    if (data.length === 0) return;
     for (const item of data) {
       yield item;
       count++;
