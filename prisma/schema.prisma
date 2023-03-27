@@ -10,9 +10,9 @@ datasource db {
 }
 
 model Account {
-  id                Int      @id @default(autoincrement())
-  instance          String   @db.Citext
-  username          String   @unique @db.Citext
+  id                Int           @id @default(autoincrement())
+  instance          String        @db.Citext
+  username          String        @unique @db.Citext
   displayName       String?
   instanceAccountId String
   followersCount    Int?
@@ -23,16 +23,17 @@ model Account {
   noindex           Boolean?
   locked            Boolean?
   avatar            String?
-  lastIndex         DateTime @default(now()) @updatedAt
-  tracking          Boolean  @default(false)
+  lastIndex         DateTime      @default(now()) @updatedAt
+  tracking          Boolean       @default(false)
   metadata          Json?
   raw               Json?
   Statuses          Status[]
-  Following         Follow[] @relation("AccountFollowing")
-  Followers         Follow[] @relation("AccountFollowers")
   Metrics           Metric[]
   User              User[]
+  Interactions      Interaction[]
 
+  @@index([username])
+  @@index([lastIndex])
   @@map("accounts")
 }
 
@@ -70,20 +71,49 @@ model Status {
   engagementsCount Int?
   Account          Account  @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@index([publishedAt])
+  @@index([engagementsCount])
+  @@index([boostsCount])
+  @@index([statusUri])
   @@map("statuses")
 }
 
-model Follow {
-  id          Int      @id @default(autoincrement())
-  accountId   Int
-  followingId Int
-  createdAt   DateTime @default(now())
-  lastIndex   DateTime @default(now()) @updatedAt
-  Account     Account  @relation("AccountFollowing", fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  Following   Account  @relation("AccountFollowers", fields: [followingId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+// Cache accounts for users of the same instance, i.e. foo@[mas.to] and bar@[mas.to] share the same cache for otheruser@otherinstance.com. 
+// But baz@[other.instance.social] has their own cache. This is also due to where cached/static avatars are stored
 
-  @@unique([accountId, followingId])
-  @@map("follows")
+model CachedAccount {
+  id                Int      @id @default(autoincrement())
+  instance          String   @db.Citext
+  username          String   @db.Citext
+  hostInstance      String   @db.Citext
+  instanceAccountId String
+  displayName       String?
+  followersCount    Int?
+  followingCount    Int?
+  statusesCount     Int?
+  avatar            String?
+  lastIndex         DateTime @default(now()) @updatedAt
+
+  @@unique([username, hostInstance])
+  @@map("cached_accounts")
+}
+
+model Interaction {
+  id                Int       @id @default(autoincrement())
+  accountId         Int
+  username          String    @db.Citext
+  type              String
+  instanceAccountId String
+  reach             Int?
+  statusUri         String?
+  timestamp         DateTime? @default(now())
+  Account           Account   @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+  @@index([username])
+  @@index([type])
+  @@index([accountId, username])
+  @@map("interactions")
 }
 
 model Instance {
