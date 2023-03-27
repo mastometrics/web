@@ -16,7 +16,8 @@ import { AccountMetadata, readMetadata } from "~/lib/metadata";
 import { startSupport } from "~/lib/support";
 import { Icons } from "~/components/Icon";
 import { Box } from "~/components/Box";
-
+import { syncInteractions as syncInteractionsBackend } from "~/workers/sync-interactions";
+import { throwOnError } from "~/backend/db";
 export function routeData({ params }: RouteDataArgs) {
   const user = createServerData$(async (_, { request }) => useAuthentication(request));
   const account = createServerData$(
@@ -44,6 +45,10 @@ export default function AccountHandleRoute() {
   const permissions = usePermissions(user());
 
   const [syncing, sync] = createServerAction$((handle: string) => syncAccount(handle));
+  const [syncingInteractions, syncInteractions] = createServerAction$(async (handle: string) => {
+    throwOnError(await syncInteractionsBackend(handle));
+    return true;
+  });
   const [importing, doImport] = createServerAction$(async (handle: string, { request }) => {
     const user = await useAuthentication(request);
     if (usePermissions(user).account.edit(handle)) return startTracking(handle);
@@ -99,6 +104,9 @@ export default function AccountHandleRoute() {
                   <div class="flex flex-wrap gap-2">
                     <UIButton onClick={() => sync(params.handle)} disabled={syncing.pending}>
                       Sync
+                    </UIButton>
+                    <UIButton onClick={() => syncInteractions(params.handle)} disabled={syncingInteractions.pending}>
+                      Sync interactions
                     </UIButton>
                     <UIButton onClick={() => doImport(params.handle)} disabled={importing.pending}>
                       {account()?.tracking ? "Reimport" : "Import"}
@@ -210,5 +218,5 @@ function estimateImportDuration(statusesCount: number) {
 function formatDuration(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   if (minutes > 0) return `${minutes} minutes and ${Math.ceil(seconds % 60)} seconds`;
-  return `${seconds} seconds`;
+  return `${Math.ceil(seconds)} seconds`;
 }

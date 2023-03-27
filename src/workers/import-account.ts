@@ -6,6 +6,7 @@ import { MASTODON } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
 import { AccountMetadata, readMetadata, setMetadata } from "~/lib/metadata";
 import { backfillMetrics } from "./backfill-metrics";
+import { syncInteractions } from "./sync-interactions";
 import { syncStatuses } from "./sync-statuses";
 import { updateAccountMetrics } from "./update-metrics";
 import { createOrUpdateAccount } from "./upsert-account";
@@ -31,6 +32,7 @@ export async function importAccount(handle: string, api?: ApiOptions) {
       throwOnError(await syncStatuses(account, api, { limit: MAX_IMPORT }));
       throwOnError(await updateAccountMetrics(account));
       throwOnError(await backfillMetrics(account.username));
+      throwOnError(await syncInteractions(account.username));
 
       metadata = setMetadata<AccountMetadata>(account.metadata, { pendingImport: undefined, suspendedSync: undefined });
       account = await db.account.update({ where: { id: account.id }, data: { metadata } });

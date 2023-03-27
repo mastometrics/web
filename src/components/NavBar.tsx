@@ -7,25 +7,66 @@ import logo from "~/assets/logo.svg";
 import { startSupport } from "~/lib/support";
 import { Dynamic } from "solid-js/web";
 import { Theme, useTheme } from "~/root";
+import { cls } from "~/lib/css";
 
 export const NavBar: Component<{ account: Account }> = (props) => {
-  const [open, setOpen] = createSignal(false);
   const themeCtx = useTheme();
   const themeOptions: { label: string; value: Theme; icon: (typeof Icons)[keyof typeof Icons] }[] = [
     { label: "Light", value: "light", icon: Icons.Sun },
     { label: "Dark", value: "dark", icon: Icons.Moon },
     { label: "System", value: "system", icon: Icons.SunMoon },
   ];
+
+  const tabs: { label: string; href: string }[] = [
+    { label: "Overview", href: `/dashboard/${props.account?.username}` },
+    { label: "People", href: `/dashboard/${props.account?.username}/people` },
+  ];
+
   return (
     <div class="bg-mastodon-purple-700 dark:bg-mastodon-purple-900">
-      <div class="container mx-auto flex max-w-4xl items-center py-4 px-6">
+      <div class="container mx-auto flex max-w-4xl items-center py-4  px-2 sm:px-6">
+        <DropdownMenu.Root placement="top" gutter={8} overflowPadding={0} fitViewport>
+          <DropdownMenu.Trigger
+            class="mr-2 rounded-lg p-4 outline-none focus-visible:bg-mastodon-purple-900/50 active:bg-mastodon-purple-700 sm:hidden"
+            style={{ "-webkit-tap-highlight-color": "transparent" }}
+          >
+            <Icons.Menu class="h-5 w-5 text-mastodon-purple-100" />
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              class="z-20 max-w-[100vw] origin-top space-y-4 rounded-b-lg bg-mastodon-purple-700 p-2 shadow-xl outline-none animate-in fade-in zoom-in-50 duration-100 dark:bg-mastodon-purple-900"
+              style={{
+                width: "var(--kb-popper-content-available-width)",
+                left: 0,
+              }}
+            >
+              {tabs.map(({ label, href }) => (
+                <DropDownMenuLink href={href} label={label} />
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+
         <A href="/">
           <img src={logo} />
         </A>
-        <div class="flex-auto"></div>
+        <div class="flex-auto">
+          <div class="ml-8 hidden items-center  gap-x-4 sm:flex">
+            {tabs.map(({ label, href }) => (
+              <A
+                href={href}
+                class="rounded-md px-3 py-2 text-sm font-medium text-mastodon-purple-200 hover:bg-mastodon-purple-900/20 hover:text-white dark:hover:bg-[#080822]"
+                activeClass="bg-mastodon-purple-900/20 text-white dark:bg-[#080822] dark:text-mastodon-purple-100"
+                end
+              >
+                {label}
+              </A>
+            ))}
+          </div>
+        </div>
         <Show when={props.account}>
           {/* <a href="#" class="flex-shrink-0 group block"> */}
-          <DropdownMenu.Root isOpen={open()} onOpenChange={setOpen} placement="top-end" gutter={4}>
+          <DropdownMenu.Root placement="top-end" gutter={4}>
             <DropdownMenu.Trigger class="group block flex-shrink-0 rounded-lg p-2 pl-8 outline-none focus-visible:bg-mastodon-purple-900/50">
               <div class="flex items-center gap-3">
                 <div class="hidden sm:block">
@@ -92,7 +133,7 @@ export const NavBar: Component<{ account: Account }> = (props) => {
 };
 
 export const DropDownMenuLink: Component<
-  { label: string; icon: any } & ({ href: string } | { onClick: () => void })
+  { label: string; icon?: any; class?: string } & ({ href: string } | { onClick: () => void })
 > = (props) => {
   const navigate = useNavigate();
 
@@ -100,9 +141,12 @@ export const DropDownMenuLink: Component<
     <DropdownMenu.Item
       onSelect={() => ("href" in props ? navigate(props.href) : props.onClick())}
       closeOnSelect
-      class="flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white "
+      class={cls(
+        "flex cursor-pointer items-center rounded px-4 py-2 text-mastodon-purple-100 outline-none ui-highlighted:bg-mastodon-purple-800 ui-highlighted:text-white",
+        props.class
+      )}
     >
-      <Dynamic component={props.icon} class="mr-4 w-4 text-mastodon-purple-200" />
+      {props.icon && <Dynamic component={props.icon} class="mr-4 w-4 text-mastodon-purple-200" />}
       <DropdownMenu.ItemLabel>{props.label}</DropdownMenu.ItemLabel>
     </DropdownMenu.Item>
   );

@@ -1,8 +1,8 @@
-import { DOMParser } from "linkedom";
 import { Account, Prisma } from "@prisma/client";
 import { useDatabase } from "~/backend/db";
 import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
+import { getTextContent } from "~/lib/mastodon/utils";
 
 /** Upsert an accounts most recent statuses and their engagement, (last 120 by default)  */
 export async function syncStatuses(
@@ -48,11 +48,4 @@ export async function syncStatuses(
 
     await db.$transaction(upserts);
   });
-}
-
-function getTextContent(content: string) {
-  return (
-    new DOMParser().parseFromString(`<!doctype html><html lang="en"><body>${content}</body></html>`, "text/html").body
-      .textContent || ""
-  );
 }

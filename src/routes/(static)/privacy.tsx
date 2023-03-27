@@ -43,6 +43,15 @@ export default function PrivacyPolicyRoute() {
             following and interactions such as favorites, replies and boosts.
           </li>
           <li>
+            We store the username and individual interactions of people that favorite or boost your posts, or otherwise
+            interact with your account. People that explicitly have set their profile to{" "}
+            <a href="https://docs.joinmastodon.org/user/preferences/#misc" target="_blank">
+              'noindex'
+            </a>{" "}
+            are excluded. We cache some of their profile data, like their profile picture and display name, in order to
+            decrease the amount of requests made to your instance when displaying data inside MastoMetrics.
+          </li>
+          <li>
             For both your posts and your account, we store a cached version of the ‘raw’ API response in order to
             regenerate data attributes in the future without burdening your Mastodon instance with new requests.
           </li>
@@ -62,7 +71,8 @@ export default function PrivacyPolicyRoute() {
           <li> We do not store or require your email address</li>
           <li> We do not store or process any “Direct Messages”, posts explicitly marked as a ‘private’ mention.</li>
           <li>
-            We do not store or track accounts that don’t sign up for MastoMetrics, except as part of a single ‘boost’.
+            We do not track accounts that don’t sign up for MastoMetrics, except for individual interactions with
+            MastoMetrics users.
           </li>
           <li>
             We do not store or track your IP Address, browser or device information in connection to your account.
@@ -197,13 +207,20 @@ export default function PrivacyPolicyRoute() {
         </p>
 
         <p>
-          MastoMetrics is developed by Robert van Hoesel in The Netherlands. MastoMetrics is not a formal legal
-          (non-person) entity, but may become one in the future.
+          MastoMetrics is developed by{" "}
+          <a href="https://mas.to/@robertvh" target="_blank">
+            Robert van Hoesel
+          </a>{" "}
+          in The Netherlands. MastoMetrics is not a formal legal (non-person) entity, but may become one in the future.
         </p>
 
         <details>
           <summary class="text-mastodon-purple-500">History</summary>
           <ul>
+            <li>
+              2021-03-24: Changed our policy to include tracking of individual interactions from people interacting with
+              MastoMetrics' users.
+            </li>
             <li>
               2032-03-10: Added explantion on how to delete your account yourself without needing to contact us. Also
               adding policy that any account that revokes access to the Mastodon App will be delete if not signed into

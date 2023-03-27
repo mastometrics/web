@@ -34,33 +34,37 @@ const StatusContent: Component<{ status: Status }> = ({ status }) => {
   );
 };
 
-const StatusItem: Component<{ status: Status }> = ({ status }) => {
-  const avatar = (status.raw as any).account.avatar_static;
+const StatusItem: Component<{ status: Status }> = (props) => {
+  const avatar = (props.status.raw as any).account.avatar_static;
   return (
     <li>
       <div class="group flex flex-wrap gap-4 px-4 py-4 hover:bg-mastodon-purple-100/30 dark:hover:bg-mastodon-purple-800/20 sm:flex-nowrap sm:px-6">
         <div class="flex sm:basis-2/3">
           <img class="mr-4 mt-3 h-8 w-8 flex-none rounded-sm object-cover" src={avatar} />
           <div>
-            <StatusContent status={status} />
+            <StatusContent status={props.status} />
             <a
-              href={status.url!}
+              href={props.status.url!}
               class="text-sm text-mastodon-purple-900/70 hover:text-mastodon-purple-900 dark:text-mastodon-purple-300 dark:hover:text-mastodon-purple-100"
               target="_blank"
               rel="noopener"
             >
-              {(typeof status.publishedAt == "string"
-                ? new Date(status.publishedAt)
-                : status.publishedAt
+              {(typeof props.status.publishedAt == "string"
+                ? new Date(props.status.publishedAt)
+                : props.status.publishedAt
               ).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
             </a>
           </div>
         </div>
 
         <div class="mt-2 ml-12 flex h-7 basis-full gap-4 pr-4 text-sm sm:ml-0 sm:basis-1/3">
-          <EngagementLink count={status.favoritesCount} href={`${status.url!}/favourites`} icon={Icons.Star} />
-          <EngagementLink count={status.boostsCount} href={`${status.url!}/reblogs`} icon={Icons.Reblog} />
-          <EngagementLink count={status.repliesCount} href={status.url!} icon={Icons.Reply} />
+          <EngagementLink
+            count={props.status.favoritesCount}
+            href={`${props.status.url!}/favourites`}
+            icon={Icons.Star}
+          />
+          <EngagementLink count={props.status.boostsCount} href={`${props.status.url!}/reblogs`} icon={Icons.Reblog} />
+          <EngagementLink count={props.status.repliesCount} href={props.status.url!} icon={Icons.Reply} />
         </div>
       </div>
     </li>

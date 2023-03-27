@@ -1,3 +1,5 @@
+import { MastodonStatus } from "./mastodon/types";
+
 const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
@@ -36,8 +38,8 @@ export function formatRelativeTime(date: Date | string | undefined) {
 }
 
 const numberFormater = new Intl.NumberFormat("en");
-export function formatNumber(number: number) {
-  return numberFormater.format(number);
+export function formatNumber(number?: number | null) {
+  return number ? numberFormater.format(number) : "";
 }
 
 export function formatHandle(acct: string, defaultInstance: string) {
@@ -46,8 +48,8 @@ export function formatHandle(acct: string, defaultInstance: string) {
   return `${acct}@${defaultInstance}`;
 }
 
-export function parseHandle(handle: string) {
-  const username = handle.startsWith("@") ? handle.slice(1) : handle;
+export function parseHandle(handle: string, defaultInstance?: string) {
+  const username = formatHandle(handle, defaultInstance || "");
   const [acct, instance] = username.split("@");
   return { acct, instance, username };
 }

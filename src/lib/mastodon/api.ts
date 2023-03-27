@@ -1,7 +1,7 @@
 import { HandledError } from "../error";
 import { logger } from "../logger";
 import { ApiOptions, fetchApi, http } from "./http";
-import { MastodonAccount, MastodonInstance, MastodonNotification, MastodonStatus } from "./types";
+import { MastodonAccount, MastodonInstance, MastodonNotification, MastodonRelationship, MastodonStatus } from "./types";
 export * from "./types";
 
 type paginateOpts = { limit?: number };
@@ -24,12 +24,17 @@ export function mastodonApi(api: ApiOptions) {
       /** Get account statuses, max 40 per request */
       statuses: (params: { id: string }, opts?: paginateOpts) =>
         http.paginate<MastodonStatus>(`accounts/${params.id}/statuses?${limit(STATUS_LIMIT, opts)}`, api, opts),
+      relationships: async (params: { ids: string[] }) =>
+        (await http.fetch<MastodonRelationship[]>(`accounts/relationships?${queryArray("id", params.ids)}`, api)).data,
     },
     notifications: {
       /** Get notifications, max 30 per request */
-      list: ({ types }: { types: MastodonNotification["type"][] } = { types: [] }, opts?: paginateOpts) =>
+      list: (
+        { types, sinceId }: { types: MastodonNotification["type"][]; sinceId?: number } = { types: [] },
+        opts?: paginateOpts
+      ) =>
         http.paginate<MastodonNotification>(
-          `notifications?types[]=${types.join("&types[]=")}&${limit(30, opts)}`,
+          `notifications?${queryArray("types", types)}&${limit(30, opts)}${sinceId ? `&since_id=${sinceId}` : ""}`,
           api,
           opts
         ),
@@ -61,4 +66,8 @@ async function fetchInstance(api: ApiOptions) {
     logger.warn(e);
     throw new HandledError(`Could not fetch instance '${api.instance}'`, { cause: e });
   }
+}
+
+function queryArray<T>(key: string, value: T[]) {
+  return value.map((v) => `${key}[]=${v}`).join("&");
 }

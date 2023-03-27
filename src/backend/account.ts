@@ -2,6 +2,8 @@ import { Account, PrismaClient } from "@prisma/client";
 import { HandledError } from "~/lib/error";
 import { logger } from "~/lib/logger";
 import { logDeletedUser, logNewUser } from "~/lib/logsnag/logsnag";
+import { mastodonApi } from "~/lib/mastodon/api";
+import { ApiOptions } from "~/lib/mastodon/http";
 import { AccountMetadata, setMetadata } from "~/lib/metadata";
 import { MAX_WARNINGS_LOGGED, SUSPEND_IMPORT_AFTER_WARNINGS } from "~/workers/config";
 import { importAccount } from "~/workers/import-account";
@@ -102,4 +104,14 @@ export async function deleteAccount(handle: string) {
       }
     }
   });
+}
+
+export async function getApiInstanceForAccount(accountId: number) {
+  return throwOnError(
+    await useDatabase(async (db) => {
+      const user = await db.user.findFirst({ where: { Account: { id: accountId } }, include: { Account: true } });
+      if (!user) throw new Error("User not found");
+      return mastodonApi({ token: user.token, instance: user.Account.instance });
+    })
+  );
 }

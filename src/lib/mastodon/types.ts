@@ -29,6 +29,8 @@ interface MastodonAccountField {
   verified_at?: any;
 }
 
+type StatusVisibility = "public" | "unlisted" | "private" | "direct";
+
 export interface MastodonStatus {
   id: string;
   created_at: string;
@@ -36,7 +38,7 @@ export interface MastodonStatus {
   in_reply_to_account_id?: string;
   sensitive: boolean;
   spoiler_text: string;
-  visibility: string;
+  visibility: StatusVisibility;
   language?: string;
   uri: string;
   url: string;
@@ -63,7 +65,7 @@ interface MastodonReblog {
   in_reply_to_account_id?: any;
   sensitive: boolean;
   spoiler_text: string;
-  visibility: string;
+  visibility: StatusVisibility;
   language: string;
   uri: string;
   url: string;
@@ -263,4 +265,19 @@ export interface MastodonNotification {
   created_at: string;
   account: MastodonAccount;
   status?: MastodonStatus;
+}
+
+export interface MastodonRelationship {
+  id: string;
+  following: boolean;
+  showing_reblogs: boolean;
+  notifying: boolean;
+  followed_by: boolean;
+  blocking: boolean;
+  blocked_by: boolean;
+  muting: boolean;
+  muting_notifications: boolean;
+  requested: boolean;
+  domain_blocking: boolean;
+  endorsed: boolean;
 }

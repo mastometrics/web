@@ -4,10 +4,11 @@ export enum Roles {
 }
 export function usePermissions(user?: AuthenticatedUser | null) {
   const isAdmin = user?.roles?.includes(Roles.Admin);
-  const viewAccount = (username: string) => {
+  const viewAccount = (usernameOrId: string | number) => {
     if (!user?.account) return false;
     if (isAdmin) return true;
-    return user.account.username.toLowerCase() === username.toLowerCase();
+    if (typeof usernameOrId === "number") return user.account.id === usernameOrId;
+    if (typeof usernameOrId === "string") return user.account.username.toLowerCase() === usernameOrId.toLowerCase();
   };
   const manage = () => isAdmin;
   return { manage, account: { view: viewAccount, edit: viewAccount } };
