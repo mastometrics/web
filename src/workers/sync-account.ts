@@ -6,6 +6,7 @@ import { mastodonApi } from "~/lib/mastodon/api";
 import { ApiOptions } from "~/lib/mastodon/http";
 import { AccountMetadata, readMetadata } from "~/lib/metadata";
 import { SYNC_MAX_STATUS_COUNT } from "./config";
+import { syncInteractions } from "./sync-interactions";
 import { syncStatuses } from "./sync-statuses";
 import { updateAccountMetrics } from "./update-metrics";
 import { createOrUpdateAccount } from "./upsert-account";
@@ -32,6 +33,7 @@ export async function syncAccount(handle: string, api?: ApiOptions, opts?: { acc
 
         await syncStatuses(account, api, { limit: SYNC_MAX_STATUS_COUNT });
         await updateAccountMetrics(account);
+        await syncInteractions(account.username);
 
         // Remove the lock
         await db.$executeRaw`UPDATE "accounts" SET metadata = jsonb_set(metadata, '{pendingSync}', 'null', false)  WHERE "id" = ${account.id}`;

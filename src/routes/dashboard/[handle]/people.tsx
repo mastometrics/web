@@ -58,7 +58,7 @@ export function routeData({ params }: RouteDataArgs) {
 
 export default function AccountHandleRoute() {
   const { user, account } = useRouteData<typeof routeData>();
-
+  user();
   return (
     <>
       <Title>{account()?.displayName} - People - MastoMetrics</Title>
@@ -85,9 +85,9 @@ export default function AccountHandleRoute() {
         </div>
       </div>
       <div class="container mx-auto max-w-4xl px-4 py-2 sm:py-4 sm:px-6"></div>
-      {user()?.account && (
+      {account() && (
         <div class="container mx-auto max-w-4xl sm:mb-12 sm:px-6">
-          <PeopleComponent account={user()?.account!} />
+          <PeopleComponent account={account()!} />
         </div>
       )}
     </>

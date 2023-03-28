@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { MastodonAccount, mastodonApi } from "../lib/mastodon/api";
+import { MastodonAccount, mastodonApi, MastodonNotification } from "../lib/mastodon/api";
 import { useDatabase } from "../backend/db";
 import { parseHandle } from "~/lib/format";
 import { getOrCreateAccount } from "./upsert-account";
@@ -14,6 +14,8 @@ const notificationTypeToInteractionType: Record<string, InteractionType> = {
   mention: "mention",
   reblog: "boost",
 };
+
+const supportedNotifications: MastodonNotification["type"][] = ["favourite", "mention", "reblog"];
 
 export async function syncInteractions(handle: string, apiConfig?: ApiOptions) {
   return useDatabase(async (db) => {
@@ -30,7 +32,7 @@ export async function syncInteractions(handle: string, apiConfig?: ApiOptions) {
     let maxNotificationId = minNotificationId ?? 0;
 
     const notifications = mastodonApi(apiConfig).notifications.list(
-      { types: ["favourite", "mention", "reblog"], sinceId: minNotificationId },
+      { types: supportedNotifications, sinceId: minNotificationId },
       { limit: 30 * 150 }
     );
 
@@ -44,6 +46,8 @@ export async function syncInteractions(handle: string, apiConfig?: ApiOptions) {
 
       if (notification.status?.visibility === "direct") continue;
       if (notification.account.noindex) continue;
+
+      if (!supportedNotifications.includes(notification.type)) continue;
 
       const { username } = parseHandle(notification.account.acct, homeInstance);
 
@@ -72,7 +76,7 @@ export async function syncInteractions(handle: string, apiConfig?: ApiOptions) {
     logger.debug(`🆕 Inserted ${inserted.count} interactions for ${handle}`);
 
     // Update metadata
-    const metadata = setMetadata(account.metadata, { maxImportedNotificationId: maxNotificationId });
+    const metadata = setMetadata(account.metadata, { maxImportedNotificationId: maxNotificationId ?? 1 });
     await db.account.update({ where: { id: account.id }, data: { metadata } });
 
     const notificationAccountUsernames = Array.from(notificationAccounts.keys());
@@ -122,7 +126,7 @@ export async function syncInteractions(handle: string, apiConfig?: ApiOptions) {
     }
 
     if (updateCachedAccounts.length > 0) {
-      for (const update of updateCachedAccounts) await db.cachedAccount.update(update);
+      await db.$transaction(updateCachedAccounts.map((update) => db.cachedAccount.update(update)));
       logger.debug(`🔃 Updated ${updateCachedAccounts.length} cached accounts for ${handle}`);
     }
   });
