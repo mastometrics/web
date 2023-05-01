@@ -1,10 +1,11 @@
 import { Status } from "@prisma/client";
-import { ParentComponent, Component } from "solid-js";
+import { ParentComponent, Component, For, Show } from "solid-js";
 import { Dynamic, NoHydration } from "solid-js/web";
 import { cls } from "~/lib/css";
 import { simpleMastodonSanitzer } from "~/lib/mastodon/utils";
 import { Icons, Icon } from "./Icon";
 import { ShowDelayed, TinyLoadingIndicator } from "./LoadingIndicator";
+import { MastodonStatus } from "~/lib/mastodon/types";
 
 const Wrapper: ParentComponent<{ loading?: boolean }> = (props) => {
   return (
@@ -23,14 +24,49 @@ const Wrapper: ParentComponent<{ loading?: boolean }> = (props) => {
 };
 
 const StatusContent: Component<{ status: Status }> = ({ status }) => {
-  const content = simpleMastodonSanitzer((status.raw as any).content, undefined, {
+  const statusData = () => status.raw as unknown as MastodonStatus;
+  const content = simpleMastodonSanitzer(statusData().content, undefined, {
     a: ["text-mastodon-purple-600", "dark:text-mastodon-purple-300", "hover:underline"],
     p: ["text-gray-700", "dark:text-mastodon-purple-100", "my-2"],
   });
+
   return (
-    <NoHydration>
-      <p class="text-mastodon-purple-600 dark:text-white/90" innerHTML={content} />
-    </NoHydration>
+    <div>
+      <NoHydration>
+        <p class="text-mastodon-purple-600 dark:text-white/90" innerHTML={content} />
+      </NoHydration>
+      <StatusMedia status={statusData()} />
+    </div>
+  );
+};
+
+const StatusMedia: Component<{ status: MastodonStatus }> = (props) => {
+  return (
+    <Show when={props.status.media_attachments?.filter((x) => x.type == "image")}>
+      {(images) => (
+        <div class="my-4 grid auto-rows-max grid-cols-2 gap-2">
+          <For each={images()}>
+            {(image) => (
+              <a
+                href={image.url}
+                target="_blank"
+                rel="noopener"
+                class={cls("block", images().length == 1 && "col-span-2")}
+              >
+                <img
+                  class={cls(
+                    "max-h-[300px] rounded-md object-cover",
+                    images().length == 1 ? "w-auto" : "h-full w-full"
+                  )}
+                  src={image.preview_url}
+                  alt={image.description}
+                />
+              </a>
+            )}
+          </For>
+        </div>
+      )}
+    </Show>
   );
 };
 
@@ -57,7 +93,7 @@ const StatusItem: Component<{ status: Status }> = (props) => {
           </div>
         </div>
 
-        <div class="mt-2 ml-12 flex h-7 basis-full gap-4 pr-4 text-sm sm:ml-0 sm:basis-1/3">
+        <div class="ml-12 mt-2 flex h-7 basis-full gap-4 pr-4 text-sm sm:ml-0 sm:basis-1/3">
           <EngagementLink
             count={props.status.favoritesCount}
             href={`${props.status.url!}/favourites`}
