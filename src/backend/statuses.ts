@@ -18,6 +18,7 @@ export type getStatusesParams = {
   period: periodKeys;
   order: orderKeys;
   includeReplies?: boolean;
+  query?: string;
   page?: number;
   limit?: number;
   skip?: number;
@@ -38,6 +39,7 @@ export const getStatuses = async (
         isReblog: false,
         publishedAt: params.period != "all" ? { gte: periodToDate(params.period) } : undefined,
         ...(params.includeReplies ? {} : { NOT: { content: { startsWith: "@" } } }),
+        content: params?.query?.trim()?.length ? { contains: params?.query.trim(), mode: "insensitive" } : undefined,
       },
       orderBy: [orderings[params.order], ...Object.values(orderings)],
       take,

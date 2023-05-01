@@ -9,7 +9,7 @@ export const Checkbox: ParentComponent<{ checked: boolean; onChange: (isChecked:
       class="flex flex-wrap items-center gap-2"
     >
       <KBCheckbox.Input class="peer" />
-      <KBCheckbox.Control class="grid h-5 w-5 place-items-center items-center rounded-sm border border-black/20 bg-white shadow-sm ring-white  peer-focus-visible:ring ui-checked:bg-mastodon-purple-500 ui-checked:text-white">
+      <KBCheckbox.Control class="grid h-5 w-5 place-items-center items-center rounded-sm border border-black/20 bg-mastodon-purple-50 shadow-sm ring-white  peer-focus-visible:ring ui-checked:bg-mastodon-purple-500 ui-checked:text-white">
         <KBCheckbox.Indicator>
           <Icons.Check class="h-4 w-4" />
         </KBCheckbox.Indicator>

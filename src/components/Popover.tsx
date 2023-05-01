@@ -12,7 +12,7 @@ export const Popover: ParentComponent<{ triggerEl: ReturnType<typeof PopoverTrig
                 <Icons.Close />
               </KBPopover.CloseButton> */}
           <KBPopover.Title class="mb-2 text-xs font-bold uppercase  text-mastodon-purple-400 dark:text-mastodon-purple-200">
-            Options
+            {props.title}
           </KBPopover.Title>
           {props.children}
         </KBPopover.Content>

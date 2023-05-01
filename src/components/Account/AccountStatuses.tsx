@@ -11,6 +11,8 @@ import { Tabbar } from "../Tabbar";
 import { Checkbox } from "../Checkbox";
 import { Icons } from "../Icon";
 import { Popover, PopoverTrigger } from "../Popover";
+import { debounce } from "~/lib/utils";
+import { TextField } from "../TextField";
 
 const fetchStatuses = server$(async (handle, params: getStatusesParams) => {
   const user = await requireAuth(server$.request);
@@ -22,12 +24,13 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
   const [period, setPeriod] = createSignal<periodKeys>("30d");
   const [ordering, setOrdering] = createSignal<orderKeys>("engagements");
   const [loading, setLoading] = createSignal(false);
-  const [includeReplies, setIncludeReplies] = createSignal(false);
+  const [excludeRepies, setExcludeReplies] = createSignal(true);
+  const [query, setQuery] = createSignal("");
 
   const [data, { mutate }] = createResource(
     () => ({
       handle: props.handle,
-      params: { period: period(), order: ordering(), includeReplies: includeReplies() },
+      params: { period: period(), order: ordering(), includeReplies: !excludeRepies(), query: query() },
     }),
     async ({ handle, params }) => {
       if (params.order === "publishedAt") params.period = "all";
@@ -76,15 +79,24 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
           onChange={({ key }) => setOrdering(key as orderKeys)}
         />
         <Popover
-          title="Options"
+          title="Filters"
           triggerEl={
             <PopoverTrigger class="rounded p-2 text-mastodon-purple-500 focus:outline-none focus-visible:bg-mastodon-purple-600 focus-visible:text-white dark:text-white/80">
               <Icons.Adjustments />
             </PopoverTrigger>
           }
         >
-          <Checkbox checked={includeReplies()} onChange={setIncludeReplies}>
-            Include replies
+          <TextField
+            label="Search"
+            value={query()}
+            debounce={300}
+            onChange={setQuery}
+            icon={Icons.Search}
+            class="my-4"
+          />
+
+          <Checkbox checked={excludeRepies()} onChange={setExcludeReplies}>
+            Exclude replies
           </Checkbox>
         </Popover>
         <Select
@@ -100,6 +112,9 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
         <Switch fallback={<>Loading</>}>
           <Match when={data.error}>
             <div class="text-red-400">{data.error.message}</div>
+          </Match>
+          <Match when={!data.latest?.statuses?.length}>
+            <div class="p-6 text-mastodon-purple-600 dark:text-mastodon-purple-100">No posts found</div>
           </Match>
           <Match when={data.latest?.statuses}>
             <For each={data.latest?.statuses}>{(status) => <StatusList.Item status={status} />}</For>
