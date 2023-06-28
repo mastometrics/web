@@ -15,6 +15,7 @@ import { cls } from "~/lib/css";
 import { logger } from "~/lib/logger";
 import { accountExists } from "~/backend/account";
 import { throwOnError } from "~/backend/db";
+import { MaintenanceGuard } from "~/components/MaintenanceGuard";
 
 async function getAuthUrl(inputInstance: string, request: Request) {
   const instance = throwOnError(await findOrCreateInstance(inputInstance));
@@ -91,53 +92,55 @@ export default function LoginRoute() {
 
   return (
     <Page title="Login">
+      <Title>Login</Title>
       <Show when={params.error}>
         <Box isError class="mx-auto my-6 max-w-2xl">
           <p>{params.error}</p>
         </Box>
       </Show>
-      <div class="mx-auto my-6 max-w-2xl rounded-lg bg-white p-4 shadow-lg shadow-mastodon-purple-600/10 dark:bg-mastodon-purple-700 sm:p-8">
-        {/* {user()?.account && <p>Logged in as {user()?.account!.username}</p>} */}
-        <Title>Login</Title>
-        <h1 class="mb-4 text-2xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-100">Welcome!</h1>
-        <p class="my-2 text-mastodon-purple-900/60 dark:text-mastodon-purple-200">
-          {username() ? (
-            <>
-              Sign up for MastoMetrics to get analytics for <em class="text-mastodon-purple-500">{username()}</em>.
-              <br />
-              <br />
-              MastoMetrics is a free and privacy-friendly analytics tool for Mastodon, giving you insights into your
-              account and your followers.
-            </>
-          ) : (
-            "Enter your mastodon instance or username, to continue to MastoMetrics."
-          )}
-          <br />
-        </p>
+      <MaintenanceGuard>
+        <div class="mx-auto my-6 max-w-2xl rounded-lg bg-white p-4 shadow-lg shadow-mastodon-purple-600/10 dark:bg-mastodon-purple-700 sm:p-8">
+          {/* {user()?.account && <p>Logged in as {user()?.account!.username}</p>} */}
+          <h1 class="mb-4 text-2xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-100">Welcome!</h1>
+          <p class="my-2 text-mastodon-purple-900/60 dark:text-mastodon-purple-200">
+            {username() ? (
+              <>
+                Sign up for MastoMetrics to get analytics for <em class="text-mastodon-purple-500">{username()}</em>.
+                <br />
+                <br />
+                MastoMetrics is a free and privacy-friendly analytics tool for Mastodon, giving you insights into your
+                account and your followers.
+              </>
+            ) : (
+              "Enter your mastodon instance or username, to continue to MastoMetrics."
+            )}
+            <br />
+          </p>
 
-        <Form class="mt-8">
-          <LoginForm
-            loginForm={login}
-            defaultInstance={username() ? parseInstance(username()) : params.instance}
-            error={params.error}
-            cta={username() ? "Continue" : undefined}
-          />
-        </Form>
-        <p class="mt-4 max-w-prose text-sm leading-relaxed text-mastodon-purple-900/70  dark:text-mastodon-purple-200">
-          If this is your first time using MastoMetrics, you will be asked to authorize the app.
-          <br />
-          Learn more about the data we store in our{" "}
-          <a href="/faq" class="text-mastodon-purple-500 dark:text-mastodon-purple-300">
-            FAQ
-          </a>
-          .
-        </p>
-        <ul class="my-2 list-inside list-disc space-y-2 text-sm leading-relaxed text-mastodon-purple-900/70 marker:text-mastodon-purple-400 dark:text-mastodon-purple-200">
-          <li>We only need read permissions</li>
-          <li>We dont't need your email address</li>
-          <li>We don't send spam</li>
-        </ul>
-      </div>
+          <Form class="mt-8">
+            <LoginForm
+              loginForm={login}
+              defaultInstance={username() ? parseInstance(username()) : params.instance}
+              error={params.error}
+              cta={username() ? "Continue" : undefined}
+            />
+          </Form>
+          <p class="mt-4 max-w-prose text-sm leading-relaxed text-mastodon-purple-900/70  dark:text-mastodon-purple-200">
+            If this is your first time using MastoMetrics, you will be asked to authorize the app.
+            <br />
+            Learn more about the data we store in our{" "}
+            <a href="/faq" class="text-mastodon-purple-500 dark:text-mastodon-purple-300">
+              FAQ
+            </a>
+            .
+          </p>
+          <ul class="my-2 list-inside list-disc space-y-2 text-sm leading-relaxed text-mastodon-purple-900/70 marker:text-mastodon-purple-400 dark:text-mastodon-purple-200">
+            <li>We only need read permissions</li>
+            <li>We dont't need your email address</li>
+            <li>We don't send spam</li>
+          </ul>
+        </div>
+      </MaintenanceGuard>
     </Page>
   );
 }
@@ -191,7 +194,7 @@ export const LoginForm: Component<{
         <button
           type="submit"
           class={cls(
-            "m-1 h-auto  place-self-stretch whitespace-nowrap rounded-xl py-3 px-6 text-white ",
+            "m-1 h-auto  place-self-stretch whitespace-nowrap rounded-xl px-6 py-3 text-white ",
             "border border-mastodon-purple-700 bg-mastodon-purple-600 bg-gradient-to-b from-mastodon-purple-600 to-mastodon-purple-700",
             "outline-offset-4 outline-mastodon-purple-700 transition-all hover:from-mastodon-purple-700 hover:to-mastodon-purple-800 hover:shadow-md  focus-visible:bg-mastodon-purple-800 focus-visible:outline-2 disabled:bg-mastodon-purple-900/60  "
           )}

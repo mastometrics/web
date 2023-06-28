@@ -10,7 +10,8 @@ export async function GET({ params, request }: APIEvent) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const host = url.searchParams.get("instance");
-
+  if (import.meta.env.VITE_MAINTENANCE_MODE == "true")
+    return redirect(`/login?error=${encodeURIComponent("Server is in maintenance mode")}`);
   if (!code || !host) return redirect(`/login?error=${encodeURIComponent("No code or instance provided")}`);
   const [credentials, error] = await getInstanceAppCredentials(host, {});
   if (error) throw error;

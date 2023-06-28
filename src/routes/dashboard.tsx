@@ -2,6 +2,7 @@ import { Suspense } from "solid-js";
 import { Outlet, useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import { useAuthentication } from "~/backend/authentication";
+import { MaintenanceGuard } from "~/components/MaintenanceGuard";
 import { NavBar } from "~/components/NavBar";
 
 export function routeData() {
@@ -18,7 +19,9 @@ export default function DashboardRoute() {
         {/* <div class="bg-mastodon-purple-100/90 h-20"></div> */}
       </Suspense>
       <div class="flex-auto">
-        <Outlet />
+        <MaintenanceGuard>
+          <Outlet />
+        </MaintenanceGuard>
       </div>
 
       <div class="container mx-auto max-w-4xl p-4 sm:px-6 sm:pb-8 ">

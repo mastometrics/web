@@ -27,6 +27,9 @@ interface ImportMetaEnv {
 
   /** Log level */
   readonly LOG_LEVEL?: "debug" | "info" | "warning" | "error";
+
+  /** Maintenance mode */
+  readonly VITE_MAINTENANCE_MODE?: "true" | "false";
 }
 
 interface ImportMeta {
