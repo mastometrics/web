@@ -2,6 +2,9 @@ interface ImportMetaEnv {
   readonly SESSION_SECRET: string;
   readonly LOGSNAG_TOKEN: string;
 
+  /** Deployment type, default serves both as app and worker, where worker only executes tasks and app only serves user traffic */
+  readonly VITE_DEPLOYMENT_TYPE?: "app" | "worker" | "default";
+
   /** Run the sync operation every N minutes */
   readonly WORKER_SYNC_INTERVAL_MINS?: string;
 

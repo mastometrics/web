@@ -6,6 +6,7 @@ import { createPrefersDark } from "@solid-primitives/media";
 import "./root.css";
 import { createStorageSignal } from "@solid-primitives/storage";
 import { createContextProvider } from "@solid-primitives/context";
+import { Box } from "./components/Box";
 
 export type Theme = "dark" | "light" | "system";
 const [ThemeProvider, useTheme] = createContextProvider(() => {
@@ -30,6 +31,7 @@ else document.documentElement.classList.remove("dark");
 export { useTheme };
 
 export default function Root() {
+  const isAppMode = import.meta.env.VITE_DEPLOYMENT_TYPE != "worker";
   return (
     <Html lang="en">
       <Head>
@@ -67,11 +69,15 @@ export default function Root() {
       <Body class="bg-mastodon-purple-200/10 dark:bg-[#080822] dark:text-white">
         <ThemeProvider>
           <ErrorBoundary>
-            <Suspense fallback={<div>Loading</div>}>
-              <Routes>
-                <FileRoutes />
-              </Routes>
-            </Suspense>
+            {isAppMode ? (
+              <Suspense fallback={<div>Loading</div>}>
+                <Routes>
+                  <FileRoutes />
+                </Routes>
+              </Suspense>
+            ) : (
+              <Box title="Cannot render app in worker mode" />
+            )}
           </ErrorBoundary>
         </ThemeProvider>
         <Scripts />
