@@ -4,7 +4,7 @@ import MaintenanceGuard from "~/components/astro/MaintenanceGuard.astro";
 import { Box } from "~/components/Box";
 import { LoginForm } from "~/components/LoginForm";
 import { accountExists } from "~/backend/account";
-import { clearUserSession, getOrigin } from "~/backend/auth-session";
+import { clearUserSession, createOAuthState, getOrigin } from "~/backend/auth-session";
 import { getAuthUrl } from "~/backend/oauth";
 import { parseInstance } from "~/lib/format";
 import { logger } from "~/lib/logger";
@@ -24,7 +24,9 @@ if (params.get("username")?.length) {
     // There's an account with this username, user is specifically trying to log in with that account
     // so we direct to the oauth page with the 'force_login' parameter set
     try {
-      return Astro.redirect(await getAuthUrl(parseInstance(username)!, getOrigin(Astro.url), { forceLogin: true }));
+      const instance = parseInstance(username)!.toLowerCase();
+      const state = createOAuthState(Astro.cookies, instance, Astro.url);
+      return Astro.redirect(await getAuthUrl(instance, getOrigin(Astro.url), { state, forceLogin: true }));
     } catch (e) {
       logger.warn(e);
     }

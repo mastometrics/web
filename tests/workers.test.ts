@@ -194,25 +194,28 @@ describe("sign in", () => {
       }),
       "fosstodon.org/oauth/token": () => ({ access_token: "app-token", scope: "read" }),
     });
-    const url = new URL(await getAuthUrl("fosstodon.org", "https://metrics.example.com"));
+    const url = new URL(await getAuthUrl("fosstodon.org", "https://metrics.example.com", { state: "s" }));
     expect(url.origin).toBe("https://fosstodon.org");
     expect(url.searchParams.get("client_id")).toBe("cid");
     expect(url.searchParams.get("redirect_uri")).toBe(
       "https://metrics.example.com/auth/connect?instance=fosstodon.org"
     );
     expect(url.searchParams.get("scope")).toBe("read");
+    expect(url.searchParams.get("state")).toBe("s");
 
     const appRegistration = JSON.parse(calls.find((c) => c.url.endsWith("/api/v1/apps"))!.init!.body as string);
     expect(appRegistration).toMatchObject({ client_name: "MastoMetrics", scopes: "read" });
 
     // The app is reused for the same redirect uri
-    await getAuthUrl("fosstodon.org", "https://metrics.example.com");
+    await getAuthUrl("fosstodon.org", "https://metrics.example.com", { state: "s" });
     expect(calls.filter((c) => c.url.endsWith("/api/v1/apps"))).toHaveLength(1);
   });
 
   it("rejects domains that are not mastodon instances", async () => {
     mockMastodon({});
-    await expect(getAuthUrl("example.com", "https://metrics.example.com")).rejects.toThrow(/Could not fetch instance/);
+    await expect(getAuthUrl("example.com", "https://metrics.example.com", { state: "s" })).rejects.toThrow(
+      /Could not fetch instance/
+    );
   });
 
   it("creates new users and refreshes tokens of existing users", async () => {

@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { setUserSession } from "~/backend/auth-session";
+import { consumeOAuthState, setUserSession } from "~/backend/auth-session";
 import { getInstanceAppCredentials } from "~/backend/instance";
 import { loginErrorUrl } from "~/backend/oauth";
 import { authenticate } from "~/backend/session";
@@ -14,6 +14,8 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   const host = url.searchParams.get("instance");
   if (config.maintenanceMode) return redirect(loginErrorUrl("Server is in maintenance mode"));
   if (!code || !host) return redirect(loginErrorUrl("No code or instance provided"));
+  if (!consumeOAuthState(cookies, host, url.searchParams.get("state")))
+    return redirect(loginErrorUrl("Your sign in expired or was started in another browser, please try again", host));
 
   try {
     // Use the stored app credentials, the authorization code was issued for that app
