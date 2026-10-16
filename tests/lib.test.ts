@@ -122,7 +122,11 @@ describe("mastodon html", () => {
     { shortcode: "c", static_url: "javascript:alert(1)" },
   ];
   const elementsWithHandlers = (html: string) =>
-    Array.from(new DOMParser().parseFromString(`<html><body>${html}</body></html>`, "text/html").querySelectorAll("*"))
+    Array.from(
+      (new DOMParser() as unknown as globalThis.DOMParser)
+        .parseFromString(`<html><body>${html}</body></html>`, "text/html")
+        .querySelectorAll("*")
+    )
       .flatMap((el) => Array.from(el.attributes).map((attr) => attr.name))
       .filter((name) => name.startsWith("on"));
 
