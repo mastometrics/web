@@ -6,6 +6,12 @@ export function formatDate(date: Date | string) {
   return dateFormatter.format(typeof date === "string" ? new Date(date) : date);
 }
 
+const longDateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "long" });
+/** Date including the year, e.g. January 12, 2025 */
+export function formatLongDate(date: Date | string) {
+  return longDateFormatter.format(typeof date === "string" ? new Date(date) : date);
+}
+
 const dateTimeFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",

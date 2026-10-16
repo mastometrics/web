@@ -1,6 +1,6 @@
 import { ActionError, defineAction, type ActionAPIContext } from "astro:actions";
 import { z } from "astro/zod";
-import { deleteAccount, startTracking, syncAccount } from "~/backend/account";
+import { deleteAccount, restartSync, startTracking, syncAccount } from "~/backend/account";
 import { requireUser, throwUnauthorized } from "~/backend/authentication";
 import { throwOnError } from "~/backend/db";
 import { getAccountMetrics } from "~/backend/metrics";
@@ -161,6 +161,16 @@ export const server = {
       run(async () => {
         requireAccountAccess(context, handle, true);
         return startTracking(handle);
+      }),
+  }),
+
+  /** Resume syncing of a suspended account */
+  restartSync: defineAction({
+    input: z.object({ handle: z.string() }),
+    handler: ({ handle }, context) =>
+      run(async () => {
+        requireAccountAccess(context, handle, true);
+        return restartSync(handle);
       }),
   }),
 

@@ -1,7 +1,7 @@
 import { actions } from "astro:actions";
 import { type Component, createEffect, createSignal, onMount, Show } from "solid-js";
 import { estimateImportDuration, formatDuration } from "~/lib/dashboard";
-import { formatDateTime } from "~/lib/format";
+import { formatLongDate } from "~/lib/format";
 import { startSupport } from "~/lib/support";
 import { Box } from "../Box";
 import { UIButton } from "../Button";
@@ -78,27 +78,7 @@ export const AccountSetup: Component<{ account: OverviewAccount; isOwnAccount: b
   return (
     <>
       <Show when={props.account.suspendedSync}>
-        {(suspended) => (
-          <Box isError title="Data syncing suspended">
-            <p>
-              Since {formatDateTime(suspended())} we are no longer syncing data for this account. Typically this is
-              because your instance denied access to MastoMetrics, for example because the MastoMetrics app has been
-              revoked in your Mastodon account settings.
-            </p>
-            <p class="my-4">
-              To resolve this issue, please first log out and in again and then retry. If the issue persists, please
-              contact support.
-            </p>
-            <UIButton onClick={() => startTrackingAccount()} disabled={importing()}>
-              <Icons.Reload class="mr-2 h-4 w-4" />
-              Retry
-            </UIButton>
-            <UIButton onClick={() => startSupport(props.account)} class="ml-2">
-              <Icons.At class="mr-2 h-4 w-4" />
-              Support
-            </UIButton>
-          </Box>
-        )}
+        {(suspended) => <SyncPaused account={props.account} since={suspended()} />}
       </Show>
       <ImportStatus
         account={props.account}
@@ -107,6 +87,56 @@ export const AccountSetup: Component<{ account: OverviewAccount; isOwnAccount: b
         retry={startTrackingAccount}
       />
     </>
+  );
+};
+
+/** Syncing was suspended after repeated failures, lets the user restart it */
+const SyncPaused: Component<{ account: OverviewAccount; since: string }> = (props) => {
+  const [restarting, setRestarting] = createSignal(false);
+  const [error, setError] = createSignal<string>();
+  const [restarted, setRestarted] = createSignal<string>();
+
+  async function restart() {
+    setRestarting(true);
+    setError(undefined);
+    const { data, error } = await actions.restartSync({ handle: props.account.username });
+    setRestarting(false);
+    if (error) setError(error.message);
+    else if (data.error) setRestarted(data.error);
+    else window.location.reload();
+  }
+
+  return (
+    <Box isSecondary title="Syncing is paused">
+      <Show
+        when={restarted() === undefined}
+        fallback={
+          <p>
+            Syncing restarted. The first attempt didn't work out ({restarted()}), we'll keep trying in the background.
+          </p>
+        }
+      >
+        <p>
+          We stopped updating this account on {formatLongDate(props.since)} after it failed to sync a few times, for
+          example because {props.account.instance} was unreachable. Everything collected until then is still here.
+        </p>
+        <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <UIButton onClick={() => restart()} disabled={restarting()}>
+            <Icons.Reload class="mr-2 h-4 w-4" />
+            Restart syncing
+          </UIButton>
+          <button type="button" class="text-sm underline" onClick={() => startSupport(props.account)}>
+            Need help?
+          </button>
+          <Show when={restarting()}>
+            <TinyLoadingIndicator class="text-mastodon-purple-500" />
+          </Show>
+        </div>
+        <Show when={error()}>
+          <p class="mt-3 text-sm text-red-600 dark:text-red-400">{error()}</p>
+        </Show>
+      </Show>
+    </Box>
   );
 };
 
