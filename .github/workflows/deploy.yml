@@ -12,6 +12,10 @@ concurrency:
   group: deploy
   cancel-in-progress: false
 
+# The token only needs to read the repository
+permissions:
+  contents: read
+
 jobs:
   deploy:
     # Only deploy pushes to main of this repository. workflow_run has access to the secrets, so never run it for CI runs
