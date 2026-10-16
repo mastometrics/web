@@ -34,6 +34,9 @@ export const startTracking = async (handle: string) => {
 export async function restartSync(handle: string): Promise<{ error?: string }> {
   const account = await db.account.findUnique({ where: { username: handle } });
   if (!account) throw new HandledError("Account not found", { status: 404 });
+  // Only for paused accounts, so this can't be used to run syncs over and over
+  if (!readMetadata<AccountMetadata>(account.metadata).suspendedSync)
+    throw new HandledError("Syncing isn't paused for this account", { status: 400 });
   // Clear the warnings as well, otherwise the next failure suspends the account straight away
   const metadata = setMetadata<AccountMetadata>(account.metadata, { suspendedSync: undefined, warnings: [] });
   await db.account.update({ where: { id: account.id }, data: { metadata } });

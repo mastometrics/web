@@ -269,6 +269,11 @@ describe("restartSync", () => {
     expect(metadata.warnings).toHaveLength(1);
   });
 
+  it("only restarts paused accounts", async () => {
+    mockDemoInstance();
+    await expect(restartSync("demo@mas.to")).rejects.toThrow(/isn't paused/);
+  });
+
   it("asks to sign in again when the token is rejected", async () => {
     await suspendDemo();
     mockDemoInstance({
