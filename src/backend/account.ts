@@ -79,15 +79,20 @@ export async function deleteAccount(handle: string) {
   return useDatabase(async (db) => {
     const account = await db.account.findUnique({ where: { username: handle } });
     if (!account) throw new HandledError("Account not found", { status: 404 });
-    let deleted = false;
     try {
-      await db.account.delete({ where: { id: account.id } });
-      deleted = true;
+      // Interactions aren't deleted along with the account by the database, statuses, metrics and users are
+      await db.$transaction(
+        async (tx) => {
+          await tx.interaction.deleteMany({ where: { accountId: account.id } });
+          await tx.account.delete({ where: { id: account.id } });
+        },
+        { timeout: 120_000 }
+      );
     } catch (error) {
+      logger.error(`Failed to delete account ${handle}`, error);
       throw new HandledError("Unable to delete account", { status: 500 });
-    } finally {
-      if (deleted) logger.info(`💔 Deleted account ${handle}`);
     }
+    logger.info(`💔 Deleted account ${handle}`);
   });
 }
 

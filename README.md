@@ -115,6 +115,17 @@ docker compose exec db psql -U mastometrics -c \
   "UPDATE users SET roles = '{admin}' FROM accounts WHERE users.\"accountId\" = accounts.id AND accounts.username = 'you@your.instance';"
 ```
 
+### Deleting revoked accounts
+
+The privacy policy promises to delete the data of people who revoke MastoMetrics' access in their Mastodon settings and don't sign in again within 30 days. Run this regularly, e.g. weekly:
+
+```bash
+node dist/scripts/purge-revoked-accounts.mjs           # in the Docker image (docker compose exec app ..., or the App Platform console)
+npm run accounts:purge-revoked                          # from a checkout, uses DATABASE_URL from .env
+```
+
+Without `--apply` it only lists the accounts it would delete. It only considers accounts that were suspended because their instance rejected the token (HTTP 401) more than 30 days ago, without a sign in since, and asks each instance once more whether the token is still rejected. Accounts suspended for other reasons, like an instance being down, are never deleted. See `--help` for the options.
+
 ### Configuration
 
 All configuration happens through environment variables, read at runtime. See [`.env.dist`](./.env.dist) for the full list.
@@ -184,18 +195,19 @@ There are two ways to use the dashboard locally:
 
 ### Scripts
 
-| Command                  | Description                                                                |
-| ------------------------ | -------------------------------------------------------------------------- |
-| `npm run dev`            | Dev server with hot reloading (`-- --port 3000` for another port)          |
-| `npm run dev:worker`     | Worker, restarts on changes                                                |
-| `npm run check`          | Type check `.ts`, `.tsx` and `.astro` files                                |
-| `npm test`               | Run the tests (see below)                                                  |
-| `npm run format`         | Format everything with Prettier                                            |
-| `npm run build`          | Production build of the app (`dist/server`) and worker (`dist/worker.mjs`) |
-| `npm start`              | Run the production build                                                   |
-| `npm run db:migrate:dev` | Create a migration after changing `prisma/schema.prisma`                   |
-| `npm run db:migrate`     | Apply migrations                                                           |
-| `npm run db:seed`        | Fill a local database with demo data                                       |
+| Command                          | Description                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| `npm run dev`                    | Dev server with hot reloading (`-- --port 3000` for another port)                    |
+| `npm run dev:worker`             | Worker, restarts on changes                                                          |
+| `npm run check`                  | Type check `.ts`, `.tsx` and `.astro` files                                          |
+| `npm test`                       | Run the tests (see below)                                                            |
+| `npm run format`                 | Format everything with Prettier                                                      |
+| `npm run build`                  | Production build of the app (`dist/server`) and worker (`dist/worker.mjs`)           |
+| `npm start`                      | Run the production build                                                             |
+| `npm run db:migrate:dev`         | Create a migration after changing `prisma/schema.prisma`                             |
+| `npm run db:migrate`             | Apply migrations                                                                     |
+| `npm run db:seed`                | Fill a local database with demo data                                                 |
+| `npm run accounts:purge-revoked` | Delete data of accounts that revoked access, see [above](#deleting-revoked-accounts) |
 
 ### How it fits together
 

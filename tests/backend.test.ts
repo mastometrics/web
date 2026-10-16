@@ -141,6 +141,13 @@ describe("accounts", () => {
     expect(await db.user.count()).toBe(1);
   });
 
+  it("deletes accounts with interactions", async () => {
+    throwOnError(await deleteAccount("demo@mas.to"));
+    expect(await accountExists("demo@mas.to")).toBe(false);
+    expect(await db.interaction.count()).toBe(0);
+    expect(await db.status.count()).toBe(0);
+  });
+
   it("refuses to delete unknown accounts", async () => {
     const [, error] = await deleteAccount("nobody@mas.to");
     expect(error?.status).toBe(404);
