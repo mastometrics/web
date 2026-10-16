@@ -1,8 +1,8 @@
-import { Component, createEffect, createSignal, JSX, Match, onCleanup, ParentComponent, Show, Switch } from "solid-js";
+import { type Component, createEffect, createSignal, type JSX, onCleanup, type ParentComponent, Show } from "solid-js";
 import { cls } from "~/lib/css";
 
 export const TinyLoadingIndicator: Component<{ class?: string }> = (props) => (
-  <div class={cls("translate-y-.5 inline-flex", props.class)} aria-hidden>
+  <div class={cls("inline-flex translate-y-0.5", props.class)} aria-hidden>
     <span class="animate-bounce text-lg">•</span>
     <span class="animate-bounce text-lg delay-75">•</span>
     <span class="animate-bounce text-lg delay-200">•</span>
@@ -10,7 +10,7 @@ export const TinyLoadingIndicator: Component<{ class?: string }> = (props) => (
 );
 
 export const ShowDelayed: ParentComponent<{ when: boolean; delay?: number; fallback?: JSX.Element }> = (props) => {
-  let timeout: globalThis.NodeJS.Timeout;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   const [show, setShow] = createSignal(false);
   createEffect(() => {
     clearTimeout(timeout);

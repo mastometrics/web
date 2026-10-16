@@ -1,32 +1,17 @@
-import { Account, PrismaClient } from "@prisma/client";
+import type { Account } from "~/generated/prisma/client";
+import { PrismaClient } from "~/generated/prisma/client";
 import { HandledError } from "~/lib/error";
 import { logger } from "~/lib/logger";
-import { logDeletedUser, logNewUser } from "~/lib/logsnag/logsnag";
 import { mastodonApi } from "~/lib/mastodon/api";
-import { ApiOptions } from "~/lib/mastodon/http";
-import { AccountMetadata, setMetadata } from "~/lib/metadata";
-import { MAX_WARNINGS_LOGGED, SUSPEND_IMPORT_AFTER_WARNINGS } from "~/workers/config";
+import { type AccountMetadata, setMetadata } from "~/lib/metadata";
+import { MAX_WARNINGS_LOGGED, SUSPEND_IMPORT_AFTER_WARNINGS } from "~/lib/config";
 import { importAccount } from "~/workers/import-account";
-import { db, useDatabase, throwOnError } from "./db";
+import { db, isDatabaseError, useDatabase, throwOnError } from "./db";
 export { syncAccount } from "../workers/sync-account";
 
 export const getFullAccount = async (handle: string) =>
   useDatabase(async (db) => {
-    const account = await db.account.findUnique({
-      where: { username: handle },
-      // include: {
-      //   Followers: {
-      //     select: { Account: { select: { username: true, avatar: true, displayName: true } } },
-      //     orderBy: { createdAt: "desc" },
-      //     take: 5,
-      //   },
-      //   Following: {
-      //     select: { Account: { select: { username: true, avatar: true, displayName: true } } },
-      //     orderBy: { createdAt: "desc" },
-      //     take: 5,
-      //   },
-      // },
-    });
+    const account = await db.account.findUnique({ where: { username: handle } });
 
     return {
       id: account?.id,
@@ -49,7 +34,9 @@ export async function handleAccountSyncingError(
   let metadata = setMetadata<AccountMetadata>(account.metadata, { pendingImport: undefined });
   metadata.warnings ??= [];
 
-  if (error instanceof HandledError && error.status === 401) {
+  // Database trouble is not the account's fault, it's retried with the next sync instead of counting towards suspension
+  if (isDatabaseError(error)) logger.warn(`💾 Database error while syncing ${account.username}, retrying later`);
+  else if (error instanceof HandledError && error.status === 401) {
     metadata.suspendedSync ??= new Date().toISOString();
     metadata.warnings.unshift({
       timestamp: new Date().toISOString(),
@@ -73,7 +60,8 @@ export async function handleAccountSyncingError(
       message: `Import failed, ${error instanceof HandledError ? error.message : "Unhandled error"}`,
     });
 
-  if (metadata.warnings.length > MAX_WARNINGS_LOGGED) metadata.warnings.slice(0, MAX_WARNINGS_LOGGED);
+  if (metadata.warnings.length > MAX_WARNINGS_LOGGED)
+    metadata.warnings = metadata.warnings.slice(0, MAX_WARNINGS_LOGGED);
 
   return await db.account.update({ where: { id: account.id }, data: { metadata } });
 }
@@ -89,7 +77,7 @@ export async function accountExists(handle: string) {
 
 export async function deleteAccount(handle: string) {
   return useDatabase(async (db) => {
-    const account = await db.account.findUniqueOrThrow({ where: { username: handle } });
+    const account = await db.account.findUnique({ where: { username: handle } });
     if (!account) throw new HandledError("Account not found", { status: 404 });
     let deleted = false;
     try {
@@ -98,10 +86,7 @@ export async function deleteAccount(handle: string) {
     } catch (error) {
       throw new HandledError("Unable to delete account", { status: 500 });
     } finally {
-      if (deleted) {
-        logger.info(`💔 Deleted account ${handle}`);
-        logDeletedUser(account);
-      }
+      if (deleted) logger.info(`💔 Deleted account ${handle}`);
     }
   });
 }

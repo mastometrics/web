@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, For } from "solid-js";
+import { type Component, createSignal, createEffect, For, on } from "solid-js";
 import { cls } from "~/lib/css";
 import { Select } from "./Select";
 
@@ -7,7 +7,7 @@ export const Tabbar: Component<{ tabs: Tab[]; active?: string; onChange: (tab: T
   props
 ) => {
   const [activeTab, setActiveTab] = createSignal(props.tabs.find((t) => t.key == props.active) ?? props.tabs[0]);
-  createEffect(() => props.onChange(activeTab()));
+  createEffect(on(activeTab, (tab) => props.onChange(tab), { defer: true }));
 
   return (
     <div class={props.class}>
@@ -18,6 +18,7 @@ export const Tabbar: Component<{ tabs: Tab[]; active?: string; onChange: (tab: T
           onChange={(key) => setActiveTab(props.tabs.find((t) => t.key == key)!)}
           label="Select a tab"
           hideLabel
+          class="w-full"
         />
       </div>
       <div class="hidden sm:block">

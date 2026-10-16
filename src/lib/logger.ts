@@ -1,19 +1,22 @@
-import { LOG_LEVEL } from "~/workers/config";
+import { config } from "./config";
+
+const levels = ["debug", "info", "warning", "error"];
+const enabled = (level: string) => levels.indexOf(level) >= Math.max(0, levels.indexOf(config.logLevel));
 
 function debug(...args: any[]) {
-  if (["debug"].includes(LOG_LEVEL)) console.debug(...args);
+  if (enabled("debug")) console.debug(...args);
 }
 
 function info(...args: any[]) {
-  if (["debug", "info"].includes(LOG_LEVEL)) console.info(...args);
+  if (enabled("info")) console.info(...args);
 }
 
 function warn(...args: any[]) {
-  if (["debug", "info", "warning"].includes(LOG_LEVEL)) console.warn(...args);
+  if (enabled("warning")) console.warn(...args);
 }
 
 function error(...args: any[]) {
-  if (["debug", "info", "warning", "error"]) console.error(...args);
+  console.error(...args);
 }
 
 export const logger = {
@@ -21,5 +24,7 @@ export const logger = {
   info,
   warn,
   error,
-  level: LOG_LEVEL,
+  get level() {
+    return config.logLevel;
+  },
 };

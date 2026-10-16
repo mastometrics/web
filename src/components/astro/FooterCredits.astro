@@ -1,0 +1,28 @@
+---
+import { vendorIcons } from "~/assets/icons";
+
+const linkClass = "transition hover:text-mastodon-purple-100";
+const iconClass = "mx-0.5 mb-0.5 inline-block w-4 align-middle";
+---
+
+<div class="flex flex-wrap items-center justify-center gap-2 pb-10 pt-4 text-sm text-mastodon-purple-200/80 sm:text-base">
+  <p>
+    <span class="mr-1 inline-block text-white">🇳🇱</span> Made by{" "}
+    <a class={linkClass} href="https://mas.to/@robertvh" target="_blank" rel="noopener">
+      @robertvh
+    </a>{" "}
+    in Amsterdam using
+  </p>
+  <a class={linkClass} href="https://astro.build" target="_blank" rel="noopener">
+    <img class={iconClass} src={vendorIcons.astro.src} alt="" /> Astro,
+  </a>
+  <a class={linkClass} href="https://solidjs.com" target="_blank" rel="noopener">
+    <img class={iconClass} src={vendorIcons.solidjs.src} alt="" /> SolidJS,
+  </a>
+  <a class={linkClass} href="https://tailwindcss.com" target="_blank" rel="noopener">
+    <img class={iconClass} src={vendorIcons.tailwind.src} alt="" /> Tailwind CSS
+  </a>
+  <a class={linkClass} href="https://prisma.io" target="_blank" rel="noopener">
+    and <img class={iconClass} src={vendorIcons.prismaOnDark.src} alt="" /> Prisma
+  </a>
+</div>

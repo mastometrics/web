@@ -1,0 +1,5 @@
+dist
+.astro
+src/generated
+package-lock.json
+prisma/migrations

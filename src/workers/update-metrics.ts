@@ -1,5 +1,6 @@
-import { Account, Prisma } from "@prisma/client";
-import { useDatabase, Result } from "~/backend/db";
+import type { Account } from "~/generated/prisma/client";
+import { Prisma } from "~/generated/prisma/client";
+import { useDatabase, type Result } from "~/backend/db";
 import { sum, truncateDate } from "~/lib/format";
 import { logger } from "~/lib/logger";
 import { createOrUpdateAccount } from "./upsert-account";

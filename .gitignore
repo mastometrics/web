@@ -1,24 +1,28 @@
-
+# build output
 dist
-.solid
-.output
-.vercel
-.netlify
-netlify
+.astro
+
+# generated
+src/generated
+
+# environment
 .env
+.env.*
+!.env.dist
 
 # dependencies
-/node_modules
+node_modules
 
 # IDEs and editors
 /.idea
+.vscode
 .project
 .classpath
 *.launch
 .settings/
 
-# Temp
-gitignore
+# logs
+*.log
 
 # System Files
 .DS_Store

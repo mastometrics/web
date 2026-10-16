@@ -1,14 +1,16 @@
-import { Instance } from "@prisma/client";
-import { redirect, useRequest } from "solid-start/server";
-import { createCookieSessionStorage } from "solid-start/session";
-import { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon/api";
-import { AuthenticatedUser } from "~/backend/authentication";
-import { createOrUpdateAccount, getOrCreateAccount } from "~/workers/upsert-account";
+import { createHmac, timingSafeEqual } from "node:crypto";
+import type { Instance } from "~/generated/prisma/client";
+import type { MastodonAccessToken, MastodonAuthenticatedAccount } from "~/lib/mastodon/api";
+import type { AuthenticatedUser } from "~/backend/authentication";
+import { createOrUpdateAccount } from "~/workers/upsert-account";
 import { db, useDatabase } from "./db";
-import { HandledError } from "~/lib/error";
-import { Roles } from "~/lib/permissions";
-import { logNewUser } from "~/lib/logsnag/logsnag";
+import type { Roles } from "~/lib/permissions";
 import { logger } from "~/lib/logger";
+import { config } from "~/lib/config";
+
+export const SESSION_COOKIE = "mm_session";
+export const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
+
 type AuthenticationData = {
   token: MastodonAccessToken;
   authAccount: MastodonAuthenticatedAccount;
@@ -23,7 +25,6 @@ export async function authenticate({ authAccount, token, instance }: Authenticat
     if (!account) {
       account = await createOrUpdateAccount(username, authAccount, { instance: instance.host }, db);
       logger.info(`🔥 New signup: ${username}`);
-      if (import.meta.env.PROD) logNewUser(account);
     }
 
     return db.user.upsert({
@@ -44,88 +45,40 @@ export async function authenticate({ authAccount, token, instance }: Authenticat
   });
 }
 
-const sessionSecret = process.env.SESSION_SECRET!;
-
-const storage = createCookieSessionStorage({
-  cookie: {
-    name: "RJ_session",
-    // secure doesn't work on localhost for Safari
-    // https://web.dev/when-to-use-local-https/
-    secure: true,
-    secrets: [sessionSecret],
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-    httpOnly: true,
-  },
-});
-
-export function getUserSession(request: Request) {
-  return storage.getSession(request.headers.get("Cookie"));
+function sign(value: string, secret = config.sessionSecret) {
+  return createHmac("sha256", secret).update(value).digest("base64url");
 }
 
-export async function getUserId(request: Request) {
-  const session = await getUserSession(request);
-  const userId = session.get("userId");
-  if (!userId || typeof userId !== "string" || userId.length == 0) return null;
-  return userId;
+/** Create a signed session cookie value for the given user id */
+export function createSessionValue(userId: string | number, secret?: string) {
+  const payload = Buffer.from(JSON.stringify({ userId: `${userId}` })).toString("base64url");
+  return `${payload}.${sign(payload, secret)}`;
 }
 
-export async function hasActiveSession(request: Request) {
-  const userId = await getUserId(request);
-  return userId != null;
-}
-
-export async function requireUserId(request: Request, redirectTo: string = new URL(request.url).pathname) {
-  const session = await getUserSession(request);
-  const userId = session.get("userId");
-  if (!userId || typeof userId !== "string") {
-    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
+/** Returns the user id from a signed session cookie value, or null when missing or tampered with */
+export function readSessionValue(value: string | undefined | null, secret?: string): string | null {
+  if (!value) return null;
+  const [payload, signature] = value.split(".");
+  if (!payload || !signature) return null;
+  const expected = Buffer.from(sign(payload, secret));
+  const actual = Buffer.from(signature);
+  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return null;
+  try {
+    const { userId } = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return typeof userId === "string" && userId.length > 0 ? userId : null;
+  } catch {
+    return null;
   }
-  return userId;
 }
 
-// In the future, we may want to store more of this data in the session for performance reasons
-export async function getUser(request: Request): Promise<AuthenticatedUser | null> {
-  const ctx = useRequest();
-
-  // Store the promise in the request context so that it can be reused on subsequent calls
-  if (ctx?.locals?.userPromise) return ctx.locals.userPromise as Promise<AuthenticatedUser | null>;
-  const promise = (async () => {
-    const userId = await getUserId(request);
-    if (typeof userId !== "string") return null;
-    try {
-      const user = await db.user.findUnique({ where: { id: +userId }, include: { Account: true } });
-      if (!user) throw new HandledError("User not found");
-      return {
-        // user: user as User, // includes token
-        account: user?.Account,
-        roles: (user?.roles as Roles[]) || [],
-      };
-    } catch {
-      throw logout(request);
-    }
-  })();
-  if (ctx?.locals) ctx.locals.userPromise = promise;
-  return promise;
-}
-
-export async function logout(request: Request, redirectTo: string = "/") {
-  const session = await storage.getSession(request.headers.get("Cookie"));
-  return redirect(redirectTo, {
-    headers: {
-      "Set-Cookie": await storage.destroySession(session),
-    },
-  });
-}
-
-export async function createUserSession(userId: string, redirectTo: string) {
-  const session = await storage.getSession();
-  session.set("userId", userId);
-  return redirect(redirectTo, {
-    headers: {
-      "Set-Cookie": await storage.commitSession(session),
-    },
-  });
+/** Resolve a user from a session user id. Returns null if the user no longer exists */
+export async function getUserById(userId: string | null): Promise<AuthenticatedUser | null> {
+  if (!userId || isNaN(+userId)) return null;
+  const user = await db.user.findUnique({ where: { id: +userId }, include: { Account: true } });
+  if (!user) return null;
+  return {
+    id: user.id,
+    account: user.Account,
+    roles: (user.roles as Roles[]) || [],
+  };
 }

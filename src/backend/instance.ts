@@ -1,7 +1,9 @@
-import { Instance, Prisma } from "@prisma/client";
+import type { Instance } from "~/generated/prisma/client";
+import { Prisma } from "~/generated/prisma/client";
 import { mastodonApi } from "~/lib/mastodon/api";
+import { config } from "~/lib/config";
 import { registerInstanceApp, fetchAppAccessToken } from "~/lib/mastodon/auth";
-import { db, Result, useDatabase } from "./db";
+import { db, type Result, useDatabase } from "./db";
 
 export async function findOrCreateInstance(host: string) {
   return useDatabase(async () => {
@@ -72,7 +74,8 @@ export async function getInstanceAppCredentials(
       };
     } else if (redirectUri) {
       const client = await registerInstanceApp(instance.host, {
-        clientName: process.env.NODE_ENV === "production" ? "MastoMetrics" : "MastoMetrics Dev",
+        clientName: config.appName,
+        website: config.siteUrl,
         redirectUris: redirectUri,
         scopes: "read",
       });

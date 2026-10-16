@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Component, onMount, JSX, splitProps, onCleanup, createEffect } from "solid-js";
+import { type Component, onMount, type JSX, splitProps, onCleanup, createEffect } from "solid-js";
 import {
   BarController,
   CategoryScale,

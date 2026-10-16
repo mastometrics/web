@@ -1,27 +1,21 @@
-import { Account } from "@prisma/client";
-import { Component, createSignal, createResource, Switch, Match, For, Show } from "solid-js";
-import server$ from "solid-start/server";
-import { requireAuth, throwUnauthorized } from "~/backend/authentication";
-import { getStatusesParams, getStatuses, orderKeys } from "~/backend/statuses";
-import { periodKeys } from "~/lib/period";
-import { usePermissions } from "~/lib/permissions";
+import { actions } from "astro:actions";
+import { type Component, createSignal, createResource, Switch, Match, For, Show } from "solid-js";
+import type { getStatusesParams, getStatusesResponse, orderKeys } from "~/backend/statuses";
+import { withInitialData } from "~/lib/resource";
+import type { periodKeys } from "~/lib/period";
 import { Select } from "../Select";
 import { StatusList } from "../Status";
 import { Tabbar } from "../Tabbar";
 import { Checkbox } from "../Checkbox";
 import { Icons } from "../Icon";
 import { Popover, PopoverTrigger } from "../Popover";
-import { debounce } from "~/lib/utils";
 import { TextField } from "../TextField";
 
-const fetchStatuses = server$(async (handle, params: getStatusesParams) => {
-  const user = await requireAuth(server$.request);
-  if (!usePermissions(user).account.view(handle)) throwUnauthorized();
-  return getStatuses(handle, params);
-});
+const fetchStatuses = (handle: string, params: getStatusesParams) => actions.statuses.orThrow({ handle, ...params });
 
-export const AccountStatuses: Component<{ handle: string; account: () => Account | null | undefined }> = (props) => {
-  const [period, setPeriod] = createSignal<periodKeys>("30d");
+export const AccountStatuses: Component<{ handle: string; initial?: getStatusesResponse }> = (props) => {
+  // The server falls back to all time when there are no recent posts
+  const [period, setPeriod] = createSignal<periodKeys>(props.initial?.params.period ?? "30d");
   const [ordering, setOrdering] = createSignal<orderKeys>("engagements");
   const [loading, setLoading] = createSignal(false);
   const [excludeRepies, setExcludeReplies] = createSignal(true);
@@ -32,25 +26,25 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
       handle: props.handle,
       params: { period: period(), order: ordering(), includeReplies: !excludeRepies(), query: query() },
     }),
-    async ({ handle, params }) => {
+    withInitialData(props.initial, async ({ handle, params }: { handle: string; params: getStatusesParams }) => {
       if (params.order === "publishedAt") params.period = "all";
-      const [result, err] = await fetchStatuses(handle, params);
-      if (err) throw err;
-      return result;
-    }
+      return fetchStatuses(handle, params);
+    })
   );
 
   async function loadMore() {
     if (loading()) return;
     setLoading(true);
-    const [result, err] = await fetchStatuses(props.handle, {
-      ...((data()?.params ?? {}) as getStatusesParams),
-      skip: data()?.statuses.length,
-      limit: 50,
-    });
-    if (err) throw err;
-    mutate((data) => ({ ...data, ...result, statuses: [...(data?.statuses ?? []), ...result.statuses] }));
-    setLoading(false);
+    try {
+      const result = await fetchStatuses(props.handle, {
+        ...((data()?.params ?? {}) as getStatusesParams),
+        skip: data()?.statuses.length,
+        limit: 50,
+      });
+      mutate((data) => ({ ...data, ...result, statuses: [...(data?.statuses ?? []), ...result.statuses] }));
+    } finally {
+      setLoading(false);
+    }
   }
 
   const tabs = [
@@ -71,9 +65,9 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
 
   return (
     <>
-      <div class="mb-0 mt-8 flex items-center gap-4 px-4 sm:mt-12 sm:px-0">
+      <div class="mt-8 mb-0 flex items-center gap-4 px-4 sm:mt-12 sm:px-0">
         <Tabbar
-          class="flex-auto"
+          class="min-w-0 flex-auto"
           tabs={tabs}
           active={ordering()}
           onChange={({ key }) => setOrdering(key as orderKeys)}
@@ -81,7 +75,7 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
         <Popover
           title="Filters"
           triggerEl={
-            <PopoverTrigger class="rounded p-2 text-mastodon-purple-500 focus:outline-none focus-visible:bg-mastodon-purple-600 focus-visible:text-white dark:text-white/80">
+            <PopoverTrigger class="text-mastodon-purple-500 focus-visible:bg-mastodon-purple-600 rounded-sm p-2 focus:outline-hidden focus-visible:text-white dark:text-white/80">
               <Icons.Adjustments />
             </PopoverTrigger>
           }
@@ -102,7 +96,7 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
         <Select
           options={periods}
           value={period()}
-          onChange={setPeriod}
+          onChange={(value) => setPeriod(value as periodKeys)}
           label="Select a period"
           hideLabel
           disabled={ordering() === "publishedAt"}
@@ -114,7 +108,7 @@ export const AccountStatuses: Component<{ handle: string; account: () => Account
             <div class="text-red-400">{data.error.message}</div>
           </Match>
           <Match when={!data.latest?.statuses?.length}>
-            <div class="p-6 text-mastodon-purple-600 dark:text-mastodon-purple-100">No posts found</div>
+            <div class="text-mastodon-purple-600 dark:text-mastodon-purple-100 p-6">No posts found</div>
           </Match>
           <Match when={data.latest?.statuses}>
             <For each={data.latest?.statuses}>{(status) => <StatusList.Item status={status} />}</For>
@@ -135,9 +129,4 @@ const periodOptions: { [key in periodKeys]?: string } = {
   // "90d": "Last 90 days",
   // "1y": "Last year",
   all: "All time",
-};
-
-const orderingOptions: { [key in orderKeys]?: string } = {
-  engagements: "Top posts",
-  publishedAt: "Latest posts",
 };

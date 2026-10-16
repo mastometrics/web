@@ -1,5 +1,3 @@
-import { MastodonStatus } from "./mastodon/types";
-
 const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
@@ -63,4 +61,17 @@ export function truncateDate(date: Date | string, truncateTo: "day" | "hour" = "
   if (truncateTo == "day") turncated.setHours(0);
   turncated.setMinutes(0, 0, 0);
   return turncated;
+}
+
+/** Extract an instance host from user input like `user@mas.to`, `https://mas.to` or `mas.to` */
+export function parseInstance(input?: string | null) {
+  try {
+    if (!input) return;
+    input = input.trim();
+    if (input.includes("://")) return new URL(input).hostname;
+    if (input.includes("@")) return parseHandle(input).instance;
+    return input;
+  } catch {
+    return input ?? undefined;
+  }
 }

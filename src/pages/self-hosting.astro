@@ -1,0 +1,166 @@
+---
+import Page from "~/layouts/Page.astro";
+import { Box } from "~/components/Box";
+
+const repo = "https://github.com/mastometrics/web";
+const readme = `${repo}#readme`;
+
+// Code snippets live here, so braces don't need escaping in the markup
+const snippets = {
+  clone: `git clone ${repo}.git mastometrics
+cd mastometrics
+cp .env.dist .env`,
+  env: `SESSION_SECRET="$(openssl rand -base64 32)"      # signs session cookies
+POSTGRES_PASSWORD="$(openssl rand -base64 24)"   # database password
+SITE_URL="https://metrics.example.com"           # the public URL of your deployment`,
+  up: `docker compose up -d`,
+  caddy: `metrics.example.com {
+  reverse_proxy localhost:4321
+}`,
+  admin: `docker compose exec db psql -U mastometrics -c \\
+  "UPDATE users SET roles = '{admin}' FROM accounts
+   WHERE users.\\"accountId\\" = accounts.id AND accounts.username = 'you@your.instance';"`,
+  update: `git pull
+docker compose up -d --build`,
+  node: `cp .env.dist .env               # fill in DATABASE_URL, SESSION_SECRET and SITE_URL
+npm ci
+npm run build
+npm run db:migrate              # apply database migrations
+npm start -- --host 0.0.0.0     # starts the app and the worker, loads .env automatically`,
+  managedDb: `DATABASE_URL="postgresql://user:password@host:25060/mastometrics?sslmode=require&uselibpqcompat=true&connection_limit=5"`,
+};
+
+const steps = [
+  { title: "Get the code", snippet: snippets.clone },
+  {
+    title: "Configure",
+    text: "Fill in the required values in .env. The database connection is set up by Docker Compose.",
+    snippet: snippets.env,
+  },
+  {
+    title: "Start",
+    text: "Builds the image, starts PostgreSQL, applies the database migrations and starts the app and worker on port 4321.",
+    snippet: snippets.up,
+  },
+  {
+    title: "Add HTTPS",
+    text: "Point a reverse proxy at the app, for example Caddy, which takes care of certificates:",
+    snippet: snippets.caddy,
+  },
+  {
+    title: "Sign in and become admin",
+    text: "Open your SITE_URL, sign in with your Mastodon account, then give yourself access to the admin page:",
+    snippet: snippets.admin,
+  },
+];
+
+const databaseNotes = [
+  {
+    title: "SSL certificates",
+    text: "sslmode=require verifies the server certificate. For managed databases with their own CA (DigitalOcean, AWS RDS, ...) add the CA with sslrootcert=..., or add uselibpqcompat=true to encrypt without verifying.",
+  },
+  {
+    title: "Connection limits",
+    text: "Every process (app, worker, each extra app replica) uses up to 10 connections. Small managed plans allow only 20-25, lower it with connection_limit.",
+  },
+  {
+    title: "Same region",
+    text: "Imports write each post with its own query. Keep the app, worker and database close together, or imports take minutes instead of seconds.",
+  },
+  {
+    title: "Storage and backups",
+    text: "Plan for roughly 10 MB per tracked account, growing over time. The database is the only state, back it up regularly.",
+  },
+  {
+    title: "Privileges",
+    text: "Migrations create the citext extension and tables. To run the app with a restricted user, set RUN_MIGRATIONS=false and migrate with a privileged user.",
+  },
+];
+
+const codeClass =
+  "mt-3 overflow-x-auto rounded-md bg-mastodon-purple-900 px-4 py-3 text-sm leading-relaxed text-mastodon-purple-100 dark:bg-black/40";
+const linkClass = "font-medium underline";
+---
+
+<Page title="Self-hosting - MastoMetrics">
+  <Box>
+    <h1 class="text-4xl font-bold text-mastodon-purple-500">Self-hosting</h1>
+    <p class="mt-4 max-w-prose leading-relaxed text-gray-500 dark:text-white">
+      <strong class="font-semibold">MastoMetrics is open source, you can run it for yourself or your community.</strong>{" "}
+      All you need is a server with Docker and a domain. Users sign in with their Mastodon account, MastoMetrics
+      registers itself on each instance automatically, so there is nothing to configure on the Mastodon side.
+    </p>
+    <p class="mt-4 max-w-prose leading-relaxed text-gray-500 dark:text-white">
+      This page covers the recommended setup. The{" "}
+      <a href={readme} target="_blank" class={linkClass}>
+        README
+      </a>{" "}
+      has all configuration options, other ways to deploy and a guide for contributors.
+    </p>
+  </Box>
+
+  <ol class="space-y-4">
+    {steps.map((step, i) => (
+      <li>
+        <Box class="my-0" isSecondary>
+          <h2 class="flex items-center gap-3 text-xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-300">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mastodon-purple-500 text-base text-white">
+              {i + 1}
+            </span>
+            {step.title}
+          </h2>
+          {step.text && <p class="mt-3 leading-relaxed text-gray-500 dark:text-mastodon-purple-100">{step.text}</p>}
+          <pre class={codeClass}><code>{step.snippet}</code></pre>
+        </Box>
+      </li>
+    ))}
+  </ol>
+
+  <Box title="Updating">
+    <p class="leading-relaxed text-gray-500 dark:text-mastodon-purple-100">
+      Pull the latest version and rebuild, database migrations are applied automatically on start.
+    </p>
+    <pre class={codeClass}><code>{snippets.update}</code></pre>
+  </Box>
+
+  <Box title="Without Docker">
+    <p class="leading-relaxed text-gray-500 dark:text-mastodon-purple-100">
+      Requires Node.js 22.22 or newer and PostgreSQL 14 or newer. Keep <code>npm start</code> running with a process
+      manager such as systemd or pm2. The app and the worker can also run as separate processes, see the{" "}
+      <a href={readme} target="_blank" class={linkClass}>
+        README
+      </a>
+      .
+    </p>
+    <pre class={codeClass}><code>{snippets.node}</code></pre>
+  </Box>
+
+  <Box title="Using your own database">
+    <p class="leading-relaxed text-gray-500 dark:text-mastodon-purple-100">
+      Instead of the bundled PostgreSQL you can use a managed database by setting <code>DATABASE_URL</code>. Keep these
+      in mind:
+    </p>
+    <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+      {databaseNotes.map((note) => (
+        <div>
+          <dt class="font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-300">{note.title}</dt>
+          <dd class="mt-1 text-sm leading-relaxed text-gray-500 dark:text-mastodon-purple-100">{note.text}</dd>
+        </div>
+      ))}
+    </dl>
+    <p class="mt-4 leading-relaxed text-gray-500 dark:text-mastodon-purple-100">For example:</p>
+    <pre class={codeClass}><code>{snippets.managedDb}</code></pre>
+  </Box>
+
+  <Box title="Before you open it up" isSecondary>
+    <p class="max-w-prose leading-relaxed text-gray-500 dark:text-mastodon-purple-100">
+      The privacy policy and FAQ describe the hosted version at mastometrics.com, review them for your instance. Set{" "}
+      <code>CONTACT_HANDLE</code> to your own Mastodon account, it's used for support and contact links. Questions or
+      problems? Open an issue on{" "}
+      <a href={repo} target="_blank" class={linkClass}>
+        GitHub
+      </a>
+      .
+    </p>
+  </Box>
+</Page>

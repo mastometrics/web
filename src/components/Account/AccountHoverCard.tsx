@@ -1,26 +1,25 @@
-import { HoverCard as KBHoverCard } from "@kobalte/core";
-import { Account } from "@prisma/client";
+import { HoverCard as KBHoverCard } from "@kobalte/core/hover-card";
+import { actions } from "astro:actions";
 import {
-  Component,
+  type Component,
   createResource,
   createSignal,
   ErrorBoundary,
   For,
-  JSX,
-  ParentComponent,
+  type JSX,
+  type ParentComponent,
   Show,
   splitProps,
   Suspense,
 } from "solid-js";
-import server$ from "solid-start/server";
 import { formatNumber, parseHandle } from "~/lib/format";
-import { MastodonAccount, mastodonApi } from "~/lib/mastodon/api";
-import { formatEmojis, simpleMastodonSanitzer } from "~/lib/mastodon/utils";
+import type { MastodonAccount } from "~/lib/mastodon/types";
+import { formatEmojis, sanitizeMastodonHtml } from "~/lib/mastodon/html";
 import { Icons } from "../Icon";
 
 export const AccountLink: ParentComponent<
-  | (JSX.ButtonHTMLAttributes<HTMLAnchorElement> & { account: Account })
-  | (JSX.ButtonHTMLAttributes<HTMLAnchorElement> & { username: string })
+  | (JSX.AnchorHTMLAttributes<HTMLAnchorElement> & { account: { username: string } })
+  | (JSX.AnchorHTMLAttributes<HTMLAnchorElement> & { username: string })
 > = (props) => {
   const [local, rest] = splitProps(props, ["children", "account", "username"] as any);
   const username = () => ("account" in props ? props.account.username : props.username);
@@ -28,19 +27,19 @@ export const AccountLink: ParentComponent<
 
   const [account] = createResource(
     () => triggered() && username(),
-    (handle) => lookupAccount(handle).catch(() => server$(lookupAccount)(handle))
+    (handle) => lookupAccount(handle).catch(() => actions.lookupAccount.orThrow({ handle }))
   );
 
   return (
-    <KBHoverCard.Root placement="right-start" arrowPadding={40} gutter={4} onOpenChange={() => setTriggered(true)}>
+    <KBHoverCard placement="right-start" arrowPadding={40} gutter={4} onOpenChange={() => setTriggered(true)}>
       <KBHoverCard.Trigger href={accountHref(username())} target="_blank" rel="noopener noreferrer" {...rest}>
         {props.children}
       </KBHoverCard.Trigger>
       <KBHoverCard.Portal>
         <Suspense>
           <KBHoverCard.Content
-            class="max-w-[90vw] origin-top-left whitespace-normal rounded-lg border border-mastodon-purple-200 bg-mastodon-purple-50 shadow-lg shadow-mastodon-purple-900/10 animate-in fade-in zoom-in dark:border-mastodon-purple-700 dark:bg-mastodon-purple-800 sm:max-w-md"
-            style={{ "transform-origin": "var(--kb-hovercard-content-transform-origin);" }}
+            class="border-mastodon-purple-200 bg-mastodon-purple-50 shadow-mastodon-purple-900/10 animate-in fade-in zoom-in dark:border-mastodon-purple-700 dark:bg-mastodon-purple-800 max-w-[90vw] origin-top-left rounded-lg border whitespace-normal shadow-lg sm:max-w-md"
+            style={{ "transform-origin": "var(--kb-hovercard-content-transform-origin)" }}
           >
             <KBHoverCard.Arrow />
             <ErrorBoundary
@@ -58,7 +57,7 @@ export const AccountLink: ParentComponent<
           </KBHoverCard.Content>
         </Suspense>
       </KBHoverCard.Portal>
-    </KBHoverCard.Root>
+    </KBHoverCard>
   );
 };
 
@@ -68,7 +67,7 @@ const AccountCard: Component<{ account: MastodonAccount; handle?: string }> = (p
   }
 
   function formatHtml(html: string) {
-    return formatEmojis(simpleMastodonSanitzer(html), props.account.emojis, true);
+    return formatEmojis(sanitizeMastodonHtml(new DOMParser(), html), props.account.emojis, true);
   }
 
   return (
@@ -76,8 +75,8 @@ const AccountCard: Component<{ account: MastodonAccount; handle?: string }> = (p
       <Show when={props.account.header} keyed>
         {(h) => (
           <div class="relative -mb-32 aspect-[2/1] w-full overflow-hidden">
-            <img src={h} class="h-full w-full rounded-t-lg object-cover opacity-70" />
-            <div class="absolute bottom-0 left-0 right-0 h-60 bg-gradient-to-b from-transparent via-mastodon-purple-50/70 to-mastodon-purple-50 dark:via-mastodon-purple-800/70 dark:to-mastodon-purple-800 "></div>
+            <img src={h} class="h-full w-full rounded-t-lg object-cover opacity-70" alt="" />
+            <div class="via-mastodon-purple-50/70 to-mastodon-purple-50 dark:via-mastodon-purple-800/70 dark:to-mastodon-purple-800 absolute right-0 bottom-0 left-0 h-60 bg-linear-to-b from-transparent"></div>
           </div>
         )}
       </Show>
@@ -85,11 +84,12 @@ const AccountCard: Component<{ account: MastodonAccount; handle?: string }> = (p
         <div class="flex items-center">
           <img
             src={props.account.avatar}
-            class="h-16 w-16 rounded-lg border-2 border-mastodon-purple-50 object-cover dark:border-mastodon-purple-800 "
+            class="border-mastodon-purple-50 dark:border-mastodon-purple-800 h-16 w-16 rounded-lg border-2 object-cover"
+            alt=""
           />
           <div class="ml-4">
             <div
-              class="text-lg font-bold text-mastodon-purple-800 dark:text-white"
+              class="text-mastodon-purple-800 text-lg font-bold dark:text-white"
               innerHTML={format(props.account.display_name)}
             ></div>
             <a
@@ -104,14 +104,14 @@ const AccountCard: Component<{ account: MastodonAccount; handle?: string }> = (p
           </div>
         </div>
 
-        <div class="text-md flex flex-wrap gap-4 text-mastodon-purple-800 dark:text-mastodon-purple-200">
+        <div class="text-md text-mastodon-purple-800 dark:text-mastodon-purple-200 flex flex-wrap gap-4">
           <CountWithLabel count={props.account.followers_count} label="Followers" />
           <CountWithLabel count={props.account.following_count} label="Following" />
           <CountWithLabel count={props.account.statuses_count} label="Posts" />
         </div>
 
         <div
-          class="text-sm text-gray-500 dark:text-mastodon-purple-50"
+          class="dark:text-mastodon-purple-50 text-sm text-gray-500"
           innerHTML={formatHtml(props.account.note)}
         ></div>
 
@@ -120,10 +120,10 @@ const AccountCard: Component<{ account: MastodonAccount; handle?: string }> = (p
             <For each={props.account.fields ?? []}>
               {(field) => (
                 <div class="min-w-0">
-                  <div class="text-xs font-semibold uppercase text-mastodon-purple-700 dark:text-mastodon-purple-100">
+                  <div class="text-mastodon-purple-700 dark:text-mastodon-purple-100 text-xs font-semibold uppercase">
                     <span innerHTML={format(field.name)} />
                     {field.verified_at && (
-                      <Icons.Verified class="ml-1 mb-0.5 inline h-3 w-3 align-middle text-mastodon-purple-500 dark:text-mastodon-purple-300 " />
+                      <Icons.Verified class="text-mastodon-purple-500 dark:text-mastodon-purple-300 mb-0.5 ml-1 inline h-3 w-3 align-middle" />
                     )}
                   </div>
                   <div class="min-w-0 truncate text-sm" innerHTML={formatHtml(field.value)} />
@@ -154,7 +154,12 @@ function accountHref(handle: string) {
   return `https://${instance}/@${acct}`;
 }
 
+/** Look up the account directly from the browser, the server action is used as fallback (i.e. when CORS fails) */
 async function lookupAccount(handle: string) {
   const { instance } = parseHandle(handle);
-  return mastodonApi({ instance }).accounts.lookup(handle);
+  const response = await fetch(`https://${instance}/api/v1/accounts/lookup?acct=${encodeURIComponent(handle)}`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error(`Could not load account (${response.status})`);
+  return (await response.json()) as MastodonAccount;
 }

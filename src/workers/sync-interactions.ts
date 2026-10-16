@@ -1,12 +1,12 @@
-import { Prisma } from "@prisma/client";
-import { MastodonAccount, mastodonApi, MastodonNotification } from "../lib/mastodon/api";
+import { Prisma } from "~/generated/prisma/client";
+import { type MastodonAccount, mastodonApi, type MastodonNotification } from "../lib/mastodon/api";
 import { useDatabase } from "../backend/db";
 import { parseHandle } from "~/lib/format";
 import { getOrCreateAccount } from "./upsert-account";
 import { logger } from "~/lib/logger";
-import { getTextContent } from "~/lib/mastodon/utils";
-import { AccountMetadata, readMetadata, setMetadata } from "~/lib/metadata";
-import { ApiOptions } from "~/lib/mastodon/http";
+import { getTextContent } from "~/lib/mastodon/html.server";
+import { type AccountMetadata, readMetadata, setMetadata } from "~/lib/metadata";
+import { type ApiOptions } from "~/lib/mastodon/http";
 
 type InteractionType = "favorite" | "mention" | "boost";
 const notificationTypeToInteractionType: Record<string, InteractionType> = {
@@ -126,7 +126,8 @@ export async function syncInteractions(handle: string, apiConfig?: ApiOptions) {
     }
 
     if (updateCachedAccounts.length > 0) {
-      await db.$transaction(updateCachedAccounts.map((update) => db.cachedAccount.update(update)));
+      // One at a time, see syncStatuses
+      for (const update of updateCachedAccounts) await db.cachedAccount.update(update);
       logger.debug(`🔃 Updated ${updateCachedAccounts.length} cached accounts for ${handle}`);
     }
   });

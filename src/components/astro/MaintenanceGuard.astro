@@ -1,0 +1,22 @@
+---
+import { Box } from "~/components/Box";
+import { config } from "~/lib/config";
+
+const [user, host] = config.contactHandle.split("@");
+---
+
+{config.maintenanceMode ? (
+  <div class="container mx-auto max-w-4xl p-4 sm:px-6 sm:pb-8">
+    <Box title="Server Maintenance" class="text-center">
+      We're currently performing server maintenance. During this time your dashboard is unavailable.
+      <br />
+      Please check back later or{" "}
+      <a href={`https://${host}/@${user}`} target="_blank" class="font-bold hover:underline">
+        contact support
+      </a>{" "}
+      if you have any questions.
+    </Box>
+  </div>
+) : (
+  <slot />
+)}

@@ -1,7 +1,13 @@
 import { HandledError } from "../error";
 import { logger } from "../logger";
-import { ApiOptions, fetchApi, http } from "./http";
-import { MastodonAccount, MastodonInstance, MastodonNotification, MastodonRelationship, MastodonStatus } from "./types";
+import { type ApiOptions, fetchApi, http } from "./http";
+import {
+  type MastodonAccount,
+  type MastodonInstance,
+  type MastodonNotification,
+  type MastodonRelationship,
+  type MastodonStatus,
+} from "./types";
 export * from "./types";
 
 type paginateOpts = { limit?: number };

@@ -1,5 +1,5 @@
 import { HandledError } from "../error";
-import { MastodonAccessToken, MastodonAppRegistration, MastodonAuthenticatedAccount } from "./types";
+import { type MastodonAccessToken, type MastodonAppRegistration, type MastodonAuthenticatedAccount } from "./types";
 
 export async function registerInstanceApp(
   instance: string,

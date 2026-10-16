@@ -41,7 +41,7 @@ export function createRateLimitStore() {
     }
   }
 
-  setInterval(garbageCollect, 1000 * 60 * 1);
+  setInterval(garbageCollect, 1000 * 60 * 1).unref?.();
 
   return { get, update };
 }

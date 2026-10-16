@@ -1,6 +1,6 @@
 import { HandledError } from "../error";
 import { createThrottler, createRateLimitStore } from "./throttler";
-import { createHash } from "crypto?server";
+import { createHash } from "node:crypto";
 import { logger } from "../logger";
 const throttler = createThrottler(createRateLimitStore());
 export type ApiOptions = { throttle?: boolean; instance: string; token?: string };
@@ -16,7 +16,7 @@ export async function fetchApi<T>(
 
   try {
     let key = instance;
-    if (token) key += crypto ? `-${createHash("sha256").update(token).digest("hex").slice(0, 8)}` : token.slice(0, 8);
+    if (token) key += `-${createHash("sha256").update(token).digest("hex").slice(0, 8)}`;
     const { handleResponse } = await throttler.throttle(key, { greedy: !throttle });
 
     logger.debug(`🐘 GET ${url}`);
@@ -29,7 +29,7 @@ export async function fetchApi<T>(
 
     if (ratelimitExceeded) {
       await awaitReset();
-      return fetchApi(instance, { throttle, token, instance }, request);
+      return fetchApi<T>(path, { throttle, token, instance }, request);
     }
 
     if (response.status >= 400) {
