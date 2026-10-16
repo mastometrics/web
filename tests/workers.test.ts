@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { db, throwOnError } from "~/backend/db";
 import { getAuthUrl } from "~/backend/oauth";
+import { restartSync } from "~/backend/account";
 import { authenticate } from "~/backend/session";
 import { type AccountMetadata, readMetadata } from "~/lib/metadata";
 import { importAccount } from "~/workers/import-account";
@@ -228,6 +229,53 @@ describe("sign in", () => {
     );
     expect(created.Account.username).toBe("newbie@mas.to");
     expect(await db.user.count()).toBe(3);
+  });
+});
+
+describe("restartSync", () => {
+  const suspendDemo = () =>
+    db.account.update({
+      where: { username: "demo@mas.to" },
+      data: {
+        metadata: {
+          suspendedSync: new Date().toISOString(),
+          warnings: Array.from({ length: 12 }, () => ({ timestamp: new Date().toISOString(), message: "Bad Gateway" })),
+        },
+      },
+    });
+  const demoMetadata = async () =>
+    readMetadata<AccountMetadata>(
+      (await db.account.findUniqueOrThrow({ where: { username: "demo@mas.to" } })).metadata
+    );
+
+  it("resumes and syncs a suspended account", async () => {
+    await suspendDemo();
+    mockDemoInstance();
+    expect(await restartSync("demo@mas.to")).toEqual({});
+    const metadata = await demoMetadata();
+    expect(metadata.suspendedSync).toBeUndefined();
+    expect(metadata.warnings).toEqual([]);
+    expect(await db.status.count({ where: { content: "Status 1" } })).toBe(1);
+  });
+
+  it("keeps retrying in the background when the instance has trouble", async () => {
+    await suspendDemo();
+    mockDemoInstance({
+      "mas.to/api/v1/accounts/1/statuses": () => new Response("{}", { status: 502, statusText: "Bad Gateway" }),
+    });
+    expect((await restartSync("demo@mas.to")).error).toContain("Bad Gateway");
+    const metadata = await demoMetadata();
+    expect(metadata.suspendedSync).toBeUndefined();
+    expect(metadata.warnings).toHaveLength(1);
+  });
+
+  it("asks to sign in again when the token is rejected", async () => {
+    await suspendDemo();
+    mockDemoInstance({
+      "mas.to/api/v1/accounts/1/statuses": () => new Response("{}", { status: 401, statusText: "Unauthorized" }),
+    });
+    await expect(restartSync("demo@mas.to")).rejects.toThrow(/Sign out and in again/);
+    expect((await demoMetadata()).suspendedSync).toBeTruthy();
   });
 });
 
