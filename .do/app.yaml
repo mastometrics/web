@@ -1,0 +1,78 @@
+# DigitalOcean App Platform spec for mastometrics.com, applied by .github/workflows/deploy.yml on every push to main.
+# Changes made in the DigitalOcean dashboard are overwritten by the next deploy, change this file instead.
+#
+# ${DATABASE_URL} and ${SESSION_SECRET} are filled in by the deploy workflow from the GitHub repository secrets with the
+# same name. Self-hosting on App Platform? Change the name, domain and region, and see the README.
+name: mastometrics
+region: sfo
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+
+domains:
+  - domain: mastometrics.com
+    type: PRIMARY
+
+ingress:
+  rules:
+    - component:
+        name: web
+      match:
+        path:
+          prefix: /
+
+# Shared by all components
+envs:
+  - key: DATABASE_URL
+    scope: RUN_TIME
+    type: SECRET
+    value: ${DATABASE_URL}
+  - key: SESSION_SECRET
+    scope: RUN_TIME
+    type: SECRET
+    value: ${SESSION_SECRET}
+  - key: SITE_URL
+    scope: RUN_TIME
+    value: https://mastometrics.com
+  - key: MAINTENANCE_MODE
+    scope: RUN_TIME
+    value: "false"
+
+services:
+  - name: web
+    dockerfile_path: Dockerfile
+    source_dir: /
+    github:
+      repo: mastometrics/web
+      branch: main
+      # Deploys are started by the deploy workflow, after CI passed
+      deploy_on_push: false
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-1gb
+    http_port: 4321
+    health_check:
+      http_path: /internal-api/health
+    envs:
+      # Also applies the database migrations on start
+      - key: DEPLOYMENT_TYPE
+        scope: RUN_TIME
+        value: app
+
+workers:
+  - name: worker
+    dockerfile_path: Dockerfile
+    source_dir: /
+    github:
+      repo: mastometrics/web
+      branch: main
+      deploy_on_push: false
+    instance_count: 1
+    instance_size_slug: apps-d-1vcpu-4gb
+    envs:
+      - key: DEPLOYMENT_TYPE
+        scope: RUN_TIME
+        value: worker
+      - key: WORKER_SYNC_OUTDATED_MINS
+        scope: RUN_TIME
+        value: "60"

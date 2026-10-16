@@ -90,6 +90,22 @@ Only one worker should run at a time. Migrations run on start of containers that
 
 The health check endpoint is `GET /internal-api/health`.
 
+### DigitalOcean App Platform
+
+mastometrics.com runs on App Platform, configured by [`.do/app.yaml`](.do/app.yaml): a web service and a worker built from the Dockerfile. The [deploy workflow](.github/workflows/deploy.yml) applies the spec and deploys after CI passed on `main`, so the spec in the repository is the source of truth and changes made in the dashboard are overwritten by the next deploy.
+
+To deploy your own:
+
+1. Fork the repository and change `name`, `domains`, `region`, `SITE_URL` and `github.repo` in `.do/app.yaml`.
+2. Add these repository secrets (Settings → Secrets and variables → Actions):
+   - `DIGITALOCEAN_ACCESS_TOKEN`: a [personal access token](https://cloud.digitalocean.com/account/api/tokens) with access to App Platform.
+   - `DATABASE_URL`: the connection string of your database. For DigitalOcean Managed Databases append `&uselibpqcompat=true`, see [Database](#database).
+   - `SESSION_SECRET`: e.g. `openssl rand -base64 32`.
+3. Run the Deploy workflow (Actions → Deploy → Run workflow), it creates the app on the first run and updates it after that. The deploy workflow only runs in `mastometrics/web`, update the `if:` condition in your fork.
+4. Add the app to your database's trusted sources, if you use them.
+
+The secrets are passed to the spec as `${DATABASE_URL}` and `${SESSION_SECRET}` and stored encrypted in the app. To add a secret, add it to the repository secrets, the `env` of the deploy step and the spec.
+
 ### Becoming an admin
 
 Admins can see all accounts at `/admin` and trigger syncs manually. Sign in once, then grant yourself the role in the database:
