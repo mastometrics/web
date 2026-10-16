@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createSessionValue, readSessionValue } from "~/backend/session";
 import { formatHandle, formatNumber, parseHandle, parseInstance, sum, truncateDate } from "~/lib/format";
-import { formatEmojis } from "~/lib/mastodon/html";
+import { formatEmojis, sanitizeMastodonHtmlWithEmojis } from "~/lib/mastodon/html";
+import { DOMParser } from "linkedom";
 import { getTextContent, simpleMastodonSanitizer } from "~/lib/mastodon/html.server";
 import { periodToDate } from "~/lib/period";
 import { Roles, usePermissions } from "~/lib/permissions";
@@ -112,6 +113,36 @@ describe("mastodon html", () => {
     const html = formatEmojis(`<b>hi</b> :blobcat:`, [{ shortcode: "blobcat", static_url: "https://e/blob.png" }]);
     expect(html).toContain("&lt;b&gt;");
     expect(html).toContain('<img src="https://e/blob.png" alt="blobcat"');
+  });
+
+  // Emojis come from the instance: a shortcode in one emoji's url used to be replaced by the next emoji's markup
+  const maliciousEmojis = [
+    { shortcode: "a", static_url: "https://e/:b:" },
+    { shortcode: "b", static_url: "https://e/x onerror=alert(document.domain) x=" },
+    { shortcode: "c", static_url: "javascript:alert(1)" },
+  ];
+  const elementsWithHandlers = (html: string) =>
+    Array.from(new DOMParser().parseFromString(`<html><body>${html}</body></html>`, "text/html").querySelectorAll("*"))
+      .flatMap((el) => Array.from(el.attributes).map((attr) => attr.name))
+      .filter((name) => name.startsWith("on"));
+
+  it("doesn't let emojis inject markup into display names", () => {
+    const html = formatEmojis(":a: :b: :c:", maliciousEmojis);
+    expect(elementsWithHandlers(html)).toEqual([]);
+    expect(html).toContain('<img src="https://e/:b:" alt="a"');
+    expect(html).not.toContain("javascript:");
+  });
+
+  it("only replaces emojis in the text of Mastodon html", () => {
+    const parser = new DOMParser() as unknown as globalThis.DOMParser;
+    const html = sanitizeMastodonHtmlWithEmojis(
+      parser,
+      `<p>Hi :a: <a href="https://mas.to/:a:">link :b:</a></p>`,
+      maliciousEmojis
+    );
+    expect(elementsWithHandlers(html)).toEqual([]);
+    expect(html).toContain('href="https://mas.to/:a:"');
+    expect(html.match(/<img/g)).toHaveLength(2);
   });
 });
 

@@ -14,7 +14,7 @@ import {
 } from "solid-js";
 import { formatNumber, parseHandle } from "~/lib/format";
 import type { MastodonAccount } from "~/lib/mastodon/types";
-import { formatEmojis, sanitizeMastodonHtml } from "~/lib/mastodon/html";
+import { formatEmojis, sanitizeMastodonHtmlWithEmojis } from "~/lib/mastodon/html";
 import { Icons } from "../Icon";
 
 export const AccountLink: ParentComponent<
@@ -62,12 +62,12 @@ export const AccountLink: ParentComponent<
 };
 
 const AccountCard: Component<{ account: MastodonAccount; handle?: string }> = (props) => {
-  function format(textWithEmojis: string, safe = false) {
-    return formatEmojis(textWithEmojis, props.account.emojis, safe);
+  function format(textWithEmojis: string) {
+    return formatEmojis(textWithEmojis, props.account.emojis);
   }
 
   function formatHtml(html: string) {
-    return formatEmojis(sanitizeMastodonHtml(new DOMParser(), html), props.account.emojis, true);
+    return sanitizeMastodonHtmlWithEmojis(new DOMParser(), html, props.account.emojis);
   }
 
   return (

@@ -69,16 +69,59 @@ export function getHtmlTextContent(parser: DOMParserLike, content: string) {
   return parse(parser, content).body.textContent || "";
 }
 
-export function formatEmojis(text: string, emojis: MastodonStatus["emojis"], trust = false) {
-  text = trust ? text : escapeHtml(text);
-  for (const emoji of emojis ?? []) {
-    const regex = new RegExp(`:${escapeRegExp(emoji.shortcode)}:`, "g");
-    text = text.replace(
-      regex,
-      `<img src="${escapeHtml(emoji.static_url)}" alt="${escapeHtml(emoji.shortcode)}" class="inline w-4 h-4" />`
-    );
+type Emojis = MastodonStatus["emojis"];
+
+const SHORTCODE = /:([a-zA-Z0-9_]+):/g;
+
+/** Custom emojis by shortcode, only with https image urls */
+function emojiMap(emojis: Emojis) {
+  return new Map((emojis ?? []).filter((emoji) => /^https:\/\//i.test(emoji.static_url)).map((e) => [e.shortcode, e]));
+}
+
+/**
+ * Escapes plain text (e.g. a display name) and replaces custom emoji shortcodes with images. Emojis come from the
+ * (untrusted) instance, so this is a single pass: the inserted markup is never scanned for shortcodes again.
+ */
+export function formatEmojis(text: string, emojis: Emojis) {
+  const byShortcode = emojiMap(emojis);
+  return escapeHtml(text).replace(SHORTCODE, (match, shortcode: string) => {
+    const emoji = byShortcode.get(shortcode);
+    return emoji
+      ? `<img src="${escapeHtml(emoji.static_url)}" alt="${escapeHtml(emoji.shortcode)}" class="inline w-4 h-4" />`
+      : match;
+  });
+}
+
+/** Sanitizes Mastodon HTML and replaces custom emoji shortcodes in its text (never in attributes) with images */
+export function sanitizeMastodonHtmlWithEmojis(parser: DOMParserLike, html: string, emojis: Emojis) {
+  const doc = parse(parser, sanitizeMastodonHtml(parser, html));
+  const byShortcode = emojiMap(emojis);
+
+  const textNodes: Node[] = [];
+  const collect = (node: Node) =>
+    node.nodeType === TEXT_NODE ? textNodes.push(node) : node.childNodes.forEach((child) => collect(child));
+  collect(doc.body);
+
+  for (const node of textNodes) {
+    const text = node.textContent ?? "";
+    const parts: Node[] = [];
+    let last = 0;
+    for (const match of text.matchAll(SHORTCODE)) {
+      const emoji = byShortcode.get(match[1]);
+      if (!emoji) continue;
+      parts.push(doc.createTextNode(text.slice(last, match.index)));
+      const img = doc.createElement("img");
+      img.setAttribute("src", emoji.static_url);
+      img.setAttribute("alt", emoji.shortcode);
+      img.setAttribute("class", "inline w-4 h-4");
+      parts.push(img);
+      last = match.index! + match[0].length;
+    }
+    if (!parts.length) continue;
+    parts.push(doc.createTextNode(text.slice(last)));
+    (node as ChildNode).replaceWith(...parts);
   }
-  return text;
+  return doc.body.innerHTML;
 }
 
 export function escapeHtml(unsafe: string) {

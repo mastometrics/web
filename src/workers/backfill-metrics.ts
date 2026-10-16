@@ -27,6 +27,10 @@ type MetricAggregate = {
 
 const metricPeriod = 24 * 60 * 60 * 1000; // 1 day
 
+/** Dates come from the (untrusted) instance, ignore anything before Mastodon existed or in the future */
+const MASTODON_EPOCH = new Date("2016-01-01T00:00:00Z").getTime();
+const isPlausibleDate = (date: Date) => date.getTime() >= MASTODON_EPOCH && date.getTime() <= Date.now() + metricPeriod;
+
 export async function backfillMetrics(handle: string) {
   return useDatabase(async (db) => {
     logger.info(`🏛️ Backfilling metrics for ${handle}`);
@@ -63,6 +67,7 @@ export async function backfillMetrics(handle: string) {
     };
 
     for (const day of statusAggregates) {
+      if (!isPlausibleDate(new Date(day.date))) continue;
       const activityOnDay = getActivityOnDay(day.date);
       activityOnDay.favorites = day.favoritesCount;
       activityOnDay.boosts = day.boostsCount;
@@ -73,11 +78,14 @@ export async function backfillMetrics(handle: string) {
     }
 
     for await (const notification of followNotifications) {
-      getActivityOnDay(new Date(notification.created_at)).followers++;
+      const followedAt = new Date(notification.created_at);
+      if (!isPlausibleDate(followedAt)) continue;
+      getActivityOnDay(followedAt).followers++;
       backfilled.followers++;
     }
 
     const firstKnownDate = [...activityOnDays.keys()].sort()[0];
+    if (!firstKnownDate) return { count: 0 };
     const metricsToBackfill = Math.floor(
       (truncateDate(new Date()).getTime() - new Date(firstKnownDate).getTime()) / metricPeriod
     );
