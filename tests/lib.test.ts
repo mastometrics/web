@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createSessionValue, readSessionValue } from "~/backend/session";
 import { formatHandle, formatNumber, parseHandle, parseInstance, sum, truncateDate } from "~/lib/format";
 import { formatEmojis } from "~/lib/mastodon/html";
@@ -7,6 +7,8 @@ import { periodToDate } from "~/lib/period";
 import { Roles, usePermissions } from "~/lib/permissions";
 import type { AuthenticatedUser } from "~/backend/authentication";
 import { estimateImportDuration, mapMetricsToDelta, mapMetricsToProgression } from "~/lib/dashboard";
+import { assertPublicUrl, dns, isPublicAddress, safeFetch } from "~/lib/mastodon/safe-fetch";
+import { mockMastodon } from "./mastodon-mock";
 
 describe("format", () => {
   it("parses handles", () => {
@@ -128,5 +130,68 @@ describe("ui helpers", () => {
     expect(mapMetricsToProgression(metrics, "followers").map((m) => m.value)).toEqual([1, 2, 4]);
     expect(mapMetricsToDelta(metrics, "engagements").map((m) => m.value)).toEqual([5, 10]);
     expect(mapMetricsToProgression([], "followers", 9)[0].value).toBe(9);
+  });
+});
+
+describe("safeFetch", () => {
+  const publicLookup = dns.lookup;
+  afterEach(() => {
+    dns.lookup = publicLookup;
+    vi.unstubAllGlobals();
+  });
+
+  it("recognises public addresses", () => {
+    for (const address of ["203.0.113.10", "8.8.8.8", "2a01:4f8::1"]) expect(isPublicAddress(address)).toBe(true);
+    for (const address of ["127.0.0.1", "10.1.2.3", "172.20.0.1", "192.168.1.1", "169.254.169.254", "100.64.0.1"])
+      expect(isPublicAddress(address)).toBe(false);
+    for (const address of ["::1", "::", "fd00::1", "fe80::1", "::ffff:127.0.0.1", "not-an-ip"])
+      expect(isPublicAddress(address)).toBe(false);
+  });
+
+  it("only allows https urls of public host names", async () => {
+    await expect(assertPublicUrl("https://mas.to/api/v1/instance")).resolves.toBeUndefined();
+    for (const url of [
+      "http://mas.to/api",
+      "https://127.0.0.1/api",
+      "https://[::1]/api",
+      "https://169.254.169.254/latest/meta-data",
+      "https://localhost/api",
+      "https://mas.to:8443/api",
+      "https://user:pass@mas.to/api",
+      "https://2130706433/api",
+    ])
+      await expect(assertPublicUrl(url), url).rejects.toThrow(/not a valid Mastodon instance/);
+  });
+
+  it("rejects host names that resolve to private addresses", async () => {
+    dns.lookup = async () => [{ address: "10.0.0.5", family: 4 }];
+    await expect(assertPublicUrl("https://internal.example.com/api")).rejects.toThrow(/not a valid/);
+    dns.lookup = async () => [
+      { address: "203.0.113.10", family: 4 },
+      { address: "::1", family: 6 },
+    ];
+    await expect(assertPublicUrl("https://sneaky.example.com/api")).rejects.toThrow(/not a valid/);
+  });
+
+  it("checks every redirect and only sends the token to the original host", async () => {
+    const { calls } = mockMastodon({
+      "mas.to/old": () => new Response(null, { status: 301, headers: { Location: "/new" } }),
+      "mas.to/new": () => ({ ok: true }),
+      "mas.to/away": () => new Response(null, { status: 302, headers: { Location: "https://other.social/landing" } }),
+      "other.social/landing": () => ({ ok: true }),
+      "mas.to/metadata": () =>
+        new Response(null, { status: 302, headers: { Location: "http://169.254.169.254/metadata/v1.json" } }),
+    });
+    const headers = { Authorization: "Bearer secret" };
+
+    expect(await (await safeFetch("https://mas.to/old", { headers })).json()).toEqual({ ok: true });
+    expect(new Headers(calls[1].init?.headers).get("authorization")).toBe("Bearer secret");
+
+    await safeFetch("https://mas.to/away", { headers });
+    expect(calls[3].url).toBe("https://other.social/landing");
+    expect(new Headers(calls[3].init?.headers).get("authorization")).toBeNull();
+
+    await expect(safeFetch("https://mas.to/metadata")).rejects.toThrow(/not a valid Mastodon instance/);
+    expect(calls.some((call) => call.url.includes("169.254.169.254"))).toBe(false);
   });
 });
