@@ -1,4 +1,4 @@
-import { JSX, ParentComponent } from "solid-js";
+import type { JSX, ParentComponent } from "solid-js";
 import { cls } from "~/lib/css";
 
 export const Box: ParentComponent<{
@@ -10,9 +10,9 @@ export const Box: ParentComponent<{
   return (
     <div
       class={cls(
-        "my-8 rounded-lg bg-white px-5 py-6 text-mastodon-purple-800 shadow sm:rounded-md sm:px-6 ",
-        "dark:bg-mastodon-purple-800/40 dark:text-white dark:shadow-none dark:outline dark:outline-mastodon-purple-800/70 ",
-        props.isSecondary && "bg-mastodon-purple-100 shadow-none dark:bg-mastodon-purple-800/60",
+        "text-mastodon-purple-800 my-8 rounded-lg bg-white px-5 py-6 shadow-sm sm:rounded-md sm:px-6",
+        "dark:bg-mastodon-purple-800/40 dark:outline-mastodon-purple-800/70 dark:text-white dark:shadow-none dark:outline",
+        props.isSecondary && "bg-mastodon-purple-100 dark:bg-mastodon-purple-800/60 shadow-none",
         props.isError &&
           "bg-red-100/50 text-red-900 shadow-none outline outline-red-500/30 dark:bg-red-900/20 dark:text-white dark:outline-red-500/30",
         props.class
@@ -22,8 +22,8 @@ export const Box: ParentComponent<{
       {props.title && (
         <h3
           class={cls(
-            "mb-4 text-xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-400",
-            props.isSecondary && " dark:text-mastodon-purple-400",
+            "text-mastodon-purple-600 dark:text-mastodon-purple-400 mb-4 text-xl font-semibold",
+            props.isSecondary && "dark:text-mastodon-purple-400",
             props.isError && "!text-red-600 dark:text-red-400"
           )}
         >

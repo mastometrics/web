@@ -1,0 +1,16 @@
+---
+import Dashboard from "~/layouts/Dashboard.astro";
+import { SettingsPanel } from "~/components/SettingsPanel";
+import { config } from "~/lib/config";
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/auth/login");
+
+const [contactUser, contactHost] = config.contactHandle.split("@");
+---
+
+<Dashboard title="Settings - MastoMetrics">
+  <div class="container mx-auto max-w-4xl px-4 py-2 sm:px-6 sm:py-4">
+    <SettingsPanel client:load username={user.account.username} contactUrl={`https://${contactHost}/@${contactUser}`} />
+  </div>
+</Dashboard>

@@ -1,5 +1,5 @@
-import { Metric } from "@prisma/client";
-import { periodKeys, periodToDate } from "~/lib/period";
+import type { Metric } from "~/generated/prisma/client";
+import { type periodKeys, periodToDate } from "~/lib/period";
 import { db } from "./db";
 
 function formatUtcOffset(offset: number) {
@@ -12,7 +12,7 @@ function formatUtcOffset(offset: number) {
 export type AggregateMetric = Omit<Metric, "id" | "timestamp"> & { date: Date };
 export const getAccountMetrics = async (handle: string, params?: { period: periodKeys; utcOffset: number }) => {
   const period = params?.period ?? "7d";
-  const utcOffset = params?.utcOffset ?? 180 ?? new Date().getTimezoneOffset(); // Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const utcOffset = params?.utcOffset ?? new Date().getTimezoneOffset();
 
   const accountMetrics = db.$queryRaw<AggregateMetric[]>`
   SELECT DATE_TRUNC('day', timestamp AT TIME ZONE ${formatUtcOffset(utcOffset)}) AS date,

@@ -1,0 +1,13 @@
+---
+import { Box } from "~/components/Box";
+
+interface Props {
+  title: string;
+}
+---
+
+<Box class="my-0 break-inside-avoid-column rounded-lg" title={Astro.props.title} isSecondary>
+  <p class="max-w-prose leading-relaxed text-gray-500 dark:text-mastodon-purple-100">
+    <slot />
+  </p>
+</Box>

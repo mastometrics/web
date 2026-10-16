@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/manrope";
+
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter Variable", "Manrope Variable", sans-serif;
+  --font-display: "Manrope Variable", "Inter Variable", sans-serif;
+
+  --color-mastodon-gray-200: #9baec8;
+  --color-mastodon-gray-400: #313543;
+  --color-mastodon-gray-800: #1f232b;
+
+  --color-mastodon-purple: #6364ff;
+  --color-mastodon-purple-50: #fafaff;
+  --color-mastodon-purple-100: #f2f2ff;
+  --color-mastodon-purple-200: #ceceff;
+  --color-mastodon-purple-300: #aaabff;
+  --color-mastodon-purple-400: #8787ff;
+  --color-mastodon-purple-500: #6364ff;
+  --color-mastodon-purple-600: #4849d3;
+  --color-mastodon-purple-700: #2a2ba9;
+  --color-mastodon-purple-800: #1d1d6f;
+  --color-mastodon-purple-900: #0f0f36;
+}
+
+/* Tailwind v4 changed the defaults below, keep the v3 look */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

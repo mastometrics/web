@@ -1,0 +1,86 @@
+---
+import Page from "~/layouts/Page.astro";
+import MaintenanceGuard from "~/components/astro/MaintenanceGuard.astro";
+import { Box } from "~/components/Box";
+import { LoginForm } from "~/components/LoginForm";
+import { accountExists } from "~/backend/account";
+import { clearUserSession, getOrigin } from "~/backend/auth-session";
+import { getAuthUrl } from "~/backend/oauth";
+import { parseInstance } from "~/lib/format";
+import { logger } from "~/lib/logger";
+
+const params = Astro.url.searchParams;
+const user = Astro.locals.user;
+const error = params.get("error") ?? undefined;
+let username: string | undefined;
+
+if (params.get("username")?.length) {
+  username = params.get("username")!.replace(/^@/, "");
+  if (user?.account && user.account.username.toLowerCase() != username.toLowerCase()) {
+    // Signed in with another account, sign out and reload the same url
+    clearUserSession(Astro.cookies);
+    return Astro.redirect(Astro.url.pathname + Astro.url.search);
+  } else if (!user?.account && (await accountExists(username))) {
+    // There's an account with this username, user is specifically trying to log in with that account
+    // so we direct to the oauth page with the 'force_login' parameter set
+    try {
+      return Astro.redirect(await getAuthUrl(parseInstance(username)!, getOrigin(Astro.url), { forceLogin: true }));
+    } catch (e) {
+      logger.warn(e);
+    }
+  }
+}
+
+if (user?.account) return Astro.redirect(`/dashboard/${user.account.username}`);
+
+const defaultInstance = username ? parseInstance(username) : (params.get("instance") ?? undefined);
+---
+
+<Page title="Login">
+  {error && (
+    <Box isError class="mx-auto my-6 max-w-2xl">
+      <p class="whitespace-pre-line">{error}</p>
+    </Box>
+  )}
+  <MaintenanceGuard>
+    <div class="mx-auto my-6 max-w-2xl rounded-lg bg-white p-4 shadow-lg shadow-mastodon-purple-600/10 dark:bg-mastodon-purple-700 sm:p-8">
+      <h1 class="mb-4 text-2xl font-semibold text-mastodon-purple-600 dark:text-mastodon-purple-100">Welcome!</h1>
+      <p class="my-2 text-mastodon-purple-900/60 dark:text-mastodon-purple-200">
+        {username ? (
+          <>
+            Sign up for MastoMetrics to get analytics for <em class="text-mastodon-purple-500">{username}</em>.
+            <br />
+            <br />
+            MastoMetrics is a free and privacy-friendly analytics tool for Mastodon, giving you insights into your
+            account and your followers.
+          </>
+        ) : (
+          "Enter your mastodon instance or username, to continue to MastoMetrics."
+        )}
+        <br />
+      </p>
+
+      <LoginForm
+        client:load
+        class="mt-8"
+        defaultInstance={defaultInstance}
+        error={error}
+        cta={username ? "Continue" : undefined}
+      />
+      <p class="mt-4 max-w-prose text-sm leading-relaxed text-mastodon-purple-900/70 dark:text-mastodon-purple-200">
+        If this is your first time using MastoMetrics, you will be asked to authorize the app.
+        <br />
+        Learn more about the data we store in our{" "}
+        <a href="/faq" class="text-mastodon-purple-500 dark:text-mastodon-purple-300">
+          FAQ
+        </a>
+        .
+      </p>
+      <ul class="my-2 list-inside list-disc space-y-2 text-sm leading-relaxed text-mastodon-purple-900/70 marker:text-mastodon-purple-400 dark:text-mastodon-purple-200">
+        <li>We only need read permissions</li>
+        <li>We dont't need your email address</li>
+        <li>We don't send spam</li>
+      </ul>
+    </div>
+  </MaintenanceGuard>
+</Page>

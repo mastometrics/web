@@ -1,0 +1,27 @@
+---
+import { config } from "~/lib/config";
+
+const contact = config.contactHandle;
+const [user, host] = contact.split("@");
+const contactUrl = `https://${host}/@${user}`;
+const links = [
+  { href: "/faq", label: "FAQ" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/self-hosting", label: "Self-hosting" },
+  { href: contactUrl, label: "Contact" },
+  { href: contactUrl, label: `@${contact.toLowerCase()}`, rel: "me" },
+];
+---
+
+<div class="mt-24 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 px-4 py-6 sm:gap-x-14 sm:px-8">
+  {links.map(({ href, label, rel }) => (
+    <a
+      href={href}
+      rel={rel}
+      target={href.startsWith("https://") ? "_blank" : undefined}
+      class="text-mastodon-purple-400 transition hover:text-white"
+    >
+      {label}
+    </a>
+  ))}
+</div>

@@ -40,7 +40,9 @@ export const listUsers = async (params: listUsersParams = {}) =>
         ],
       },
       orderBy: orderings[params.order ?? "lastLogin"],
-      include: { Account: true },
+      // Never expose access tokens or raw api responses to the client
+      omit: { token: true },
+      include: { Account: { omit: { raw: true } } },
       take,
       skip,
     });

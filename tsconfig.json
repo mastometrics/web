@@ -1,18 +1,13 @@
 {
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist", "node_modules"],
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "jsxImportSource": "solid-js",
     "jsx": "preserve",
-    "strict": true,
-    "types": ["solid-start/env", "unplugin-icons/types/solid"],
-    "baseUrl": "./",
+    "jsxImportSource": "solid-js",
+    "types": ["node", "unplugin-icons/types/solid"],
     "paths": {
       "~/*": ["./src/*"]
-    },
-    "plugins": [{ "name": "vite-plugin-iso-import" }]
+    }
   }
 }

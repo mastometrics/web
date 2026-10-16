@@ -1,4 +1,5 @@
-import { Metric, Prisma } from "@prisma/client";
+import type { Metric } from "~/generated/prisma/client";
+import { Prisma } from "~/generated/prisma/client";
 import { mastodonApi } from "../lib/mastodon/api";
 import { useDatabase } from "../backend/db";
 import { truncateDate } from "~/lib/format";
@@ -82,30 +83,33 @@ export async function backfillMetrics(handle: string) {
     );
 
     const datePosition = new Date(firstKnownDate);
-    const toCreateMetrics = [...Array(metricsToBackfill).keys()].reduce((macc, i) => {
-      const metricDate = new Date(datePosition.getTime() + i * metricPeriod);
-      const prevMetric = macc[i - 1] || {
-        timestamp: new Date(datePosition.getTime() + (i - 1) * metricPeriod),
-        followers: Math.max(0, (account.followersCount ?? 0) - backfilled.followers),
-        following: account.followingCount || 0,
-        statuses: Math.max(0, (account.statusesCount ?? 0) - backfilled.statuses),
-        favorites: 0,
-        boosts: 0,
-        replies: 0,
-        engagements: 0,
-      };
-      const activityOnDay = getActivityOnDay(metricDate);
-      const metric = Object.assign({}, prevMetric, { timestamp: metricDate });
-      metric.followers += activityOnDay.followers;
-      metric.following += activityOnDay.following;
-      metric.statuses += activityOnDay.statuses;
-      metric.favorites += activityOnDay.favorites;
-      metric.boosts += activityOnDay.boosts;
-      metric.replies += activityOnDay.replies;
-      metric.engagements += activityOnDay.engagements;
-      macc.push(metric);
-      return macc;
-    }, [] as (MetricAggregate & { timestamp: Date })[]);
+    const toCreateMetrics = [...Array(metricsToBackfill).keys()].reduce(
+      (macc, i) => {
+        const metricDate = new Date(datePosition.getTime() + i * metricPeriod);
+        const prevMetric = macc[i - 1] || {
+          timestamp: new Date(datePosition.getTime() + (i - 1) * metricPeriod),
+          followers: Math.max(0, (account.followersCount ?? 0) - backfilled.followers),
+          following: account.followingCount || 0,
+          statuses: Math.max(0, (account.statusesCount ?? 0) - backfilled.statuses),
+          favorites: 0,
+          boosts: 0,
+          replies: 0,
+          engagements: 0,
+        };
+        const activityOnDay = getActivityOnDay(metricDate);
+        const metric = Object.assign({}, prevMetric, { timestamp: metricDate });
+        metric.followers += activityOnDay.followers;
+        metric.following += activityOnDay.following;
+        metric.statuses += activityOnDay.statuses;
+        metric.favorites += activityOnDay.favorites;
+        metric.boosts += activityOnDay.boosts;
+        metric.replies += activityOnDay.replies;
+        metric.engagements += activityOnDay.engagements;
+        macc.push(metric);
+        return macc;
+      },
+      [] as (MetricAggregate & { timestamp: Date })[]
+    );
 
     const existingMetrics = (await db.metric.findMany({
       where: { accountId: account.id },
@@ -115,7 +119,7 @@ export async function backfillMetrics(handle: string) {
     const createData: Prisma.MetricCreateManyInput[] = [];
     for (const metric of toCreateMetrics) {
       if (existingMetrics.find((m) => m.timestamp.getTime() === metric.timestamp.getTime())) {
-        if (import.meta.env.DEV) logger.debug(`❗ Skipping ${metric.timestamp} because it already exists`);
+        logger.debug(`❗ Skipping ${metric.timestamp} because it already exists`);
         continue;
       }
       createData.push({

@@ -1,8 +1,9 @@
-import { Account, Prisma } from "@prisma/client";
+import type { Account } from "~/generated/prisma/client";
+import { Prisma } from "~/generated/prisma/client";
 import { useDatabase } from "~/backend/db";
 import { mastodonApi } from "~/lib/mastodon/api";
-import { ApiOptions } from "~/lib/mastodon/http";
-import { getTextContent } from "~/lib/mastodon/utils";
+import { type ApiOptions } from "~/lib/mastodon/http";
+import { getTextContent } from "~/lib/mastodon/html.server";
 
 /** Upsert an accounts most recent statuses and their engagement, (last 120 by default)  */
 export async function syncStatuses(
@@ -37,15 +38,19 @@ export async function syncStatuses(
         db.status.upsert({
           where: { statusUri: status.uri },
           update: statusData,
+          // Scalar accountId (instead of connecting the relation) lets Prisma use a native INSERT ... ON CONFLICT
           create: {
-            ...(statusData as Prisma.StatusCreateInput),
+            ...(statusData as Prisma.StatusUncheckedCreateInput),
             statusUri: status.uri,
-            Account: { connect: { id: account.id } },
+            accountId: account.id,
           },
         })
       );
     }
 
-    await db.$transaction(upserts);
+    // One at a time instead of in a transaction, which would hold on to a connection for every round trip. With many
+    // accounts syncing at once (or a slow connection) other syncs would time out waiting for a free connection.
+    // Each upsert is idempotent, so a failed sync is simply completed by the next one.
+    for (const upsert of upserts) await upsert;
   });
 }

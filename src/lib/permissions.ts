@@ -1,4 +1,4 @@
-import { AuthenticatedUser } from "~/backend/authentication";
+import type { AuthenticatedUser } from "~/backend/authentication";
 export enum Roles {
   Admin = "admin",
 }

@@ -1,0 +1,39 @@
+---
+import Dashboard from "~/layouts/Dashboard.astro";
+import { PeopleList } from "~/components/Account/PeopleList";
+import { PeopleFeedbackButton } from "~/components/Account/PeopleFeedbackButton";
+import { Icons } from "~/components/Icon";
+import { loadDashboardAccount } from "~/backend/page-guards";
+import { getTopPeople } from "~/backend/people";
+
+const result = await loadDashboardAccount(Astro);
+if (result.redirect) return result.redirect;
+const { account } = result;
+
+const peopleAccount = { id: account.id, instance: account.instance };
+const initialPeople = await getTopPeople(account.id, { order: "reach" });
+---
+
+<Dashboard title={`${account.displayName ?? account.username} - People - MastoMetrics`}>
+  <div class="bg-mastodon-purple-100/90 dark:bg-mastodon-purple-800/10">
+    <div class="container mx-auto max-w-4xl px-6 py-8">
+      <div class="flex flex-col items-center gap-8 sm:flex-row">
+        <Icons.TestPipe class="h-12 w-12 text-mastodon-purple-500 dark:text-mastodon-purple-700" />
+        <div class="flex-auto">
+          <h2 class="text-base font-medium text-mastodon-purple-500">Experimental feature</h2>
+          <p class="my-2 max-w-prose text-sm text-mastodon-purple-900 dark:text-mastodon-purple-200">
+            This feature helps you learn more about the people you interact with often. We use your notifications to
+            gather data for this view, in order to not overload your instance server. As a downside, data may not be
+            100% accurate, especially if you often clear your notifications. Make sure to let us know if you like the
+            feature or have any suggestions.
+          </p>
+          <PeopleFeedbackButton client:idle account={peopleAccount} />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container mx-auto max-w-4xl px-4 py-2 sm:px-6 sm:py-4"></div>
+  <div class="container mx-auto max-w-4xl sm:mb-12 sm:px-6">
+    <PeopleList client:load account={peopleAccount} initial={initialPeople} />
+  </div>
+</Dashboard>

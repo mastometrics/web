@@ -1,6 +1,6 @@
 import { Prisma, useDatabase } from "~/backend/db";
 import { logger } from "~/lib/logger";
-import { SYNC_MAX_SPIKE, SYNC_OUTDATED_MINS } from "./config";
+import { SYNC_MAX_SPIKE, SYNC_OUTDATED_MINS } from "~/lib/config";
 import { syncAccount } from "./sync-account";
 
 export async function updateOutdatedUsers() {

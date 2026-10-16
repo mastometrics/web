@@ -1,0 +1,39 @@
+# Self-hosting MastoMetrics: `docker compose up -d`
+# Configure it through a `.env` file next to this file, see `.env.dist` and the README.
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4321}:4321"
+    environment:
+      DATABASE_URL: postgresql://mastometrics:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/mastometrics
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      SITE_URL: ${SITE_URL:?Set SITE_URL in .env, e.g. https://metrics.example.com}
+      APP_NAME: ${APP_NAME:-}
+      CONTACT_HANDLE: ${CONTACT_HANDLE:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
+      # Runs the web app and the background worker in one container
+      DEPLOYMENT_TYPE: default
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mastometrics
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: mastometrics
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mastometrics -d mastometrics"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:

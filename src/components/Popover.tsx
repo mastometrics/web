@@ -1,23 +1,20 @@
-import { ParentComponent } from "solid-js";
-import { Popover as KBPopover } from "@kobalte/core";
+import type { JSX, ParentComponent } from "solid-js";
+import { Popover as KBPopover } from "@kobalte/core/popover";
 
-export const Popover: ParentComponent<{ triggerEl: ReturnType<typeof PopoverTrigger>; title?: string }> = (props) => {
+export const Popover: ParentComponent<{ triggerEl: JSX.Element; title?: string }> = (props) => {
   return (
-    <KBPopover.Root>
+    <KBPopover>
       {props.triggerEl}
       <KBPopover.Portal>
-        <KBPopover.Content class="origin-top rounded-md bg-white p-4 shadow-lg  animate-in fade-in zoom-in-50 duration-100 dark:bg-mastodon-purple-700 ">
+        <KBPopover.Content class="animate-in fade-in zoom-in-50 dark:bg-mastodon-purple-700 origin-top rounded-md bg-white p-4 shadow-lg duration-100">
           <KBPopover.Arrow />
-          {/* <KBPopover.CloseButton>
-                <Icons.Close />
-              </KBPopover.CloseButton> */}
-          <KBPopover.Title class="mb-2 text-xs font-bold uppercase  text-mastodon-purple-400 dark:text-mastodon-purple-200">
+          <KBPopover.Title class="text-mastodon-purple-400 dark:text-mastodon-purple-200 mb-2 text-xs font-bold uppercase">
             {props.title}
           </KBPopover.Title>
           {props.children}
         </KBPopover.Content>
       </KBPopover.Portal>
-    </KBPopover.Root>
+    </KBPopover>
   );
 };
 

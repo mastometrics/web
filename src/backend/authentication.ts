@@ -1,25 +1,15 @@
-import { Account } from "@prisma/client";
-import { isServer } from "solid-js/web";
-import { redirect, ServerError } from "solid-start/server";
-import { getUser } from "~/backend/session";
+import type { Account } from "~/generated/prisma/client";
 import { HandledError } from "~/lib/error";
-import { Roles } from "~/lib/permissions";
+import type { Roles } from "~/lib/permissions";
 
-export type AuthenticatedUser = { account: Account; roles: Roles[] };
+export type AuthenticatedUser = { id: number; account: Account; roles: Roles[] };
 
-export async function useAuthentication(request: Request) {
-  if (!isServer) throw new HandledError("useAuthentication can only be used on the server");
-  const user = await getUser(request);
-  if (!user) throw redirect("/auth/login");
+/** Throws when there is no authenticated user */
+export function requireUser(user: AuthenticatedUser | null | undefined): AuthenticatedUser {
+  if (!user) throw new HandledError("Not authenticated", { status: 401 });
   return user;
 }
 
-export async function requireAuth(request: Request) {
-  const user = useAuthentication(request);
-  if (!user) throwUnauthorized();
-  return user;
-}
-
-export function throwUnauthorized() {
-  throw new ServerError("Not authorized", { status: 403 });
+export function throwUnauthorized(): never {
+  throw new HandledError("Not authorized", { status: 403 });
 }

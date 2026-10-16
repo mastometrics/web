@@ -1,0 +1,94 @@
+---
+import Dashboard from "~/layouts/Dashboard.astro";
+import { AccountMetrics } from "~/components/Account/AccountMetrics";
+import { AccountSetup, AdminAccountActions, type OverviewAccount } from "~/components/Account/AccountOverview";
+import { AccountStatuses } from "~/components/Account/AccountStatuses";
+import { loadDashboardAccount } from "~/backend/page-guards";
+import { getAccountMetrics } from "~/backend/metrics";
+import { getStatuses } from "~/backend/statuses";
+import { formatRelativeTime } from "~/lib/format";
+import { type AccountMetadata, readMetadata } from "~/lib/metadata";
+
+const result = await loadDashboardAccount(Astro);
+if (result.redirect) return result.redirect;
+const { user, account, permissions } = result;
+
+const metadata = readMetadata<AccountMetadata>(account.metadata);
+const overview: OverviewAccount = {
+  id: account.id,
+  username: account.username,
+  instance: account.instance,
+  tracking: account.tracking,
+  statusesCount: account.statusesCount,
+  pendingImport: metadata.pendingImport ?? undefined,
+  suspendedSync: metadata.suspendedSync ?? undefined,
+};
+
+// Server render the initial data, the islands take over from there
+const statusParams = { order: "engagements", includeReplies: false, query: "" } as const;
+const [initialMetrics, [recentStatuses]] = await Promise.all([
+  getAccountMetrics(account.username, { period: "30d", utcOffset: new Date().getTimezoneOffset() }),
+  account.tracking
+    ? getStatuses(account.username, { period: "30d", ...statusParams })
+    : Promise.resolve([undefined] as const),
+]);
+// No recent posts, show the top posts of all time instead of an empty list
+const [initialStatuses] =
+  recentStatuses && !recentStatuses.statuses.length
+    ? await getStatuses(account.username, { period: "all", ...statusParams })
+    : [recentStatuses];
+const lastUpdated = formatRelativeTime(account.lastIndex);
+---
+
+<Dashboard title={`${account.displayName ?? account.username} - MastoMetrics`}>
+  <div class="bg-mastodon-purple-100/90 dark:bg-mastodon-purple-800/10">
+    <div class="container mx-auto max-w-4xl px-6 py-8">
+      <div class="-ml-4 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
+        <div class="ml-4 mt-4">
+          <div class="flex items-center">
+            <div class="shrink-0">
+              <img class="h-16 w-16 rounded-md" src={account.avatar ?? ""} alt={account.displayName ?? ""} />
+            </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-medium leading-6 text-mastodon-purple-800 dark:text-mastodon-purple-100 sm:text-xl">
+                {account.displayName}
+              </h3>
+              <p class="text-sm text-mastodon-purple-900/50 dark:text-mastodon-purple-300 sm:text-base">
+                <a href={`https://${account.instance}/@${account.username}`} target="_blank">
+                  {account.username}
+                </a>
+              </p>
+              <p class="mt-2 text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:hidden">
+                Last updated {lastUpdated}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="ml-4 mt-4 flex shrink-0 flex-col items-end gap-2">
+          <p class="hidden text-xs text-mastodon-purple-800/50 dark:text-mastodon-purple-200 sm:block">
+            Last updated {lastUpdated}
+          </p>
+          {permissions.manage() && <AdminAccountActions client:load account={overview} />}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container mx-auto max-w-4xl px-4 py-2 sm:px-6 sm:py-4">
+    <AccountSetup client:load account={overview} isOwnAccount={user.account.id === account.id} />
+    <AccountMetrics
+      client:load
+      handle={account.username}
+      account={{
+        followersCount: account.followersCount,
+        followingCount: account.followingCount,
+        statusesCount: account.statusesCount,
+      }}
+      initial={initialMetrics}
+    />
+  </div>
+  {account.tracking && (
+    <div class="container mx-auto max-w-4xl sm:mb-12 sm:px-6">
+      <AccountStatuses client:load handle={account.username} initial={initialStatuses ?? undefined} />
+    </div>
+  )}
+</Dashboard>

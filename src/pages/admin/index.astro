@@ -1,0 +1,19 @@
+---
+import Dashboard from "~/layouts/Dashboard.astro";
+import { AdminUsers } from "~/components/Admin/AdminUsers";
+import { throwOnError } from "~/backend/db";
+import { getTotalUserCount, listUsers } from "~/backend/users";
+import { usePermissions } from "~/lib/permissions";
+
+const user = Astro.locals.user;
+if (!usePermissions(user).manage()) return Astro.redirect("/auth/login");
+
+const [userCount, initial] = await Promise.all([
+  getTotalUserCount(),
+  listUsers({ order: "lastLogin", dir: "desc", query: "", filters: [] }).then(throwOnError),
+]);
+---
+
+<Dashboard title="Admin - MastoMetrics">
+  <AdminUsers client:load userCount={userCount} initial={initial} />
+</Dashboard>

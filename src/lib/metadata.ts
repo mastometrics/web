@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "~/generated/prisma/client";
 
 type DateTimeString = string;
 export type Metadata<T> = T & { [key: string]: Prisma.JsonValue };

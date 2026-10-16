@@ -1,8 +1,8 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "~/generated/prisma/client";
 import { db as prisma } from "~/backend/db";
 import { parseHandle } from "~/lib/format";
-import { MastodonAccount, mastodonApi } from "~/lib/mastodon/api";
-import { ApiOptions } from "~/lib/mastodon/http";
+import { type MastodonAccount, mastodonApi } from "~/lib/mastodon/api";
+import { type ApiOptions } from "~/lib/mastodon/http";
 
 export async function createOrUpdateAccount(handle: string, user?: MastodonAccount, api?: ApiOptions, db = prisma) {
   const { username, acct, instance } = parseHandle(handle);

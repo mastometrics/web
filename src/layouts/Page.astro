@@ -1,0 +1,25 @@
+---
+// Shell for public pages (FAQ, privacy, login, ...)
+import Base from "./Base.astro";
+import Footer from "~/components/astro/Footer.astro";
+import logo from "~/assets/logo.svg";
+
+interface Props {
+  title: string;
+}
+---
+
+<Base title={Astro.props.title}>
+  <div class="bg-mastodon-purple-700">
+    <div class="container mx-auto flex max-w-4xl items-center px-6 py-4">
+      <a href="/">
+        <img src={logo.src} alt="MastoMetrics Logo" />
+      </a>
+      <div class="flex-auto"></div>
+    </div>
+  </div>
+  <div class="container mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-12">
+    <slot />
+  </div>
+  <Footer />
+</Base>
