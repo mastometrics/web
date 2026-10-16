@@ -4,7 +4,7 @@ import { throwOnError } from "./db";
 import { findOrCreateInstance, getInstanceAppCredentials } from "./instance";
 
 /** Validates the instance and returns the url of its OAuth authorization page */
-export async function getAuthUrl(inputInstance: string, origin: string, opts: { forceLogin?: boolean } = {}) {
+export async function getAuthUrl(inputInstance: string, origin: string, opts: { state: string; forceLogin?: boolean }) {
   try {
     await mastodonApi({ instance: inputInstance }).instance.info();
   } catch (error) {
@@ -24,6 +24,7 @@ export async function getAuthUrl(inputInstance: string, origin: string, opts: { 
     redirect_uri: credentials.redirectUri,
     response_type: "code",
     scope: "read",
+    state: opts.state,
   });
   if (opts.forceLogin) params.set("force_login", "true");
   return `https://${instance.host}/oauth/authorize?${params}`;

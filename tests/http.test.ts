@@ -139,6 +139,15 @@ describe.skipIf(!built)("http", () => {
     expect((await get("/dashboard", user)).headers.get("location")).toContain("/auth/login");
   });
 
+  it("rejects OAuth callbacks that weren't started in this browser", async () => {
+    const callback = await get("/auth/connect?instance=mas.to&code=attacker-code&state=forged");
+    expect(callback.status).toBe(302);
+    expect(new URL(callback.headers.get("location")!, base).searchParams.get("error")).toContain(
+      "started in another browser"
+    );
+    expect(callback.headers.getSetCookie().some((c) => c.startsWith("mm_session="))).toBe(false);
+  });
+
   it("logs out", async () => {
     const response = await get("/auth/logout", admin);
     expect(response.status).toBe(302);
