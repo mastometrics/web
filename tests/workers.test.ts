@@ -9,6 +9,7 @@ import { purgeRevokedAccounts } from "~/workers/purge-revoked-accounts";
 import { requeueStuckSyncs } from "~/workers/requeue-stuck-syncs";
 import { syncAccount } from "~/workers/sync-account";
 import { syncInteractions } from "~/workers/sync-interactions";
+import { syncStatuses } from "~/workers/sync-statuses";
 import { updateOutdatedUsers } from "~/workers/sync-outdated-users";
 import { mastodonAccount, mastodonStatus, mockMastodon } from "./mastodon-mock";
 import { resetDatabase, seedDatabase } from "./seed";
@@ -148,6 +149,27 @@ describe("importAccount", () => {
     expect(await db.metric.count({ where: { accountId: account.id } })).toBeGreaterThan(1);
   });
 
+  it("ignores implausible dates from the instance when backfilling metrics", async () => {
+    mockDemoInstance({
+      "mas.to/api/v1/notifications": (url) =>
+        url.searchParams.getAll("types[]").includes("follow")
+          ? [{ ...notification(50, "follow", { id: "20", acct: "newfan" }), created_at: "-200000-01-01T00:00:00.000Z" }]
+          : [],
+    });
+    await db.account.update({ where: { id: seeded.demo.id }, data: { tracking: false } });
+    await db.metric.deleteMany({});
+    await db.status.updateMany({ data: { publishedAt: new Date("1970-01-01T00:00:00Z") } });
+
+    expect(throwOnError(await importAccount("demo@mas.to", { instance: "mas.to", token: "secret-user-token" }))).toBe(
+      true
+    );
+    const oldest = await db.metric.findFirstOrThrow({
+      where: { accountId: seeded.demo.id },
+      orderBy: { timestamp: "asc" },
+    });
+    expect(oldest.timestamp.getTime()).toBeGreaterThanOrEqual(new Date("2016-01-01T00:00:00Z").getTime());
+  });
+
   it("does not start a second import while one is running", async () => {
     mockDemoInstance();
     await db.account.update({
@@ -280,6 +302,28 @@ describe("restartSync", () => {
     });
     await expect(restartSync("demo@mas.to")).rejects.toThrow(/Sign out and in again/);
     expect((await demoMetadata()).suspendedSync).toBeTruthy();
+  });
+});
+
+describe("syncStatuses", () => {
+  it("never overwrites statuses of another account", async () => {
+    const victimUri = "https://mas.to/users/demo/statuses/1001";
+    const before = await db.status.findUniqueOrThrow({ where: { statusUri: victimUri } });
+    mockMastodon({
+      "mas.to/api/v1/accounts/2/statuses": () => [
+        mastodonStatus(1, { uri: victimUri, content: "<p>Hijacked</p>", favourites_count: 999999 }),
+        mastodonStatus(2, { uri: "https://mas.to/users/other/statuses/2", content: "<p>Own post</p>" }),
+      ],
+    });
+    throwOnError(await syncStatuses(seeded.other, { instance: "mas.to" }));
+
+    const after = await db.status.findUniqueOrThrow({ where: { statusUri: victimUri } });
+    expect(after).toMatchObject({
+      accountId: seeded.demo.id,
+      content: before.content,
+      favoritesCount: before.favoritesCount,
+    });
+    expect(await db.status.count({ where: { accountId: seeded.other.id, content: "Own post" } })).toBe(1);
   });
 });
 
