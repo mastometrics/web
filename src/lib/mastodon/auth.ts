@@ -1,5 +1,6 @@
 import { HandledError } from "../error";
 import { type MastodonAccessToken, type MastodonAppRegistration, type MastodonAuthenticatedAccount } from "./types";
+import { safeFetch } from "./safe-fetch";
 
 export async function registerInstanceApp(
   instance: string,
@@ -11,7 +12,7 @@ export async function registerInstanceApp(
       : config.scopes?.join(" ")
     : "read write follow";
   const registration = (await (
-    await fetch(`https://${instance}/api/v1/apps`, {
+    await safeFetch(`https://${instance}/api/v1/apps`, {
       method: "POST",
       body: JSON.stringify({
         client_name: config.clientName,
@@ -48,7 +49,7 @@ export async function fetchAccessToken(
         : { grant_type: "client_credentials" }
     )
   );
-  const request = fetch(`https://${instance}/oauth/token`, {
+  const request = safeFetch(`https://${instance}/oauth/token`, {
     method: "POST",
     body,
     headers: {
@@ -74,7 +75,7 @@ export const fetchAppAccessToken = (
 
 export async function fetchAuthenticatedUser(instance: string, accessToken: string) {
   const user = (await (
-    await fetch(`https://${instance}/api/v1/accounts/verify_credentials`, {
+    await safeFetch(`https://${instance}/api/v1/accounts/verify_credentials`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

@@ -2,6 +2,7 @@ import { HandledError } from "../error";
 import { createThrottler, createRateLimitStore } from "./throttler";
 import { createHash } from "node:crypto";
 import { logger } from "../logger";
+import { safeFetch } from "./safe-fetch";
 const throttler = createThrottler(createRateLimitStore());
 export type ApiOptions = { throttle?: boolean; instance: string; token?: string };
 
@@ -23,7 +24,7 @@ export async function fetchApi<T>(
 
     const requestInit: RequestInit = { ...request, signal: AbortSignal.timeout(20 * 1000) };
     if (token) requestInit.headers = { ...request.headers, Authorization: `Bearer ${token}` };
-    const response = await fetch(url, requestInit);
+    const response = await safeFetch(url, requestInit);
 
     const { ratelimitExceeded, awaitReset } = handleResponse(response);
 
