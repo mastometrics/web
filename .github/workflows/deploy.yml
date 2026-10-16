@@ -12,6 +12,10 @@ concurrency:
   group: deploy
   cancel-in-progress: false
 
+# The token only needs to read the repository
+permissions:
+  contents: read
+
 jobs:
   deploy:
     # Only deploy pushes to main of this repository. workflow_run has access to the secrets, so never run it for CI runs
@@ -27,10 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      - uses: digitalocean/app_action/deploy@v2
+      - uses: digitalocean/app_action/deploy@cc55bc9b848d25f9c1c9f831cf843fbab3fbfb15 # v2
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
