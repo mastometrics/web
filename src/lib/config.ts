@@ -53,3 +53,6 @@ export const MAX_WARNINGS_LOGGED = num(process.env.WORKER_MAX_WARNINGS_LOGGED, 1
 
 /** Max number of warnings within 24 hours after which to suspend an account */
 export const SUSPEND_IMPORT_AFTER_WARNINGS = num(process.env.WORKER_SUSPEND_IMPORT_AFTER_WARNINGS, 10);
+
+/** Daily delete the data of accounts that revoked access more than 30 days ago, as promised in the privacy policy */
+export const PURGE_REVOKED_ACCOUNTS = process.env.WORKER_PURGE_REVOKED_ACCOUNTS !== "false";

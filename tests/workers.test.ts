@@ -5,6 +5,7 @@ import { restartSync } from "~/backend/account";
 import { authenticate } from "~/backend/session";
 import { type AccountMetadata, readMetadata } from "~/lib/metadata";
 import { importAccount } from "~/workers/import-account";
+import { purgeRevokedAccounts } from "~/workers/purge-revoked-accounts";
 import { requeueStuckSyncs } from "~/workers/requeue-stuck-syncs";
 import { syncAccount } from "~/workers/sync-account";
 import { syncInteractions } from "~/workers/sync-interactions";
@@ -300,5 +301,67 @@ describe("syncAccount warnings", () => {
     expect(error?.message).toContain("pending import");
     account = await db.account.findUniqueOrThrow({ where: { username: "demo@mas.to" } });
     expect(readMetadata<AccountMetadata>(account.metadata).warnings).toBeUndefined();
+  });
+});
+
+describe("purgeRevokedAccounts", () => {
+  const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000);
+  /** Suspend the demo account with the given newest warning, like handleAccountSyncingError does */
+  async function suspendDemo(message: string, warnedDaysAgo: number, seenDaysAgo: number) {
+    await db.account.update({
+      where: { username: "demo@mas.to" },
+      data: {
+        metadata: {
+          suspendedSync: daysAgo(warnedDaysAgo).toISOString(),
+          warnings: [{ timestamp: daysAgo(warnedDaysAgo).toISOString(), message }],
+        },
+      },
+    });
+    await db.user.update({ where: { id: seeded.admin.id }, data: { lastSeen: daysAgo(seenDaysAgo) } });
+  }
+  const revoked = "Unable to sync account, authentication token rejected (Unauthorized request to mas.to)";
+  const verifyResponds = (status: number) =>
+    mockDemoInstance({
+      "mas.to/api/v1/accounts/verify_credentials": () =>
+        status === 200 ? mastodonAccount() : new Response("{}", { status, statusText: "Error" }),
+    });
+  const demoExists = async () => (await db.account.count({ where: { username: "demo@mas.to" } })) === 1;
+
+  it("only reports without --apply", async () => {
+    await suspendDemo(revoked, 40, 60);
+    verifyResponds(401);
+    const results = await purgeRevokedAccounts();
+    expect(results.map((r) => [r.username, r.status, r.deleted])).toEqual([["demo@mas.to", "revoked", false]]);
+    expect(await demoExists()).toBe(true);
+  });
+
+  it("deletes accounts whose token is still rejected after 30 days", async () => {
+    await suspendDemo(revoked, 40, 60);
+    verifyResponds(401);
+    await purgeRevokedAccounts({ apply: true });
+    expect(await demoExists()).toBe(false);
+    expect(await db.interaction.count()).toBe(0);
+    // Other accounts are untouched, the seeded other@mas.to was only revoked just now
+    expect(await db.account.count({ where: { username: "other@mas.to" } })).toBe(1);
+  });
+
+  it("keeps accounts that were revoked recently, signed in since, or failed for other reasons", async () => {
+    verifyResponds(401);
+    await suspendDemo(revoked, 10, 60);
+    expect(await purgeRevokedAccounts({ apply: true })).toEqual([]);
+    await suspendDemo(revoked, 40, 5);
+    expect(await purgeRevokedAccounts({ apply: true })).toEqual([]);
+    await suspendDemo("Suspending after too many import warnings, Bad Gateway", 40, 60);
+    expect(await purgeRevokedAccounts({ apply: true })).toEqual([]);
+    expect(await demoExists()).toBe(true);
+  });
+
+  it("keeps accounts when the instance doesn't confirm the revocation", async () => {
+    await suspendDemo(revoked, 40, 60);
+    verifyResponds(200);
+    expect((await purgeRevokedAccounts({ apply: true }))[0]).toMatchObject({ status: "valid", deleted: false });
+    verifyResponds(503);
+    expect((await purgeRevokedAccounts({ apply: true }))[0]).toMatchObject({ status: "unknown", deleted: false });
+    expect(await demoExists()).toBe(true);
   });
 });

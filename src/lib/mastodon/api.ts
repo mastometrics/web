@@ -21,6 +21,8 @@ export function mastodonApi(api: ApiOptions) {
       lookup: async (username: string) =>
         (await http.fetch<MastodonAccount>(`accounts/lookup?acct=${username}`, api)).data,
       get: async (id: string) => (await http.fetch<MastodonAccount>(`accounts/${id}`, api)).data,
+      /** The account the token belongs to, fails with a 401 when the token was revoked */
+      verifyCredentials: async () => (await http.fetch<MastodonAccount>("accounts/verify_credentials", api)).data,
       /** Get account followers, max 80 per request */
       followers: (params: { id: string }, opts?: paginateOpts) =>
         http.paginate<MastodonAccount>(`accounts/${params.id}/followers?${limit(FOLLOW_LIMIT, opts)}`, api, opts),
