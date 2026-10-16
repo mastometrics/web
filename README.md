@@ -117,33 +117,38 @@ docker compose exec db psql -U mastometrics -c \
 
 ### Deleting revoked accounts
 
-The privacy policy promises to delete the data of people who revoke MastoMetrics' access in their Mastodon settings and don't sign in again within 30 days. Run this regularly, e.g. weekly:
+The privacy policy promises to delete the data of people who revoke MastoMetrics' access in their Mastodon settings and don't sign in again within 30 days. The worker does this every day at 04:17, disable it with `WORKER_PURGE_REVOKED_ACCOUNTS=false`.
+
+It only deletes accounts that were suspended because their instance rejected the token (HTTP 401) more than 30 days ago, without a sign in since, and asks each instance once more whether the token is still rejected. Accounts suspended for other reasons, like an instance being down, are never deleted.
+
+To see what it would delete, or to run it by hand:
 
 ```bash
-node dist/scripts/purge-revoked-accounts.mjs           # in the Docker image (docker compose exec app ..., or the App Platform console)
+node dist/scripts/purge-revoked-accounts.mjs            # in the Docker image (docker compose exec app ..., or the App Platform console)
 npm run accounts:purge-revoked                          # from a checkout, uses DATABASE_URL from .env
 ```
 
-Without `--apply` it only lists the accounts it would delete. It only considers accounts that were suspended because their instance rejected the token (HTTP 401) more than 30 days ago, without a sign in since, and asks each instance once more whether the token is still rejected. Accounts suspended for other reasons, like an instance being down, are never deleted. See `--help` for the options.
+Without `--apply` it only lists the accounts, see `--help` for the options.
 
 ### Configuration
 
 All configuration happens through environment variables, read at runtime. See [`.env.dist`](./.env.dist) for the full list.
 
-| Variable                       | Description                                                                        |
-| ------------------------------ | ---------------------------------------------------------------------------------- |
-| `DATABASE_URL`                 | PostgreSQL connection string (required)                                            |
-| `SESSION_SECRET`               | Secret used to sign session cookies (required)                                     |
-| `SITE_URL`                     | Public URL, used for the OAuth redirect and social previews (strongly recommended) |
-| `APP_NAME`                     | Name shown on the Mastodon authorization screen, defaults to `MastoMetrics`        |
-| `CONTACT_HANDLE`               | Mastodon account for support and contact links, defaults to `MastoMetrics@mas.to`  |
-| `SHOW_DONATION_BANNER`         | Show the ko-fi donation banner of the original author, defaults to `false`         |
-| `DEPLOYMENT_TYPE`              | `default`, `app` or `worker`, see above                                            |
-| `MAINTENANCE_MODE`             | `true` disables sign in, the dashboard and the worker                              |
-| `LOG_LEVEL`                    | `debug`, `info` (default), `warning` or `error`                                    |
-| `WORKER_SYNC_INTERVAL_MINS`    | Run the sync job every N minutes (default `2`)                                     |
-| `WORKER_SYNC_OUTDATED_MINS`    | Sync accounts again after N minutes (default `45`)                                 |
-| `WORKER_SYNC_MAX_STATUS_COUNT` | Number of recent posts updated per sync (default `120`)                            |
+| Variable                        | Description                                                                                         |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                  | PostgreSQL connection string (required)                                                             |
+| `SESSION_SECRET`                | Secret used to sign session cookies (required)                                                      |
+| `SITE_URL`                      | Public URL, used for the OAuth redirect and social previews (strongly recommended)                  |
+| `APP_NAME`                      | Name shown on the Mastodon authorization screen, defaults to `MastoMetrics`                         |
+| `CONTACT_HANDLE`                | Mastodon account for support and contact links, defaults to `MastoMetrics@mas.to`                   |
+| `SHOW_DONATION_BANNER`          | Show the ko-fi donation banner of the original author, defaults to `false`                          |
+| `DEPLOYMENT_TYPE`               | `default`, `app` or `worker`, see above                                                             |
+| `MAINTENANCE_MODE`              | `true` disables sign in, the dashboard and the worker                                               |
+| `LOG_LEVEL`                     | `debug`, `info` (default), `warning` or `error`                                                     |
+| `WORKER_SYNC_INTERVAL_MINS`     | Run the sync job every N minutes (default `2`)                                                      |
+| `WORKER_SYNC_OUTDATED_MINS`     | Sync accounts again after N minutes (default `45`)                                                  |
+| `WORKER_SYNC_MAX_STATUS_COUNT`  | Number of recent posts updated per sync (default `120`)                                             |
+| `WORKER_PURGE_REVOKED_ACCOUNTS` | Daily delete accounts that revoked access, see [above](#deleting-revoked-accounts) (default `true`) |
 
 ### Database
 
