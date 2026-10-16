@@ -14,8 +14,16 @@ concurrency:
 
 jobs:
   deploy:
-    # Only deploy from this repository, forks don't have the secrets
-    if: github.repository == 'mastometrics/web' && (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
+    # Only deploy pushes to main of this repository. workflow_run has access to the secrets, so never run it for CI runs
+    # of pull requests (a fork can have a branch called main too)
+    if: >-
+      github.repository == 'mastometrics/web' && (
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'push' &&
+          github.event.workflow_run.head_repository.full_name == github.repository
+        )
+      )
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -28,5 +36,6 @@ jobs:
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          # Logs of public repositories are public, the app's runtime logs (deploy logs) contain account handles
           print_build_logs: true
-          print_deploy_logs: true
+          print_deploy_logs: false
