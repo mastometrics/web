@@ -18,6 +18,22 @@ Both are started by `npm start` (or the Docker image) by default, but can run se
 
 Users sign in with their Mastodon account through OAuth. MastoMetrics registers itself as an app on each instance automatically on first sign in, there's nothing to configure on the Mastodon side.
 
+### Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mastometrics/web)
+
+The button deploys [render.yaml](./render.yaml): one paid Docker web service running the app and worker together, plus a paid managed PostgreSQL 17 database with 5 GB of storage. Review the [Render pricing](https://render.com/pricing) before deploying. Render provides HTTPS, so you don't need your own domain or reverse proxy.
+
+1. Click **Deploy to Render**, sign in and review the resources before approving the deployment.
+2. Wait for the build and deployment to finish. The database connection, session secret and public `SITE_URL` are configured automatically, and database migrations run on startup.
+3. Open the service's `onrender.com` URL and sign in with your Mastodon account.
+
+Automatic deploys are disabled, so updates to this repository won't redeploy your instance. To update, use **Manual Deploy → Deploy latest commit** on the web service in the Render dashboard.
+
+Keep the service at one instance so only one worker runs. Increase its compute plan or database storage as your usage grows. The database accepts connections only over Render's private network.
+
+For a custom domain, fork the repository, update the button's `repo` URL to your fork and replace the `SITE_URL` entry's `fromService` block in `render.yaml` with `value: https://metrics.example.com`. Add the same domain in the Render dashboard. Keep any later configuration changes in your blueprint, as syncing it can overwrite dashboard changes.
+
 ### With Docker Compose (recommended)
 
 1. Clone the repository and create a `.env` file:

@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: mastometrics
+    runtime: docker
+    plan: 0.5c-512mb
+    numInstances: 1
+    autoDeployTrigger: "off"
+    healthCheckPath: /internal-api/health
+    envVars:
+      - key: DEPLOYMENT_TYPE
+        value: default
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mastometrics-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SITE_URL
+        fromService:
+          name: mastometrics
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  - name: mastometrics-db
+    plan: 0.1c-256mb
+    postgresMajorVersion: "17"
+    diskSizeGB: 5
+    ipAllowList: []
